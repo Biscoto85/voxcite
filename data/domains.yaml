@@ -1,0 +1,196 @@
+# VoxCité — Données de référence : Domaines
+
+# Ce fichier contient les 10 domaines thématiques avec leurs dimensions sur les 2 axes.
+# Format : YAML pour lisibilité humaine, à convertir en JSON/DB selon la stack choisie.
+
+domains:
+
+  - id: travail
+    label: "Travail et emploi"
+    order: 1
+    description: "Emploi, conditions de travail, retraites, formation"
+    dimension_societale:
+      tension: "Droit au sens vs devoir de productivité"
+      exemples_progressiste: "Semaine de 4 jours, télétravail, droit à la déconnexion, rapport au travail des jeunes"
+      exemples_conservateur: "Valeur travail, effort, discipline, hiérarchie, mérite"
+    dimension_economique:
+      tension: "Protection vs flexibilité"
+      exemples_interventionniste: "CDI renforcé, salaire minimum élevé, cotisations sociales fortes"
+      exemples_liberal: "Ubérisation, flexibilité, charges réduites, auto-entrepreneuriat"
+    themes_permanents:
+      - { id: retraites, label: "Retraites" }
+      - { id: chomage, label: "Chômage" }
+      - { id: temps_travail, label: "Temps de travail" }
+      - { id: formation, label: "Formation" }
+      - { id: fonction_publique, label: "Fonction publique" }
+
+  - id: sante
+    label: "Santé et protection sociale"
+    order: 2
+    description: "Système de santé, protection sociale, bioéthique"
+    dimension_societale:
+      tension: "Liberté individuelle vs santé collective"
+      exemples_progressiste: "Fin de vie choisie, PMA/GPA, cannabis thérapeutique, droits des patients"
+      exemples_conservateur: "Vaccination obligatoire, ordre médical, tradition bioéthique"
+    dimension_economique:
+      tension: "Sécu universelle vs assurance privée"
+      exemples_interventionniste: "100% sécu, hôpital public fort, pas de déremboursement"
+      exemples_liberal: "Complémentaires privées, cliniques privées, responsabilisation financière"
+    themes_permanents:
+      - { id: hopital, label: "Hôpital" }
+      - { id: secu, label: "Sécurité sociale" }
+      - { id: fin_de_vie, label: "Fin de vie" }
+      - { id: bioethique, label: "Bioéthique" }
+      - { id: dependance, label: "Dépendance" }
+
+  - id: education
+    label: "Éducation et jeunesse"
+    order: 3
+    description: "Système éducatif, jeunesse, accès au savoir"
+    dimension_societale:
+      tension: "Émancipation vs transmission"
+      exemples_progressiste: "Pédagogies alternatives, éducation sexuelle, mixité sociale, autonomie de l'élève"
+      exemples_conservateur: "Autorité du prof, uniforme, transmission du savoir classique, laïcité stricte"
+    dimension_economique:
+      tension: "Service public vs marché éducatif"
+      exemples_interventionniste: "École publique renforcée, carte scolaire stricte, gratuité totale"
+      exemples_liberal: "Écoles privées, Parcoursup concurrentiel, frais de scolarité, chèque éducation"
+    themes_permanents:
+      - { id: ecole_publique, label: "École publique" }
+      - { id: universite, label: "Université" }
+      - { id: laicite, label: "Laïcité" }
+      - { id: numerique_educatif, label: "Numérique éducatif" }
+      - { id: orientation, label: "Orientation" }
+
+  - id: securite
+    label: "Sécurité et justice"
+    order: 4
+    description: "Sécurité publique, système judiciaire, libertés"
+    dimension_societale:
+      tension: "Libertés vs autorité"
+      exemples_progressiste: "Droits des détenus, fin du contrôle au faciès, encadrement de la vidéosurveillance"
+      exemples_conservateur: "Tolérance zéro, état d'urgence, peine plancher, autorité renforcée"
+    dimension_economique:
+      tension: "Prévention vs répression"
+      exemples_interventionniste: "Budget prévention, éducateurs de rue, justice des mineurs éducative"
+      exemples_liberal: "Budget sécuritaire, prisons privées, police municipale renforcée"
+    themes_permanents:
+      - { id: police, label: "Police" }
+      - { id: justice, label: "Justice" }
+      - { id: prison, label: "Prison" }
+      - { id: terrorisme, label: "Terrorisme" }
+      - { id: violences, label: "Violences" }
+
+  - id: immigration
+    label: "Immigration et identité"
+    order: 5
+    description: "Politique migratoire, intégration, identité nationale"
+    dimension_societale:
+      tension: "Ouverture vs enracinement"
+      exemples_progressiste: "Multiculturalisme, droit du sol élargi, intégration par la diversité"
+      exemples_conservateur: "Assimilation, identité nationale, immigration choisie, valeurs républicaines"
+    dimension_economique:
+      tension: "Immigration choisie vs solidarité"
+      exemples_interventionniste: "Aide au développement, régularisation, accueil inconditionnel"
+      exemples_liberal: "Immigration de travail, quotas économiques, attractivité des talents"
+    themes_permanents:
+      - { id: asile, label: "Asile" }
+      - { id: integration, label: "Intégration" }
+      - { id: frontieres, label: "Frontières" }
+      - { id: nationalite, label: "Nationalité" }
+      - { id: diaspora, label: "Diaspora" }
+
+  - id: environnement
+    label: "Environnement et énergie"
+    order: 6
+    description: "Climat, énergie, agriculture, biodiversité"
+    dimension_societale:
+      tension: "Sobriété choisie vs liberté de consommer"
+      exemples_progressiste: "Interdiction vols courts, véganisme encouragé, ZFE, mode de vie sobre"
+      exemples_conservateur: "Liberté de consommer, chasse, traditions rurales, anti-écologie punitive"
+    dimension_economique:
+      tension: "Planification verte vs marché carbone"
+      exemples_interventionniste: "Nationalisation énergie, planification écologique, interdiction fossiles"
+      exemples_liberal: "Marché carbone, innovation privée, nucléaire, subventions ciblées"
+    themes_permanents:
+      - { id: climat, label: "Climat" }
+      - { id: energie, label: "Énergie" }
+      - { id: agriculture, label: "Agriculture" }
+      - { id: biodiversite, label: "Biodiversité" }
+      - { id: transports, label: "Transports" }
+
+  - id: economie
+    label: "Économie et fiscalité"
+    order: 7
+    description: "Fiscalité, dette, inégalités, pouvoir d'achat"
+    dimension_societale:
+      tension: "Mérite individuel vs solidarité structurelle"
+      exemples_progressiste: "Taxer l'héritage, RSA inconditionnel, égalité des chances réelle"
+      exemples_conservateur: "Mérite, responsabilité individuelle, lutte contre l'assistanat"
+    dimension_economique:
+      tension: "Libre marché vs intervention étatique"
+      exemples_interventionniste: "ISF, nationalisation, contrôle des prix, services publics forts"
+      exemples_liberal: "Flat tax, libre-échange, réduction des dépenses publiques, compétitivité"
+    themes_permanents:
+      - { id: impots, label: "Impôts" }
+      - { id: dette, label: "Dette publique" }
+      - { id: pouvoir_achat, label: "Pouvoir d'achat" }
+      - { id: logement, label: "Logement" }
+      - { id: inegalites, label: "Inégalités" }
+
+  - id: numerique
+    label: "Numérique et libertés"
+    order: 8
+    description: "IA, données personnelles, souveraineté numérique"
+    dimension_societale:
+      tension: "Vie privée vs transparence"
+      exemples_progressiste: "RGPD renforcé, droit à l'oubli, protection des mineurs en ligne"
+      exemples_conservateur: "Identité numérique, surveillance légitime, responsabilité des plateformes"
+    dimension_economique:
+      tension: "Souveraineté tech vs Big Tech"
+      exemples_interventionniste: "Cloud souverain, taxation GAFAM, régulation forte IA"
+      exemples_liberal: "Start-up nation, innovation libre, attractivité numérique"
+    themes_permanents:
+      - { id: ia, label: "Intelligence artificielle" }
+      - { id: donnees, label: "Données personnelles" }
+      - { id: reseaux_sociaux, label: "Réseaux sociaux" }
+      - { id: cybersecurite, label: "Cybersécurité" }
+      - { id: souverainete_num, label: "Souveraineté numérique" }
+
+  - id: democratie
+    label: "Démocratie et institutions"
+    order: 9
+    description: "Fonctionnement démocratique, institutions, participation"
+    dimension_societale:
+      tension: "Démocratie directe vs démocratie représentative"
+      exemples_progressiste: "RIC, tirage au sort, participation citoyenne, démocratie liquide"
+      exemples_conservateur: "Institutions fortes, Ve République, autorité présidentielle, stabilité"
+    dimension_economique:
+      tension: "Lobbies vs intérêt général"
+      exemples_interventionniste: "Transparence lobbies, financement public des partis, anti-pantouflage"
+      exemples_liberal: "Liberté d'influence, financement privé, efficacité institutionnelle"
+    themes_permanents:
+      - { id: elections, label: "Élections" }
+      - { id: parlement, label: "Parlement" }
+      - { id: decentralisation, label: "Décentralisation" }
+      - { id: europe_instit, label: "Europe" }
+      - { id: referendum, label: "Référendum" }
+
+  - id: international
+    label: "International et défense"
+    order: 10
+    description: "Relations internationales, défense, géopolitique"
+    dimension_societale:
+      tension: "Universalisme vs souverainisme"
+      exemples_progressiste: "Droits de l'homme universels, CPI, ingérence humanitaire, multilatéralisme"
+      exemples_conservateur: "Souveraineté nationale, non-ingérence, identité civilisationnelle"
+    dimension_economique:
+      tension: "Mondialisme vs protectionnisme"
+      exemples_interventionniste: "Protectionnisme solidaire, souveraineté industrielle, taxe aux frontières"
+      exemples_liberal: "Libre-échange, OTAN, industrie d'armement privée, compétitivité mondiale"
+    themes_permanents:
+      - { id: defense, label: "Défense" }
+      - { id: europe_intl, label: "Europe (international)" }
+      - { id: afrique, label: "Afrique" }
+      - { id: commerce_intl, label: "Commerce international" }
+      - { id: diplomatie, label: "Diplomatie" }
