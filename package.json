@@ -3,23 +3,18 @@
   "version": "0.1.0",
   "private": true,
   "description": "VoxCité — On fait parler la cité.",
-  "workspaces": [
-    "packages/shared",
-    "packages/client",
-    "packages/server"
-  ],
   "scripts": {
-    "dev:client": "npm run dev --workspace=packages/client",
-    "dev:server": "npm run dev --workspace=packages/server",
-    "dev": "concurrently \"npm run dev:client\" \"npm run dev:server\"",
-    "build:shared": "npm run build --workspace=packages/shared",
-    "build:client": "npm run build --workspace=packages/client",
-    "build:server": "npm run build --workspace=packages/server",
-    "build": "npm run build:shared && concurrently \"npm run build:client\" \"npm run build:server\"",
+    "dev:client": "pnpm --filter @voxcite/client dev",
+    "dev:server": "pnpm --filter @voxcite/server dev",
+    "dev": "concurrently \"pnpm run dev:client\" \"pnpm run dev:server\"",
+    "build:shared": "pnpm --filter @voxcite/shared build",
+    "build:client": "pnpm --filter @voxcite/client build",
+    "build:server": "pnpm --filter @voxcite/server build",
+    "build": "pnpm run build:shared && concurrently \"pnpm run build:client\" \"pnpm run build:server\"",
     "start": "pm2 start ecosystem.config.js",
-    "db:generate": "npm run db:generate --workspace=packages/server",
-    "db:migrate": "npm run db:migrate --workspace=packages/server",
-    "db:seed": "npm run db:seed --workspace=packages/server"
+    "db:generate": "pnpm --filter @voxcite/server db:generate",
+    "db:migrate": "pnpm --filter @voxcite/server db:migrate",
+    "db:seed": "pnpm --filter @voxcite/server db:seed"
   },
   "devDependencies": {
     "concurrently": "^9.1.0",
