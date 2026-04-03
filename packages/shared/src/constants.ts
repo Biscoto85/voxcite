@@ -43,10 +43,10 @@ export const RESPONSE_LABELS_AFFIRMATION = [
   { value: -1, label: 'Pas d\'accord' },
   { value: 0, label: 'Neutre' },
   { value: 1, label: 'D\'accord' },
-  { value: 2, label: 'Tout à fait d\'accord' },
+  { value: 2, label: 'Tout \u00e0 fait d\'accord' },
 ] as const;
 
-// ── Compas : rendu visuel ──────────────────────────────────────────
+// ── Compas : rendu visuel ───────────────────────────────────────────
 
 export const COMPASS_COLORS = {
   userDot: '#7F77DD',
@@ -66,7 +66,7 @@ export const COMPASS_SIZES = {
   userLabelFontSize: 12,
 } as const;
 
-// ── Animation de fracture ──────────────────────────────────────────
+// ── Animation de fracture ───────────────────────────────────────────
 
 export const FRACTURE_TIMING = {
   axisAppearStart: 1.0,

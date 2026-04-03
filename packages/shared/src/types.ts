@@ -1,11 +1,11 @@
-// ── Position sur le compas 2D ──────────────────────────────────────
+// ── Position sur le compas 2D ──────────────────────────────────────────────
 
 export interface CompassPosition {
   societal: number; // -1 (conservateur) → +1 (progressiste)
   economic: number; // -1 (interventionniste) → +1 (libéral)
 }
 
-// ── Domaines thématiques ───────────────────────────────────────────
+// ── Domaines thématiques ─────────────────────────────────────────────
 
 export interface DomainDimension {
   tension: string;
@@ -30,7 +30,7 @@ export interface Domain {
   themes_permanents: ThemeRef[];
 }
 
-// ── Questions de positionnement ────────────────────────────────────
+// ── Questions de positionnement ──────────────────────────────────────
 
 export type QuestionType = 'affirmation' | 'dilemme';
 export type QuestionAxis = 'societal' | 'economic' | 'both';
