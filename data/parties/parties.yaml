@@ -1,5 +1,5 @@
 # VoxCité — Données de référence : Partis politiques français
-# Positionnement sur le compas 2 axes
+# Positionnement sur le compas
 #
 # IMPORTANT : Ces positions sont des estimations éditoriales basées sur
 # les programmes, votes parlementaires et discours publics.
@@ -7,14 +7,24 @@
 # transparentes pour les utilisateurs (méthodologie publiée).
 #
 # Échelle : -1.0 à +1.0
-#   Sociétal : -1 = conservateur, +1 = progressiste
-#   Économique : -1 = interventionniste, +1 = libéral
+#   position_1d : -1 = gauche, +1 = droite (classement éditorial traditionnel)
+#   Sociétal :    -1 = conservateur, +1 = progressiste
+#   Économique :  -1 = interventionniste, +1 = libéral
 
-parties:
+partis:
+
+  - id: npa
+    label: "Nouveau Parti Anticapitaliste"
+    abbreviation: "NPA"
+    position_1d: -0.95
+    position: { societal: 0.9, economic: -0.95 }
+    color: "#B80000"
+    leader: "Philippe Poutou"
 
   - id: lfi
     label: "La France Insoumise"
     abbreviation: "LFI"
+    position_1d: -0.80
     position: { societal: 0.7, economic: -0.8 }
     color: "#CC2443"
     leader: "Jean-Luc Mélenchon"
@@ -22,41 +32,47 @@ parties:
   - id: pcf
     label: "Parti Communiste Français"
     abbreviation: "PCF"
+    position_1d: -0.75
     position: { societal: 0.4, economic: -0.9 }
     color: "#DD0000"
     leader: "Fabien Roussel"
 
-  - id: ps
-    label: "Parti Socialiste"
-    abbreviation: "PS"
-    position: { societal: 0.5, economic: -0.3 }
-    color: "#FF6084"
-    leader: "Olivier Faure"
-
   - id: eelv
     label: "Les Écologistes"
     abbreviation: "EELV"
+    position_1d: -0.50
     position: { societal: 0.8, economic: -0.4 }
     color: "#00A650"
     leader: "Marine Tondelier"
 
-  - id: renaissance
-    label: "Renaissance"
-    abbreviation: "RE"
-    position: { societal: 0.3, economic: 0.6 }
-    color: "#FFEB00"
-    leader: "Emmanuel Macron"
+  - id: ps
+    label: "Parti Socialiste"
+    abbreviation: "PS"
+    position_1d: -0.35
+    position: { societal: 0.5, economic: -0.3 }
+    color: "#FF6084"
+    leader: "Olivier Faure"
 
   - id: modem
     label: "MoDem"
     abbreviation: "MoDem"
+    position_1d: 0.10
     position: { societal: 0.2, economic: 0.3 }
     color: "#FF8C00"
     leader: "François Bayrou"
 
+  - id: renaissance
+    label: "Renaissance"
+    abbreviation: "RE"
+    position_1d: 0.25
+    position: { societal: 0.3, economic: 0.6 }
+    color: "#FFEB00"
+    leader: "Emmanuel Macron"
+
   - id: lr
     label: "Les Républicains"
     abbreviation: "LR"
+    position_1d: 0.55
     position: { societal: -0.4, economic: 0.5 }
     color: "#0066CC"
     leader: "Laurent Wauquiez"
@@ -64,6 +80,7 @@ parties:
   - id: rn
     label: "Rassemblement National"
     abbreviation: "RN"
+    position_1d: 0.80
     position: { societal: -0.8, economic: -0.2 }
     color: "#0D378A"
     leader: "Jordan Bardella"
@@ -71,27 +88,23 @@ parties:
   - id: reconquete
     label: "Reconquête"
     abbreviation: "R!"
+    position_1d: 0.90
     position: { societal: -0.9, economic: 0.4 }
     color: "#1A1A2E"
     leader: "Éric Zemmour"
 
-  - id: npa
-    label: "Nouveau Parti Anticapitaliste"
-    abbreviation: "NPA"
-    position: { societal: 0.9, economic: -0.95 }
-    color: "#B80000"
-    leader: "Philippe Poutou"
-
 # Note sur la thèse fondatrice de VoxCité :
 #
-# En regardant cette carte, on voit immédiatement ce que l'axe unique cache :
+# Le score 1D (gauche-droite) est le classement éditorial traditionnel,
+# tel qu'utilisé par les médias et les sondeurs. Il est VOLONTAIREMENT
+# réducteur — c'est précisément ce que VoxCité démonte.
 #
-# - LFI et RN sont tous les deux "anti-système" mais aux antipodes sur le sociétal
-# - Renaissance et LR sont proches économiquement mais opposés sur le sociétal
-# - RN et LFI partagent un électorat populaire (économique proche)
-#   mais sont fracturés sur les sujets sociétaux
+# Exemples de ce que l'axe unique cache :
+# - Le RN est classé "extrême droite" mais est interventionniste économiquement
+#   → plus proche de LFI que de LR sur l'axe économique
+# - Renaissance est classé "centre" mais est libéral économiquement
+#   → plus proche de LR que du MoDem sur l'axe économique
+# - LFI et RN partagent un électorat populaire (anti-libéral)
+#   mais sont fracturés par les sujets sociétaux
 #
-# C'est exactement la fracturation que VoxCité rend visible :
-# le bloc populaire (anti-libéral économiquement) est divisé en deux
-# par les sujets identitaires/sociétaux, au profit du bloc libéral
-# qui reste uni (Renaissance + LR + Reconquête sur l'axe économique).
+# C'est exactement la fracturation que VoxCité rend visible.

@@ -61,7 +61,8 @@ export interface Party {
   id: string;
   label: string;
   abbreviation: string;
-  position: CompassPosition;
+  position1d: number;        // -1 (gauche) → +1 (droite) — classement éditorial
+  position: CompassPosition; // compas 2D
   color: string;
   leader?: string;
   visibleOnCompass: boolean;

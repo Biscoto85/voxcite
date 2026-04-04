@@ -36,12 +36,13 @@ export const questions = pgTable('questions', {
 
 // ── Partis politiques (seed depuis data/parties/parties.yaml) ──
 
-export const parties = pgTable('parties', {
+export const partis = pgTable('partis', {
   id: text('id').primaryKey(),
   label: text('label').notNull(),
   abbreviation: text('abbreviation').notNull(),
-  positionSocietal: real('position_societal').notNull(),
-  positionEconomic: real('position_economic').notNull(),
+  position1d: real('position_1d').notNull(),              // -1 (gauche) → +1 (droite) — éditorial
+  positionSocietal: real('position_societal').notNull(),   // -1 (conservateur) → +1 (progressiste)
+  positionEconomic: real('position_economic').notNull(),   // -1 (interventionniste) → +1 (libéral)
   color: text('color').notNull(),
   leader: text('leader'),
   visibleOnCompass: boolean('visible_on_compass').notNull().default(true),
@@ -53,6 +54,7 @@ export const medias = pgTable('medias', {
   id: text('id').primaryKey(),
   label: text('label').notNull(),
   type: text('type').notNull(),
+  position1d: real('position_1d').notNull(),
   positionSocietal: real('position_societal').notNull(),
   positionEconomic: real('position_economic').notNull(),
   owner: text('owner'),
@@ -64,6 +66,7 @@ export const medias = pgTable('medias', {
 export const sessions = pgTable('sessions', {
   id: uuid('id').primaryKey().defaultRandom(),
   createdAt: timestamp('created_at').notNull().defaultNow(),
+  position1d: real('position_1d'),                         // calculé depuis les réponses
   positionSocietal: real('position_societal'),
   positionEconomic: real('position_economic'),
   onboardingCompleted: boolean('onboarding_completed').notNull().default(false),

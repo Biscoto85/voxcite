@@ -1,17 +1,18 @@
 import { Router } from 'express';
 import { db } from '../db/index.js';
-import { parties } from '../db/schema.js';
+import { partis } from '../db/schema.js';
 
-export const partiesRouter = Router();
+export const partisRouter = Router();
 
 // GET / — tous les partis politiques
-partiesRouter.get('/', async (_req, res) => {
-  const allParties = await db.select().from(parties);
+partisRouter.get('/', async (_req, res) => {
+  const allParties = await db.select().from(partis);
 
   const result = allParties.map((p) => ({
     id: p.id,
     label: p.label,
     abbreviation: p.abbreviation,
+    position1d: p.position1d,
     position: {
       societal: p.positionSocietal,
       economic: p.positionEconomic,

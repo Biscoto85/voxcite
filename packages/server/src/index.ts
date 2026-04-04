@@ -2,18 +2,32 @@ import 'dotenv/config';
 import express from 'express';
 import cors from 'cors';
 import { API_PREFIX } from '@voxcite/shared';
+import { domainsRouter } from './routes/domains.js';
+import { partisRouter } from './routes/parties.js';
+import { questionsRouter } from './routes/questions.js';
+import { sessionsRouter } from './routes/sessions.js';
 import { opinionsRouter } from './routes/opinions.js';
 import { synthesisRouter } from './routes/synthesis.js';
 import { subjectsRouter } from './routes/subjects.js';
 import { shareRouter } from './routes/share.js';
+import { rateLimit } from './middleware/rateLimit.js';
 
 const app = express();
 const port = process.env.PORT || 3001;
 
 app.use(cors());
 app.use(express.json());
+app.use(rateLimit);
 
-// Routes API
+// Données de référence (lecture)
+app.use(`${API_PREFIX}/domains`, domainsRouter);
+app.use(`${API_PREFIX}/partis`, partisRouter);
+app.use(`${API_PREFIX}/questions`, questionsRouter);
+
+// Sessions et réponses
+app.use(`${API_PREFIX}/sessions`, sessionsRouter);
+
+// Avis citoyens et synthèse (v2)
 app.use(`${API_PREFIX}/opinions`, opinionsRouter);
 app.use(`${API_PREFIX}/synthesis`, synthesisRouter);
 app.use(`${API_PREFIX}/subjects`, subjectsRouter);
@@ -26,4 +40,5 @@ app.get(`${API_PREFIX}/health`, (_req, res) => {
 
 app.listen(port, () => {
   console.log(`[voxcite-api] Listening on http://localhost:${port}`);
+  console.log(`[voxcite-api] API: http://localhost:${port}${API_PREFIX}`);
 });
