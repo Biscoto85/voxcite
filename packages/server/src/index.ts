@@ -11,6 +11,7 @@ import { synthesisRouter } from './routes/synthesis.js';
 import { subjectsRouter } from './routes/subjects.js';
 import { shareRouter } from './routes/share.js';
 import { nebulaRouter } from './routes/nebula.js';
+import { analysisRouter } from './routes/analysis.js';
 import { rateLimit } from './middleware/rateLimit.js';
 
 const app = express();
@@ -30,6 +31,9 @@ app.use(`${API_PREFIX}/sessions`, sessionsRouter);
 
 // Nébuleuse collective
 app.use(`${API_PREFIX}/nebula`, nebulaRouter);
+
+// Analyse IA
+app.use(`${API_PREFIX}/analysis`, analysisRouter);
 
 // Avis citoyens et synthèse (v2)
 app.use(`${API_PREFIX}/opinions`, opinionsRouter);
