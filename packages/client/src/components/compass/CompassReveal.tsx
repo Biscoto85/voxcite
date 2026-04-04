@@ -11,10 +11,6 @@ interface CompassRevealProps {
   onContinue: () => void;
 }
 
-/**
- * After onboarding: shows user on 1D axis with closest party,
- * then unfolds to 2D after a short delay.
- */
 export function CompassReveal({ parties, userPosition, onContinue }: CompassRevealProps) {
   const [phase, setPhase] = useState<'1d' | 'transition' | '2d'>('1d');
   const [opacity1D, setOpacity1D] = useState(1);
@@ -29,7 +25,6 @@ export function CompassReveal({ parties, userPosition, onContinue }: CompassReve
     const t1 = setTimeout(() => {
       setPhase('transition');
       setOpacity2D(0);
-      // Start crossfade
       requestAnimationFrame(() => {
         setOpacity1D(0);
         setOpacity2D(1);
@@ -58,41 +53,58 @@ export function CompassReveal({ parties, userPosition, onContinue }: CompassReve
         )}
       </div>
 
-      {/* Canvas area with crossfade */}
-      <div
-        className="relative bg-gray-900 rounded-xl"
-        style={{ minHeight: 300 }}
-        role="img"
-        aria-label={`Ton positionnement politique — vue ${phase === '2d' ? '2D' : '1D'}`}
-      >
-        {(phase === '1d' || phase === 'transition') && (
-          <div
-            className="absolute inset-0 transition-opacity duration-700"
-            style={{ opacity: opacity1D }}
-          >
-            <CompassCanvas1D
-              parties={parties}
-              userPosition={userPosition}
-              highlightedPartyId={highlightedPartyId}
-              onPartyHover={setHighlightedPartyId}
-            />
+      {/* Canvas area */}
+      <div className="bg-gray-900 rounded-xl overflow-hidden">
+        {/* 1D phase: fixed height for the 1D bar */}
+        {phase === '1d' && (
+          <CompassCanvas1D
+            parties={parties}
+            userPosition={userPosition}
+            highlightedPartyId={highlightedPartyId}
+            onPartyHover={setHighlightedPartyId}
+          />
+        )}
+
+        {/* Crossfade: both canvases stacked with opacity */}
+        {phase === 'transition' && (
+          <div className="relative" style={{ minHeight: 400 }}>
+            <div
+              className="absolute inset-0 transition-opacity duration-700"
+              style={{ opacity: opacity1D }}
+            >
+              <CompassCanvas1D
+                parties={parties}
+                userPosition={userPosition}
+                highlightedPartyId={highlightedPartyId}
+                onPartyHover={setHighlightedPartyId}
+              />
+            </div>
+            <div
+              className="transition-opacity duration-700"
+              style={{ opacity: opacity2D }}
+            >
+              <CompassCanvas2D
+                parties={parties}
+                userPosition={userPosition}
+                xAxis="societal"
+                yAxis="economic"
+                highlightedPartyId={highlightedPartyId}
+                onPartyHover={setHighlightedPartyId}
+              />
+            </div>
           </div>
         )}
 
-        {(phase === 'transition' || phase === '2d') && (
-          <div
-            className="absolute inset-0 transition-opacity duration-700"
-            style={{ opacity: opacity2D }}
-          >
-            <CompassCanvas2D
-              parties={parties}
-              userPosition={userPosition}
-              xAxis="societal"
-              yAxis="economic"
-              highlightedPartyId={highlightedPartyId}
-              onPartyHover={setHighlightedPartyId}
-            />
-          </div>
+        {/* 2D phase: canvas takes its natural height, no overflow */}
+        {phase === '2d' && (
+          <CompassCanvas2D
+            parties={parties}
+            userPosition={userPosition}
+            xAxis="societal"
+            yAxis="economic"
+            highlightedPartyId={highlightedPartyId}
+            onPartyHover={setHighlightedPartyId}
+          />
         )}
       </div>
 
@@ -107,7 +119,7 @@ export function CompassReveal({ parties, userPosition, onContinue }: CompassReve
       />
 
       {/* Hint + Continue */}
-      <div className="text-center">
+      <div className="text-center pb-4">
         {phase === '1d' && (
           <p className="text-xs text-gray-500 animate-pulse" aria-live="polite">L'axe gauche-droite ne dit pas tout...</p>
         )}
