@@ -47,7 +47,7 @@ export function PostalCodeInput({ onSubmit, serverError }: PostalCodeInputProps)
 
   const handlePostalNext = () => {
     if (!validatePostal(postalCode)) {
-      setError('Entre un code postal à 5 chiffres (ou clique sur le lien ci-dessous si tu es à l\'étranger)');
+      setError('Entre un code postal français à 5 chiffres, ou 99999 si tu es à l\'étranger.');
       return;
     }
     setStep('source');
@@ -101,12 +101,9 @@ export function PostalCodeInput({ onSubmit, serverError }: PostalCodeInputProps)
             Continuer
           </button>
 
-          <button
-            onClick={() => { setPostalCode('99999'); setStep('source'); }}
-            className="text-xs text-gray-600 hover:text-gray-400 transition-colors py-2 focus-ring rounded"
-          >
-            Je suis à l'étranger / Je préfère ne pas donner
-          </button>
+          <p className="text-xs text-gray-600 mt-2">
+            Si tu es à l'étranger, entre <button onClick={() => setPostalCode('99999')} className="text-purple-400 hover:text-purple-300 underline focus-ring rounded">99999</button>.
+          </p>
         </div>
       </section>
     );

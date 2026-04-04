@@ -103,8 +103,8 @@ analysisRouter.post('/', async (req, res) => {
   if (process.env.ANTHROPIC_API_KEY) {
     try {
       const [populationStats, percentiles] = await Promise.all([
-        getPopulationStats(),
-        getUserPercentiles(position),
+        getPopulationStats().catch(() => ({ totalRespondents: 0, axes: {} as any })),
+        getUserPercentiles(position).catch(() => ({ axes: {} as any })),
       ]);
 
       const result = await runAiAnalysis({
@@ -124,5 +124,10 @@ analysisRouter.post('/', async (req, res) => {
     }
   }
 
-  res.json(generateFallbackAnalysis(position, parties));
+  try {
+    res.json(generateFallbackAnalysis(position, parties));
+  } catch (err) {
+    console.error('[analysis] Fallback analysis failed:', err);
+    res.status(500).json({ error: 'Analysis unavailable' });
+  }
 });
