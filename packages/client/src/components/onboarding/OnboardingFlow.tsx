@@ -3,38 +3,47 @@ import type { Question, QuestionResponse, CompassPosition, Party } from '@partip
 import { calculatePosition } from '@/hooks/useCompassPosition';
 import { QuestionCard } from './QuestionCard';
 import { PostalCodeInput } from './PostalCodeInput';
+import type { UserProfile } from '@/App';
 
 type OnboardingStep = 'postal' | 'questions';
 
 interface OnboardingFlowProps {
   questions: Question[];
   parties: Party[];
-  onComplete: (position: CompassPosition, sessionId: string) => void;
+  onComplete: (position: CompassPosition, profile: UserProfile) => void;
 }
 
 export function OnboardingFlow({ questions, parties, onComplete }: OnboardingFlowProps) {
   const [step, setStep] = useState<OnboardingStep>('postal');
-  const [sessionId, setSessionId] = useState<string | null>(null);
+  const [profile, setProfile] = useState<UserProfile | null>(null);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [responses, setResponses] = useState<QuestionResponse[]>([]);
+  const [profileError, setProfileError] = useState<string | null>(null);
 
   const currentQuestion = questions[currentIndex];
   const progress = currentIndex / questions.length;
 
-  const [profileError, setProfileError] = useState<string | null>(null);
-
-  const handleProfileSubmit = useCallback(async (data: { postalCode: string; infoSource: string; perceivedBias: string }) => {
+  // Validate postal code via server (checks IP distance) then move to questions
+  const handleProfileSubmit = useCallback(async (data: UserProfile) => {
     setProfileError(null);
+
+    // Validate postal code vs IP by attempting a snapshot dry-run
     try {
-      const res = await fetch('/api/sessions', {
+      const res = await fetch('/api/sessions/snapshot', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data),
+        body: JSON.stringify({
+          postalCode: data.postalCode,
+          position: { societal: 0, economic: 0, authority: 0, ecology: 0, sovereignty: 0 },
+          infoSource: data.infoSource,
+          perceivedBias: data.perceivedBias,
+        }),
       });
+
       if (!res.ok) {
         const err = await res.json().catch(() => ({ error: 'Erreur serveur' }));
         if (res.status === 403) {
-          setProfileError(err.error || 'Code postal incohérent avec ta localisation. Vérifie ton code postal.');
+          setProfileError(err.error || 'Code postal incohérent avec ta localisation.');
           return;
         }
         if (res.status === 429) {
@@ -42,12 +51,12 @@ export function OnboardingFlow({ questions, parties, onComplete }: OnboardingFlo
           return;
         }
       }
-      const result = await res.json();
-      setSessionId(result.id);
-      setStep('questions');
     } catch {
-      setStep('questions');
+      // Network error — accept and continue (offline-friendly)
     }
+
+    setProfile(data);
+    setStep('questions');
   }, []);
 
   const handleAnswer = useCallback(async (value: -2 | -1 | 0 | 1 | 2) => {
@@ -58,23 +67,27 @@ export function OnboardingFlow({ questions, parties, onComplete }: OnboardingFlo
     const newResponses = [...responses, newResponse];
     setResponses(newResponses);
 
-    // Send to backend
-    if (sessionId) {
-      fetch(`/api/sessions/${sessionId}/responses`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ answers: [{ questionId: currentQuestion.id, value }] }),
-      }).catch(() => {});
-    }
+    // Send anonymous vote (fire-and-forget, no session)
+    fetch('/api/sessions/vote', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ questionId: currentQuestion.id, value }),
+    }).catch(() => {});
 
     if (currentIndex < questions.length - 1) {
       setCurrentIndex(currentIndex + 1);
     } else {
-      // Calculate final position → go directly to reveal
+      // Calculate position entirely client-side
       const pos = calculatePosition(newResponses, questions);
-      if (sessionId) onComplete(pos, sessionId);
+
+      // Save responses to localStorage for analysis later
+      localStorage.setItem('partiprism_responses', JSON.stringify(
+        newResponses.map((r) => ({ questionId: r.questionId, value: r.value })),
+      ));
+
+      if (profile) onComplete(pos, profile);
     }
-  }, [currentQuestion, responses, currentIndex, questions, sessionId, onComplete]);
+  }, [currentQuestion, responses, currentIndex, questions, profile, onComplete]);
 
   if (step === 'postal') {
     return <PostalCodeInput onSubmit={handleProfileSubmit} serverError={profileError} />;
@@ -84,7 +97,6 @@ export function OnboardingFlow({ questions, parties, onComplete }: OnboardingFlo
 
   return (
     <div className="max-w-lg mx-auto">
-      {/* Progress bar */}
       <div className="mb-6" role="progressbar" aria-valuenow={currentIndex + 1} aria-valuemin={1} aria-valuemax={questions.length} aria-label={`Question ${currentIndex + 1} sur ${questions.length}`}>
         <div className="flex justify-between text-xs text-gray-500 mb-1">
           <span>Question {currentIndex + 1} / {questions.length}</span>

@@ -2,7 +2,6 @@ import { useState, useEffect } from 'react';
 import type { CompassPosition } from '@partiprism/shared';
 
 interface CritiqueScreenProps {
-  sessionId: string;
   userPosition: CompassPosition;
   onBack: () => void;
 }
@@ -69,7 +68,7 @@ const TABS: Array<{ id: Tab; label: string }> = [
   { id: 'signaler', label: 'Média manquant' },
 ];
 
-export function CritiqueScreen({ sessionId, userPosition, onBack }: CritiqueScreenProps) {
+export function CritiqueScreen({ userPosition, onBack }: CritiqueScreenProps) {
   const [tab, setTab] = useState<Tab>('sources');
 
   return (
@@ -108,8 +107,8 @@ export function CritiqueScreen({ sessionId, userPosition, onBack }: CritiqueScre
 
       {tab === 'sources' && <SourcesTab userPosition={userPosition} />}
       {tab === 'infos' && <InfosTab />}
-      {tab === 'partager' && <PartagerTab sessionId={sessionId} />}
-      {tab === 'signaler' && <SignalerMediaTab sessionId={sessionId} />}
+      {tab === 'partager' && <PartagerTab />}
+      {tab === 'signaler' && <SignalerMediaTab />}
     </section>
   );
 }
@@ -323,7 +322,7 @@ function InfosTab() {
 
 // ── Tab 3: Partager un lien ──────────────────────────────────────────
 
-function PartagerTab({ sessionId }: { sessionId: string }) {
+function PartagerTab() {
   const [domain, setDomain] = useState(Object.keys(DOMAIN_LABELS)[0]);
   const [url, setUrl] = useState('');
   const [description, setDescription] = useState('');
@@ -338,7 +337,7 @@ function PartagerTab({ sessionId }: { sessionId: string }) {
       const res = await fetch('/api/critique/links', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ sessionId, domainId: domain, url: url.trim(), description: description.trim() }),
+        body: JSON.stringify({ domainId: domain, url: url.trim(), description: description.trim() }),
       });
       const data = await res.json();
       setResult(data);
@@ -427,7 +426,7 @@ function PartagerTab({ sessionId }: { sessionId: string }) {
 
 // ── Tab 4: Signaler un média manquant ────────────────────────────────
 
-function SignalerMediaTab({ sessionId }: { sessionId: string }) {
+function SignalerMediaTab() {
   const [mediaName, setMediaName] = useState('');
   const [mediaUrl, setMediaUrl] = useState('');
   const [mediaType, setMediaType] = useState('presse');
@@ -443,7 +442,6 @@ function SignalerMediaTab({ sessionId }: { sessionId: string }) {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          sessionId,
           targetType: 'missing_media',
           feedbackType: 'missing_topic',
           description: `Média manquant: ${mediaName.trim()} (${TYPE_LABELS[mediaType] || mediaType})${mediaUrl.trim() ? ` — ${mediaUrl.trim()}` : ''}`,

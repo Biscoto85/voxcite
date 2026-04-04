@@ -4,10 +4,9 @@ import { feedback } from '../db/schema.js';
 
 export const feedbackRouter = Router();
 
-// POST / — envoyer un feedback
+// POST / — envoyer un feedback anonyme
 feedbackRouter.post('/', async (req, res) => {
-  const { sessionId, targetType, targetId, feedbackType, description, screen } = req.body as {
-    sessionId?: string;
+  const { targetType, targetId, feedbackType, description, screen } = req.body as {
     targetType: string;
     targetId?: string;
     feedbackType: string;
@@ -21,7 +20,6 @@ feedbackRouter.post('/', async (req, res) => {
   }
 
   const [row] = await db.insert(feedback).values({
-    sessionId: sessionId ?? null,
     targetType,
     targetId: targetId ?? null,
     feedbackType,

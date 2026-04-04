@@ -66,27 +66,25 @@ export function MentionsLegales({ onBack, onNavigateCGU }: MentionsLegalesProps)
           </p>
         </div>
 
-        {/* Données personnelles */}
+        {/* Anonymat */}
         <div className="bg-gray-900 rounded-xl p-5 border border-gray-800">
-          <h3 className="text-base font-semibold text-white mb-3">Données personnelles</h3>
+          <h3 className="text-base font-semibold text-white mb-3">Anonymat par conception</h3>
           <p>
-            Le site ne collecte aucune donnée d'identification personnelle. Seules sont collectées
-            les réponses anonymes aux questions de positionnement et un identifiant de session technique
-            non rattachable à une identité.
+            Ce site ne collecte <strong className="text-white">aucune donnée personnelle</strong>.
+            Il n'y a pas de compte utilisateur, pas de session serveur, pas d'adresse IP stockée,
+            pas de cookie de suivi. Le calcul de votre positionnement s'effectue entièrement dans
+            votre navigateur. Seules des contributions anonymes et non liables sont transmises
+            au serveur pour alimenter les statistiques collectives.
           </p>
           <p className="mt-2">
-            Conformément au Règlement Général sur la Protection des Données (RGPD), vous disposez
-            d'un droit d'accès, de rectification et d'effacement de vos données.
+            Les données traitées par la Plateforme sont véritablement anonymes au sens du considérant 26
+            du RGPD et ne constituent pas des données à caractère personnel.
+          </p>
+          <p className="mt-2">
             Contact :{' '}
             <a href="mailto:contact@partiprism.fr" className="text-purple-400 hover:text-purple-300 underline">
               contact@partiprism.fr
             </a>
-          </p>
-          <p className="mt-2">
-            Vous pouvez également introduire une réclamation auprès de la{' '}
-            <a href="https://www.cnil.fr" target="_blank" rel="noopener noreferrer" className="text-purple-400 hover:text-purple-300 underline">
-              CNIL
-            </a>.
           </p>
         </div>
 

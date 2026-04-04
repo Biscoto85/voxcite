@@ -24,7 +24,7 @@ if (!process.env.DATABASE_URL) console.warn('[partiprism-api] WARNING: DATABASE_
 
 const app = express();
 
-app.set('trust proxy', true); // Needed behind Nginx for correct req.ip
+app.set('trust proxy', true);
 
 app.use(cors({
   origin: process.env.ALLOWED_ORIGINS?.split(',') || ['http://localhost:5173', 'http://localhost:3000'],
@@ -41,9 +41,8 @@ app.use(`${API_PREFIX}/domains`, domainsRouter);
 app.use(`${API_PREFIX}/partis`, partisRouter);
 app.use(`${API_PREFIX}/questions`, questionsRouter);
 
-// Sessions et réponses
-// Session creation rate limited: 3/h/IP (prevents mass bot creation)
-app.post(`${API_PREFIX}/sessions`, sessionRateLimit);
+// Snapshots et votes anonymes (rate limited)
+app.post(`${API_PREFIX}/sessions/snapshot`, sessionRateLimit);
 app.use(`${API_PREFIX}/sessions`, sessionsRouter);
 
 // Nébuleuse collective
@@ -57,7 +56,7 @@ app.use(`${API_PREFIX}/proposals`, proposalsRouter);
 app.use(`${API_PREFIX}/program`, programRouter);
 app.use(`${API_PREFIX}/feedback`, feedbackRouter);
 
-// Esprit critique (links POST rate limited — consomme des tokens)
+// Esprit critique
 app.use(`${API_PREFIX}/critique`, critiqueRouter);
 
 // Health check

@@ -167,67 +167,56 @@ export function CGU({ onBack, onNavigateMentions }: CGUProps) {
 
         {/* Article 4 */}
         <article className="bg-gray-900 rounded-xl p-5 border border-gray-800">
-          <h3 className="text-base font-semibold text-white mb-3">Article 4 — Données personnelles et anonymat</h3>
+          <h3 className="text-base font-semibold text-white mb-3">Article 4 �� Anonymat par conception</h3>
 
-          <h4 className="font-medium text-white mt-3 mb-1">4.1 — Absence de collecte de données d'identification</h4>
+          <h4 className="font-medium text-white mt-3 mb-1">4.1 — Architecture anonyme</h4>
           <p>
-            La Plateforme ne requiert aucune création de compte, aucune inscription et ne collecte aucune
-            donnée d'identification personnelle (nom, prénom, adresse e-mail, numéro de téléphone).
+            La Plateforme a été conçue selon le principe d'anonymat par conception (<em>privacy by design</em>).
+            Aucune donnée personnelle n'est collectée, traitée ou stockée sur les serveurs de la Plateforme.
           </p>
 
-          <h4 className="font-medium text-white mt-4 mb-1">4.2 — Données collectées</h4>
-          <p>La Plateforme collecte uniquement :</p>
+          <h4 className="font-medium text-white mt-4 mb-1">4.2 — Traitement côté client</h4>
+          <p>
+            Le calcul du positionnement politique de l'utilisateur est effectué intégralement dans son
+            navigateur (JavaScript côté client). Le serveur ne reçoit à aucun moment le profil complet
+            d'un utilisateur.
+          </p>
+
+          <h4 className="font-medium text-white mt-4 mb-1">4.3 — Données transmises au serveur</h4>
+          <p>Le serveur ne reçoit que des contributions individuelles véritablement anonymes :</p>
           <ul className="mt-2 space-y-1 list-disc pl-5 text-gray-400">
-            <li>les réponses aux questions de positionnement, de manière anonyme ;</li>
-            <li>un identifiant de session technique, généré aléatoirement et non rattachable à une identité ;</li>
-            <li>une empreinte technique de l'appareil (device fingerprint), utilisée exclusivement à des fins
-              de prévention de la manipulation des résultats collectifs.</li>
+            <li>des votes individuels sur des questions (sans identifiant de session ni moyen de les lier entre eux) ;</li>
+            <li>des points de position agrégés sur la carte collective (sans identifiant) ;</li>
+            <li>des propositions et retours textuels (sans identifiant).</li>
           </ul>
 
-          <h4 className="font-medium text-white mt-4 mb-1">4.3 — Données sensibles</h4>
+          <h4 className="font-medium text-white mt-4 mb-1">4.4 — Absence de session serveur</h4>
           <p>
-            Les réponses aux questions de positionnement constituent des données relatives aux opinions
-            politiques au sens de l'article 9 du RGPD (Règlement UE 2016/679). Le traitement est fondé
-            sur le consentement explicite de l'utilisateur, manifesté par l'utilisation volontaire de
-            la Plateforme.
+            Il n'existe aucune session utilisateur côté serveur. L'expérience personnalisée (compas,
+            position, historique des réponses) est stockée exclusivement dans le navigateur de l'utilisateur
+            (localStorage). L'effacement de ces données se fait en vidant le stockage local du navigateur.
           </p>
 
-          <h4 className="font-medium text-white mt-4 mb-1">4.4 — Finalité du traitement</h4>
-          <p>Les données collectées sont utilisées exclusivement pour :</p>
-          <ul className="mt-2 space-y-1 list-disc pl-5 text-gray-400">
-            <li>calculer le positionnement individuel de l'utilisateur ;</li>
-            <li>produire des synthèses collectives agrégées et anonymes ;</li>
-            <li>améliorer le fonctionnement et la pertinence de la Plateforme.</li>
-          </ul>
-
-          <h4 className="font-medium text-white mt-4 mb-1">4.5 — Absence de cession</h4>
+          <h4 className="font-medium text-white mt-4 mb-1">4.5 — Anti-manipulation sans traçage</h4>
           <p>
-            Les données collectées ne sont en aucun cas vendues, cédées, louées ou transmises à des tiers,
-            à des fins commerciales ou non, sauf obligation légale impérative.
+            La prévention de la manipulation des résultats collectifs repose sur une limitation du nombre
+            de requêtes par adresse IP (rate limiting). L'adresse IP n'est pas stockée et ne fait l'objet
+            d'aucun enregistrement en base de données.
           </p>
 
-          <h4 className="font-medium text-white mt-4 mb-1">4.6 — Conservation</h4>
+          <h4 className="font-medium text-white mt-4 mb-1">4.6 — Absence de données personnelles</h4>
           <p>
-            Les données de session sont conservées pour une durée maximale de 12 mois. Au-delà,
-            elles sont supprimées ou irréversiblement anonymisées.
+            Aucune donnée traitée par la Plateforme ne permet, directement ou indirectement, d'identifier
+            un utilisateur. Les données stockées sur les serveurs sont véritablement anonymes au sens du
+            considérant 26 du RGPD et ne constituent pas des données à caractère personnel.
           </p>
 
-          <h4 className="font-medium text-white mt-4 mb-1">4.7 — Droits des utilisateurs</h4>
+          <h4 className="font-medium text-white mt-4 mb-1">4.7 — Contact</h4>
           <p>
-            Conformément au RGPD, tout utilisateur dispose d'un droit d'accès, de rectification,
-            d'effacement, de limitation du traitement, de portabilité et d'opposition.
-            Contact :{' '}
+            Pour toute question relative au traitement des données :{' '}
             <a href="mailto:contact@partiprism.fr" className="text-purple-400 hover:text-purple-300 underline">
               contact@partiprism.fr
             </a>
-          </p>
-
-          <h4 className="font-medium text-white mt-4 mb-1">4.8 — Réclamation</h4>
-          <p>
-            Tout utilisateur peut introduire une réclamation auprès de la{' '}
-            <a href="https://www.cnil.fr" target="_blank" rel="noopener noreferrer" className="text-purple-400 hover:text-purple-300 underline">
-              CNIL
-            </a>.
           </p>
         </article>
 

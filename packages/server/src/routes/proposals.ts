@@ -3,14 +3,12 @@ import { db } from '../db/index.js';
 import { proposals, suggestions } from '../db/schema.js';
 import { eq, sql } from 'drizzle-orm';
 import type { CompassPosition } from '@partiprism/shared';
-import { validateSessionId } from '../middleware/validate.js';
 
 export const proposalsRouter = Router();
 
-// POST / — soumettre une proposition (user ou réaction à suggestion)
+// POST / — soumettre une proposition anonyme
 proposalsRouter.post('/', async (req, res) => {
-  const { sessionId, domainId, text, source, originalSuggestionId, position } = req.body as {
-    sessionId: string;
+  const { domainId, text, source, originalSuggestionId, position } = req.body as {
     domainId: string;
     text: string;
     source: string;
@@ -18,13 +16,12 @@ proposalsRouter.post('/', async (req, res) => {
     position?: CompassPosition;
   };
 
-  if (!sessionId || !domainId || !text || !source) {
-    res.status(400).json({ error: 'sessionId, domainId, text and source required' });
+  if (!domainId || !text || !source) {
+    res.status(400).json({ error: 'domainId, text and source required' });
     return;
   }
 
   const [row] = await db.insert(proposals).values({
-    sessionId,
     domainId,
     text,
     source,
@@ -39,17 +36,18 @@ proposalsRouter.post('/', async (req, res) => {
   res.status(201).json({ id: row.id });
 });
 
-// GET /suggestions — suggestions pré-générées adaptées au profil
-proposalsRouter.get('/suggestions', async (req, res) => {
-  const { sessionId } = req.query as { sessionId?: string };
-
-  // Return shuffled subset (DB-level random for proper distribution)
-  const shuffled = await db
-    .select({ id: suggestions.id, domainId: suggestions.domainId, text: suggestions.text })
+// GET /suggestions — suggestions aléatoires
+proposalsRouter.get('/suggestions', async (_req, res) => {
+  const result = await db
+    .select({
+      id: suggestions.id,
+      domainId: suggestions.domainId,
+      text: suggestions.text,
+    })
     .from(suggestions)
     .where(eq(suggestions.isActive, true))
     .orderBy(sql`RANDOM()`)
     .limit(20);
 
-  res.json(shuffled);
+  res.json(result);
 });

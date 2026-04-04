@@ -2,7 +2,6 @@ import { useState, useEffect, useRef } from 'react';
 import type { AppScreen } from '@/App';
 
 interface FeedbackButtonProps {
-  sessionId: string | null;
   screen: AppScreen;
 }
 
@@ -13,7 +12,7 @@ const FEEDBACK_TYPES = [
   { value: 'other', label: 'Autre remarque' },
 ] as const;
 
-export function FeedbackButton({ sessionId, screen }: FeedbackButtonProps) {
+export function FeedbackButton({ screen }: FeedbackButtonProps) {
   const [open, setOpen] = useState(false);
   const [feedbackType, setFeedbackType] = useState<string>('bias');
   const [description, setDescription] = useState('');
@@ -47,7 +46,6 @@ export function FeedbackButton({ sessionId, screen }: FeedbackButtonProps) {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          sessionId,
           targetType: 'general',
           feedbackType,
           description: description.trim(),

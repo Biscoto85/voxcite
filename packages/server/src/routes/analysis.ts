@@ -3,11 +3,7 @@ import type { CompassPosition, AxisId } from '@partiprism/shared';
 import { AXES } from '@partiprism/shared';
 import { runAiAnalysis } from '../services/ai-analysis.js';
 import { getPopulationStats, getUserPercentiles } from '../services/population.js';
-import { extractResponseSignals } from '../services/response-signals.js';
-import { db } from '../db/index.js';
-import { biases, sessions, responses, questions } from '../db/schema.js';
-import { eq } from 'drizzle-orm';
-import { ALL_AXES, isValidUUID } from '../utils/helpers.js';
+import { ALL_AXES } from '../utils/helpers.js';
 import fs from 'fs';
 import path from 'path';
 import yaml from 'js-yaml';
@@ -26,7 +22,6 @@ try {
   }
 } catch { /* will work without media data */ }
 
-// Map info source to aggregate key
 const SOURCE_TO_AGGREGATE: Record<string, string> = {
   tv: 'tv',
   internet: 'internet',
@@ -81,12 +76,15 @@ function generateFallbackAnalysis(
 }
 
 // ── Route ───────────────────────────────────────────────────────────
+// Analyse one-shot: le client envoie tout le contexte, le serveur traite
+// sans rien stocker. Résultat mis en cache côté client.
 
 analysisRouter.post('/', async (req, res) => {
-  const { position, parties, sessionId } = req.body as {
+  const { position, parties, infoSource, perceivedBias } = req.body as {
     position: CompassPosition;
     parties: PartyInput[];
-    sessionId?: string;
+    infoSource?: string;
+    perceivedBias?: string;
   };
 
   if (!position || !parties) {
@@ -94,57 +92,14 @@ analysisRouter.post('/', async (req, res) => {
     return;
   }
 
-  // Fetch session info (source, perceived bias) if sessionId provided
-  let infoSource: string | undefined;
-  let perceivedBias: string | undefined;
+  // Resolve media aggregate position from infoSource
   let mediaPosition: CompassPosition | undefined;
-
-  if (sessionId) {
-    const [session] = await db.select().from(sessions).where(eq(sessions.id, sessionId));
-    if (session) {
-      infoSource = session.infoSource ?? undefined;
-      perceivedBias = session.perceivedBias ?? undefined;
-
-      // Resolve media aggregate position
-      if (infoSource) {
-        const aggKey = SOURCE_TO_AGGREGATE[infoSource] || infoSource;
-        mediaPosition = mediaAggregates[aggKey];
-      }
-    }
+  if (infoSource) {
+    const aggKey = SOURCE_TO_AGGREGATE[infoSource] || infoSource;
+    mediaPosition = mediaAggregates[aggKey];
   }
 
-  // Extract response-level signals if sessionId provided
-  let responseSignals = undefined;
-  if (sessionId) {
-    try {
-      const [sessionResponses, allQuestions] = await Promise.all([
-        db.select().from(responses).where(eq(responses.sessionId, sessionId)),
-        db.select().from(questions),
-      ]);
-
-      if (sessionResponses.length > 0) {
-        const mappedResponses = sessionResponses.map((r) => ({
-          questionId: r.questionId,
-          value: r.value,
-        }));
-        const mappedQuestions = allQuestions.map((q) => ({
-          id: q.id,
-          text: q.text,
-          axis: q.axis,
-          axes: (q.axes as string[] | null),
-          polarity: q.polarity,
-          domainId: q.domainId,
-          phase: q.phase,
-          weight: q.weight,
-        }));
-        responseSignals = extractResponseSignals(mappedResponses, mappedQuestions);
-      }
-    } catch (err) {
-      console.error('[analysis] Failed to extract response signals:', err);
-    }
-  }
-
-  // Try AI analysis first
+  // Try AI analysis (ephemeral — nothing stored server-side)
   if (process.env.ANTHROPIC_API_KEY) {
     try {
       const [populationStats, percentiles] = await Promise.all([
@@ -160,25 +115,7 @@ analysisRouter.post('/', async (req, res) => {
         infoSource,
         perceivedBias,
         mediaPosition,
-        responseSignals,
       });
-
-      // Store biases in DB
-      if (sessionId && result.biases.length > 0) {
-        for (const bias of result.biases) {
-          await db.insert(biases).values({
-            sessionId,
-            category: bias.category,
-            biasType: bias.biasType,
-            axis: bias.axis,
-            description: bias.description,
-            strength: bias.strength,
-            detectedBy: 'ai',
-            suggestedContent: bias.suggestedContent,
-            suggestedSource: bias.suggestedSource ?? null,
-          });
-        }
-      }
 
       res.json(result);
       return;
@@ -187,6 +124,5 @@ analysisRouter.post('/', async (req, res) => {
     }
   }
 
-  // Fallback
   res.json(generateFallbackAnalysis(position, parties));
 });

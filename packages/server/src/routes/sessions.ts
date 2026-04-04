@@ -1,142 +1,65 @@
 import { Router } from 'express';
 import { db } from '../db/index.js';
-import { sessions, responses, questions } from '../db/schema.js';
-import { eq } from 'drizzle-orm';
-import type { AxisId } from '@partiprism/shared';
-import { calculatePosition } from '../services/scoring.js';
+import { snapshots, votes } from '../db/schema.js';
 import { geolocateIP, validatePostalCode } from '../services/geolocation.js';
 
 export const sessionsRouter = Router();
 
-// POST / — créer une session anonyme avec code postal obligatoire
-sessionsRouter.post('/', async (req, res) => {
-  const { postalCode, infoSource, perceivedBias } = req.body as {
+// POST /snapshot — enregistrer un positionnement anonyme (pour la nébuleuse)
+// Aucun identifiant de session, aucune IP stockée.
+sessionsRouter.post('/snapshot', async (req, res) => {
+  const { postalCode, position, infoSource, perceivedBias } = req.body as {
     postalCode?: string;
+    position: { societal: number; economic: number; authority: number; ecology: number; sovereignty: number };
     infoSource?: string;
     perceivedBias?: string;
   };
 
-  // Postal code is required
-  if (!postalCode || !/^\d{5}$/.test(postalCode)) {
-    res.status(400).json({ error: 'Code postal requis (5 chiffres)' });
+  if (!position || position.societal == null) {
+    res.status(400).json({ error: 'position required' });
     return;
   }
 
-  const ip = req.ip ?? req.socket.remoteAddress ?? '';
-  const geo = await geolocateIP(ip);
-  const validation = validatePostalCode(postalCode, geo);
+  // Validate postal code vs IP (IP checked but NOT stored)
+  if (postalCode) {
+    const ip = req.ip ?? req.socket.remoteAddress ?? '';
+    const geo = await geolocateIP(ip);
+    const validation = validatePostalCode(postalCode, geo);
 
-  if (!validation.valid) {
-    console.warn(`[partiprism-api] Postal/IP mismatch: postal=${postalCode} ip=${ip} country=${geo?.country} reason=${validation.reason}`);
-    res.status(403).json({
-      error: 'Code postal incohérent avec ta localisation',
-      reason: validation.reason,
-    });
-    return;
+    if (!validation.valid) {
+      console.warn(`[partiprism-api] Snapshot postal/IP mismatch: postal=${postalCode} reason=${validation.reason}`);
+      res.status(403).json({ error: 'Code postal incohérent avec ta localisation' });
+      return;
+    }
   }
 
-  const [session] = await db.insert(sessions).values({
-    postalCode,
+  await db.insert(snapshots).values({
+    postalCode: postalCode ?? null,
+    positionSocietal: position.societal,
+    positionEconomic: position.economic,
+    positionAuthority: position.authority,
+    positionEcology: position.ecology,
+    positionSovereignty: position.sovereignty,
     infoSource: infoSource ?? null,
     perceivedBias: perceivedBias ?? null,
-    ipCountry: geo?.country ?? null,
-    ipRegion: geo?.region ?? null,
-  }).returning();
-
-  res.status(201).json({
-    id: session.id,
-    createdAt: session.createdAt,
   });
+
+  res.status(201).json({ ok: true });
 });
 
-// POST /:id/responses — enregistrer des réponses et recalculer la position
-sessionsRouter.post('/:id/responses', async (req, res) => {
-  const sessionId = req.params.id;
-  const { answers } = req.body as {
-    answers: Array<{ questionId: string; value: number }>;
+// POST /vote — enregistrer un vote anonyme individuel
+// Pas de session, pas d'IP, pas de lien entre les votes.
+sessionsRouter.post('/vote', async (req, res) => {
+  const { questionId, value } = req.body as {
+    questionId: string;
+    value: number;
   };
 
-  if (!answers || !Array.isArray(answers)) {
-    res.status(400).json({ error: 'answers array required' });
+  if (!questionId || value == null) {
+    res.status(400).json({ error: 'questionId and value required' });
     return;
   }
 
-  // Insert responses
-  for (const a of answers) {
-    await db.insert(responses).values({
-      sessionId,
-      questionId: a.questionId,
-      value: a.value,
-    });
-  }
-
-  // Recalculate position from all responses
-  const allResponses = await db
-    .select()
-    .from(responses)
-    .where(eq(responses.sessionId, sessionId));
-
-  const allQuestions = await db.select().from(questions);
-
-  const mappedResponses = allResponses.map((r) => ({
-    questionId: r.questionId,
-    value: r.value,
-  }));
-
-  const mappedQuestions = allQuestions.map((q) => ({
-    id: q.id,
-    text: q.text,
-    type: q.type as 'affirmation' | 'dilemme',
-    axis: q.axis as 'societal' | 'economic' | 'authority' | 'ecology' | 'sovereignty' | 'both' | 'all',
-    axes: (q.axes as AxisId[] | null) ?? undefined,
-    polarity: q.polarity as -1 | 1,
-    domain: q.domainId,
-    phase: q.phase as 'onboarding' | 'deep',
-    weight: q.weight,
-  }));
-
-  const position = calculatePosition(mappedResponses, mappedQuestions);
-
-  // Update session position
-  await db
-    .update(sessions)
-    .set({
-      positionSocietal: position.societal,
-      positionEconomic: position.economic,
-      positionAuthority: position.authority,
-      positionEcology: position.ecology,
-      positionSovereignty: position.sovereignty,
-      onboardingCompleted: allResponses.length >= 10,
-    })
-    .where(eq(sessions.id, sessionId));
-
-  res.json({ position, totalResponses: allResponses.length });
-});
-
-// GET /:id — récupérer la session et sa position
-sessionsRouter.get('/:id', async (req, res) => {
-  const [session] = await db
-    .select()
-    .from(sessions)
-    .where(eq(sessions.id, req.params.id));
-
-  if (!session) {
-    res.status(404).json({ error: 'Session not found' });
-    return;
-  }
-
-  res.json({
-    id: session.id,
-    createdAt: session.createdAt,
-    position: session.positionSocietal != null
-      ? {
-          societal: session.positionSocietal,
-          economic: session.positionEconomic,
-          authority: session.positionAuthority,
-          ecology: session.positionEcology,
-          sovereignty: session.positionSovereignty,
-        }
-      : null,
-    onboardingCompleted: session.onboardingCompleted,
-  });
+  await db.insert(votes).values({ questionId, value });
+  res.status(201).json({ ok: true });
 });

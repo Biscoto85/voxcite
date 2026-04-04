@@ -36,7 +36,6 @@ export const questions = pgTable('questions', {
 });
 
 // ── Partis politiques (seed depuis data/parties/parties.yaml) ──
-// Les 5 positions sont issues du fichier YAML (estimations éditoriales)
 
 export const partis = pgTable('partis', {
   id: text('id').primaryKey(),
@@ -58,8 +57,8 @@ export const partis = pgTable('partis', {
 export const medias = pgTable('medias', {
   id: text('id').primaryKey(),
   label: text('label').notNull(),
-  type: text('type').notNull(),            // 'tv' | 'radio' | 'presse' | 'web' | 'podcast'
-  url: text('url'),                        // lien vers le site/chaîne du média
+  type: text('type').notNull(),
+  url: text('url'),
   position1d: real('position_1d').notNull(),
   positionSocietal: real('position_societal').notNull(),
   positionEconomic: real('position_economic').notNull(),
@@ -70,13 +69,49 @@ export const medias = pgTable('medias', {
   independent: boolean('independent').notNull().default(false),
   editorialLabel: text('editorial_label'),
   visibleOnCompass: boolean('visible_on_compass').notNull().default(true),
-  // Perception citoyenne (ajustée par les évaluations des visiteurs)
   citizenSocietal: real('citizen_societal'),
   citizenEconomic: real('citizen_economic'),
   citizenRatingCount: integer('citizen_rating_count').notNull().default(0),
 });
 
-// ── Sessions anonymes ──
+// ══════════════════════════════════════════════════════════════════════
+// Architecture "Privacy by Design" — données 100% anonymes
+//
+// Aucune donnée n'est liée à un utilisateur identifiable.
+// Pas de session serveur, pas d'IP stockée, pas de fingerprint.
+// Le calcul de position se fait entièrement côté client (navigateur).
+// Le serveur ne reçoit que des points anonymes sur la carte.
+// ══════════════════════════════════════════════════════════════════════
+
+// ── Snapshots anonymes (1 par onboarding terminé, pour la nébuleuse) ──
+// Aucun identifiant de session, aucun lien possible entre snapshots.
+
+export const snapshots = pgTable('snapshots', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  postalCode: text('postal_code'),
+  positionSocietal: real('position_societal').notNull(),
+  positionEconomic: real('position_economic').notNull(),
+  positionAuthority: real('position_authority').notNull(),
+  positionEcology: real('position_ecology').notNull(),
+  positionSovereignty: real('position_sovereignty').notNull(),
+  infoSource: text('info_source'),         // 'internet' | 'tv' | 'radio' | 'journal' | 'autre'
+  perceivedBias: text('perceived_bias'),   // 'gauche' | 'droite' | 'neutre' | 'les_deux'
+  createdAt: timestamp('created_at').notNull().defaultNow(),
+});
+
+// ── Votes anonymes individuels (pour les stats par question) ──
+// Envoyés un par un, sans session, non liables entre eux.
+
+export const votes = pgTable('votes', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  questionId: text('question_id').references(() => questions.id).notNull(),
+  value: real('value').notNull(),
+  createdAt: timestamp('created_at').notNull().defaultNow(),
+}, (table) => [
+  index('votes_question_id_idx').on(table.questionId),
+]);
+
+// ── Tables legacy (conservées pour migration, plus utilisées activement) ──
 
 export const sessions = pgTable('sessions', {
   id: uuid('id').primaryKey().defaultRandom(),
@@ -89,15 +124,13 @@ export const sessions = pgTable('sessions', {
   positionSovereignty: real('position_sovereignty'),
   onboardingCompleted: boolean('onboarding_completed').notNull().default(false),
   postalCode: text('postal_code'),
-  infoSource: text('info_source'),                         // 'internet' | 'tv' | 'radio' | 'journal' | 'autre'
-  perceivedBias: text('perceived_bias'),                   // 'gauche' | 'droite' | 'neutre' | 'les_deux'
+  infoSource: text('info_source'),
+  perceivedBias: text('perceived_bias'),
   ipCountry: text('ip_country'),
   ipRegion: text('ip_region'),
   deviceFingerprint: text('device_fingerprint'),
   shareCount: integer('share_count').notNull().default(0),
 });
-
-// ── Réponses aux questions ──
 
 export const responses = pgTable('responses', {
   id: uuid('id').primaryKey().defaultRandom(),
@@ -109,22 +142,17 @@ export const responses = pgTable('responses', {
   index('responses_session_id_idx').on(table.sessionId),
 ]);
 
-// ── Biais identifiés ──
-// 2 catégories :
-//   'media' = biais résultant des sources d'information (bulle informationnelle)
-//   'values' = biais résultant des valeurs/histoire personnelle (cohérence interne)
-
 export const biases = pgTable('biases', {
   id: uuid('id').primaryKey().defaultRandom(),
-  sessionId: uuid('session_id').references(() => sessions.id).notNull(),
-  category: text('category').notNull(),            // 'media' | 'values'
-  biasType: text('bias_type').notNull(),           // ex: "bulle_info", "confirmation", "cadrage", "tribalisme"
-  axis: text('axis').notNull(),                    // axe concerné
+  sessionId: uuid('session_id').references(() => sessions.id),
+  category: text('category').notNull(),
+  biasType: text('bias_type').notNull(),
+  axis: text('axis').notNull(),
   description: text('description').notNull(),
-  strength: real('strength').notNull(),            // 0-1
-  detectedBy: text('detected_by').notNull(),       // 'rules' | 'ai' — traçabilité
-  suggestedContent: text('suggested_content'),     // contenu pour l'esprit critique
-  suggestedSource: text('suggested_source'),       // source d'info opposée à proposer
+  strength: real('strength').notNull(),
+  detectedBy: text('detected_by').notNull(),
+  suggestedContent: text('suggested_content'),
+  suggestedSource: text('suggested_source'),
   createdAt: timestamp('created_at').notNull().defaultNow(),
 });
 
@@ -141,11 +169,10 @@ export const subjects = pgTable('subjects', {
   decryptage: jsonb('decryptage'),
 });
 
-// ── Avis citoyens ──
+// ── Avis citoyens (anonyme — plus de lien session) ──
 
 export const opinions = pgTable('opinions', {
   id: uuid('id').primaryKey().defaultRandom(),
-  sessionId: uuid('session_id').references(() => sessions.id).notNull(),
   subjectId: text('subject_id').references(() => subjects.id).notNull(),
   positionSocietal: real('position_societal').notNull(),
   positionEconomic: real('position_economic').notNull(),
@@ -155,20 +182,13 @@ export const opinions = pgTable('opinions', {
   createdAt: timestamp('created_at').notNull().defaultNow(),
 });
 
-// ── Propositions citoyennes ──
-// Source :
-//   'user' = rédigée par un citoyen
-//   'ai_suggested' = générée par IA, en attente de réaction
-//   'ai_accepted' = proposition IA acceptée par un citoyen
-//   'ai_rejected' = proposition IA refusée par un citoyen
-//   'ai_amended'  = proposition IA amendée par un citoyen
+// ── Propositions citoyennes (anonyme) ──
 
 export const proposals = pgTable('proposals', {
   id: uuid('id').primaryKey().defaultRandom(),
-  sessionId: uuid('session_id').references(() => sessions.id).notNull(),
   domainId: text('domain_id').references(() => domains.id).notNull(),
   text: text('text').notNull(),
-  source: text('source').notNull(),             // 'user' | 'ai_suggested' | 'ai_accepted' | 'ai_rejected' | 'ai_amended'
+  source: text('source').notNull(),
   originalProposalId: uuid('original_proposal_id'),
   positionSocietal: real('position_societal'),
   positionEconomic: real('position_economic'),
@@ -177,34 +197,28 @@ export const proposals = pgTable('proposals', {
   positionSovereignty: real('position_sovereignty'),
   createdAt: timestamp('created_at').notNull().defaultNow(),
 }, (table) => [
-  index('proposals_session_id_idx').on(table.sessionId),
   index('proposals_domain_id_idx').on(table.domainId),
   index('proposals_source_idx').on(table.source),
 ]);
 
-// ── Versions du programme citoyen (générées par batch quotidien) ──
+// ── Versions du programme citoyen ──
 
 export const programVersions = pgTable('program_versions', {
   id: uuid('id').primaryKey().defaultRandom(),
   generatedAt: timestamp('generated_at').notNull().defaultNow(),
-  // Programme complet par domaine : { domainId: { title, proposals: string[], summary } }
   content: jsonb('content').notNull(),
-  // Court paragraphe décrivant l'évolution depuis la version précédente
   evolutionSummary: text('evolution_summary'),
-  // Statistiques
   totalProposals: integer('total_proposals').notNull().default(0),
   totalContributors: integer('total_contributors').notNull().default(0),
-  // Version neutre initiale ou version citoyenne
   isInitial: boolean('is_initial').notNull().default(false),
 });
 
-// ── Suggestions pré-générées (batch quotidien, par domaine × profil type) ──
+// ── Suggestions pré-générées ──
 
 export const suggestions = pgTable('suggestions', {
   id: uuid('id').primaryKey().defaultRandom(),
   domainId: text('domain_id').references(() => domains.id).notNull(),
   text: text('text').notNull(),
-  // Profil cible approximatif (pour matcher avec l'utilisateur)
   targetSocietal: real('target_societal'),
   targetEconomic: real('target_economic'),
   targetAuthority: real('target_authority'),
@@ -214,24 +228,22 @@ export const suggestions = pgTable('suggestions', {
   isActive: boolean('is_active').notNull().default(true),
 });
 
-// ── Liens partagés (Esprit critique) ──
+// ── Liens partagés (Esprit critique — anonyme) ──
 
 export const sharedLinks = pgTable('shared_links', {
   id: uuid('id').primaryKey().defaultRandom(),
-  sessionId: uuid('session_id').references(() => sessions.id),
   domainId: text('domain_id').references(() => domains.id).notNull(),
   url: text('url').notNull(),
-  description: text('description').notNull(),           // description originale de l'utilisateur
-  validatedDescription: text('validated_description'),   // description corrigée par Haiku
-  status: text('status').notNull().default('pending'),   // 'pending' | 'approved' | 'rejected'
+  description: text('description').notNull(),
+  validatedDescription: text('validated_description'),
+  status: text('status').notNull().default('pending'),
   createdAt: timestamp('created_at').notNull().defaultNow(),
 });
 
-// ── Évaluations médias par les visiteurs (2 axes) ──
+// ── Évaluations médias (anonyme) ──
 
 export const mediaRatings = pgTable('media_ratings', {
   id: uuid('id').primaryKey().defaultRandom(),
-  sessionId: uuid('session_id').references(() => sessions.id).notNull(),
   mediaId: text('media_id').references(() => medias.id).notNull(),
   ratedSocietal: real('rated_societal').notNull(),
   ratedEconomic: real('rated_economic').notNull(),
@@ -240,14 +252,13 @@ export const mediaRatings = pgTable('media_ratings', {
   index('media_ratings_media_id_idx').on(table.mediaId),
 ]);
 
-// ── Feedback utilisateur (biais, formulation, thématiques manquantes) ──
+// ── Feedback (anonyme) ──
 
 export const feedback = pgTable('feedback', {
   id: uuid('id').primaryKey().defaultRandom(),
-  sessionId: uuid('session_id').references(() => sessions.id),
-  targetType: text('target_type').notNull(),     // 'question' | 'proposal' | 'analysis' | 'suggestion' | 'general'
+  targetType: text('target_type').notNull(),
   targetId: text('target_id'),
-  feedbackType: text('feedback_type').notNull(),  // 'bias' | 'formulation' | 'missing_topic' | 'other'
+  feedbackType: text('feedback_type').notNull(),
   description: text('description').notNull(),
   screen: text('screen'),
   createdAt: timestamp('created_at').notNull().defaultNow(),

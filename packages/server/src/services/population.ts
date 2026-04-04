@@ -1,6 +1,5 @@
 import { db } from '../db/index.js';
-import { sessions } from '../db/schema.js';
-import { isNotNull } from 'drizzle-orm';
+import { snapshots } from '../db/schema.js';
 import type { AxisId } from '@partiprism/shared';
 import { ALL_AXES } from '../utils/helpers.js';
 
@@ -18,30 +17,28 @@ export interface PopulationStats {
 }
 
 export interface UserPercentiles {
-  axes: Record<AxisId, number>; // 0-100 percentile
+  axes: Record<AxisId, number>;
 }
 
 /**
- * Compute population statistics from all completed sessions.
+ * Compute population statistics from anonymous snapshots.
  */
 export async function getPopulationStats(): Promise<PopulationStats> {
-  const allSessions = await db
+  const allSnapshots = await db
     .select({
-      societal: sessions.positionSocietal,
-      economic: sessions.positionEconomic,
-      authority: sessions.positionAuthority,
-      ecology: sessions.positionEcology,
-      sovereignty: sessions.positionSovereignty,
+      societal: snapshots.positionSocietal,
+      economic: snapshots.positionEconomic,
+      authority: snapshots.positionAuthority,
+      ecology: snapshots.positionEcology,
+      sovereignty: snapshots.positionSovereignty,
     })
-    .from(sessions)
-    .where(isNotNull(sessions.positionSocietal));
+    .from(snapshots);
 
-  const count = allSessions.length;
-
+  const count = allSnapshots.length;
   const axisStats = {} as Record<AxisId, AxisStats>;
 
   for (const axis of ALL_AXES) {
-    const values = allSessions.map((s) => s[axis] as number).filter((v) => v != null);
+    const values = allSnapshots.map((s) => s[axis] as number).filter((v) => v != null);
     const n = values.length;
 
     if (n === 0) {
@@ -51,11 +48,10 @@ export async function getPopulationStats(): Promise<PopulationStats> {
 
     const mean = values.reduce((s, v) => s + v, 0) / n;
     const variance = values.reduce((s, v) => s + (v - mean) ** 2, 0) / n;
-    const stdDev = Math.sqrt(variance);
 
     axisStats[axis] = {
       mean,
-      stdDev,
+      stdDev: Math.sqrt(variance),
       min: Math.min(...values),
       max: Math.max(...values),
       count: n,
@@ -71,21 +67,20 @@ export async function getPopulationStats(): Promise<PopulationStats> {
 export async function getUserPercentiles(
   userPosition: Record<AxisId, number>,
 ): Promise<UserPercentiles> {
-  const allSessions = await db
+  const allSnapshots = await db
     .select({
-      societal: sessions.positionSocietal,
-      economic: sessions.positionEconomic,
-      authority: sessions.positionAuthority,
-      ecology: sessions.positionEcology,
-      sovereignty: sessions.positionSovereignty,
+      societal: snapshots.positionSocietal,
+      economic: snapshots.positionEconomic,
+      authority: snapshots.positionAuthority,
+      ecology: snapshots.positionEcology,
+      sovereignty: snapshots.positionSovereignty,
     })
-    .from(sessions)
-    .where(isNotNull(sessions.positionSocietal));
+    .from(snapshots);
 
   const percentiles = {} as Record<AxisId, number>;
 
   for (const axis of ALL_AXES) {
-    const values = allSessions.map((s) => s[axis] as number).filter((v) => v != null);
+    const values = allSnapshots.map((s) => s[axis] as number).filter((v) => v != null);
     if (values.length === 0) {
       percentiles[axis] = 50;
       continue;

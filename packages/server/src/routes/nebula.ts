@@ -1,7 +1,6 @@
 import { Router } from 'express';
 import { db } from '../db/index.js';
-import { sessions } from '../db/schema.js';
-import { isNotNull } from 'drizzle-orm';
+import { snapshots } from '../db/schema.js';
 import { buildNebulaData } from '../services/nebula.js';
 import type { AxisId } from '@partiprism/shared';
 import { ALL_AXES } from '../utils/helpers.js';
@@ -9,6 +8,7 @@ import { ALL_AXES } from '../utils/helpers.js';
 export const nebulaRouter = Router();
 
 // GET /?xAxis=societal&yAxis=economic — nebula data for 2D view
+// Reads from anonymous snapshots (no session data).
 nebulaRouter.get('/', async (req, res) => {
   const xAxis = (req.query.xAxis as string) || 'societal';
   const yAxis = (req.query.yAxis as string) || 'economic';
@@ -18,18 +18,16 @@ nebulaRouter.get('/', async (req, res) => {
     return;
   }
 
-  // Fetch all completed sessions with positions
-  const allSessions = await db
+  const allSnapshots = await db
     .select({
-      societal: sessions.positionSocietal,
-      economic: sessions.positionEconomic,
-      authority: sessions.positionAuthority,
-      ecology: sessions.positionEcology,
-      sovereignty: sessions.positionSovereignty,
+      societal: snapshots.positionSocietal,
+      economic: snapshots.positionEconomic,
+      authority: snapshots.positionAuthority,
+      ecology: snapshots.positionEcology,
+      sovereignty: snapshots.positionSovereignty,
     })
-    .from(sessions)
-    .where(isNotNull(sessions.positionSocietal));
+    .from(snapshots);
 
-  const nebula = buildNebulaData(allSessions, xAxis as AxisId, yAxis as AxisId);
+  const nebula = buildNebulaData(allSnapshots, xAxis as AxisId, yAxis as AxisId);
   res.json(nebula);
 });

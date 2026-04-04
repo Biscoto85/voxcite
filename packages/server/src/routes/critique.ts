@@ -42,20 +42,18 @@ critiqueRouter.get('/medias', async (req, res) => {
 
 critiqueRouter.post('/medias/:id/rate', async (req, res) => {
   const mediaId = req.params.id;
-  const { sessionId, societal, economic } = req.body as {
-    sessionId: string;
-    societal: number;  // -1 to +1
-    economic: number;  // -1 to +1
+  const { societal, economic } = req.body as {
+    societal: number;
+    economic: number;
   };
 
-  if (!sessionId || societal == null || economic == null) {
-    res.status(400).json({ error: 'sessionId, societal and economic required' });
+  if (societal == null || economic == null) {
+    res.status(400).json({ error: 'societal and economic required' });
     return;
   }
 
-  // Store the rating
+  // Store the anonymous rating
   await db.insert(mediaRatings).values({
-    sessionId,
     mediaId,
     ratedSocietal: clamp(societal),
     ratedEconomic: clamp(economic),
@@ -116,8 +114,7 @@ critiqueRouter.get('/links', async (req, res) => {
 // ── POST /links — Share a link (validated by Haiku) ─────────────────
 
 critiqueRouter.post('/links', aiRateLimit, async (req, res) => {
-  const { sessionId, domainId, url, description } = req.body as {
-    sessionId?: string;
+  const { domainId, url, description } = req.body as {
     domainId: string;
     url: string;
     description: string;
@@ -177,7 +174,6 @@ Réponds UNIQUEMENT avec le JSON.`,
   }
 
   const [row] = await db.insert(sharedLinks).values({
-    sessionId: sessionId ?? null,
     domainId,
     url,
     description,

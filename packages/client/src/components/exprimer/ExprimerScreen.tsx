@@ -2,7 +2,6 @@ import { useState, useEffect } from 'react';
 import type { CompassPosition } from '@partiprism/shared';
 
 interface ExprimerScreenProps {
-  sessionId: string;
   userPosition: CompassPosition;
   onBack: () => void;
 }
@@ -52,7 +51,7 @@ const TABS: Array<{ id: Tab; label: string }> = [
   { id: 'reagir', label: 'Réagir' },
 ];
 
-export function ExprimerScreen({ sessionId, userPosition, onBack }: ExprimerScreenProps) {
+export function ExprimerScreen({ userPosition, onBack }: ExprimerScreenProps) {
   const [tab, setTab] = useState<Tab>('programme');
 
   return (
@@ -88,8 +87,8 @@ export function ExprimerScreen({ sessionId, userPosition, onBack }: ExprimerScre
 
       <div id={`exprimer-panel-${tab}`} role="tabpanel">
         {tab === 'programme' && <ProgramTab />}
-        {tab === 'proposer' && <ProposerTab sessionId={sessionId} userPosition={userPosition} />}
-        {tab === 'reagir' && <ReagirTab sessionId={sessionId} userPosition={userPosition} />}
+        {tab === 'proposer' && <ProposerTab userPosition={userPosition} />}
+        {tab === 'reagir' && <ReagirTab userPosition={userPosition} />}
       </div>
     </section>
   );
@@ -175,7 +174,7 @@ function ProgramTab() {
 
 // ── Tab 2: Proposer ────────────────────────────────────────────────
 
-function ProposerTab({ sessionId, userPosition }: { sessionId: string; userPosition: CompassPosition }) {
+function ProposerTab({ userPosition }: { userPosition: CompassPosition }) {
   const [domain, setDomain] = useState(DOMAIN_IDS[0]);
   const [text, setText] = useState('');
   const [sending, setSending] = useState(false);
@@ -190,7 +189,6 @@ function ProposerTab({ sessionId, userPosition }: { sessionId: string; userPosit
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          sessionId,
           domainId: domain,
           text: text.trim(),
           source: 'user',
@@ -258,7 +256,7 @@ function ProposerTab({ sessionId, userPosition }: { sessionId: string; userPosit
 
 // ── Tab 3: Réagir (suggestions pré-générées) ──────────────────────
 
-function ReagirTab({ sessionId, userPosition }: { sessionId: string; userPosition: CompassPosition }) {
+function ReagirTab({ userPosition }: { userPosition: CompassPosition }) {
   const [suggestions, setSuggestions] = useState<Suggestion[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [loading, setLoading] = useState(true);
@@ -266,11 +264,11 @@ function ReagirTab({ sessionId, userPosition }: { sessionId: string; userPositio
   const [editText, setEditText] = useState('');
 
   useEffect(() => {
-    fetch(`/api/proposals/suggestions?sessionId=${sessionId}`)
+    fetch('/api/proposals/suggestions')
       .then((r) => r.ok ? r.json() : [])
       .then((data) => { setSuggestions(data); setLoading(false); })
       .catch(() => setLoading(false));
-  }, [sessionId]);
+  }, []);
 
   const current = suggestions[currentIndex];
 
@@ -281,7 +279,6 @@ function ReagirTab({ sessionId, userPosition }: { sessionId: string; userPositio
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        sessionId,
         domainId: current.domainId,
         text: amendedText || current.text,
         source: reaction,

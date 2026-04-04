@@ -2,10 +2,12 @@ import { useState, useEffect } from 'react';
 import type { CompassPosition, Party, AxisId } from '@partiprism/shared';
 import { AXES } from '@partiprism/shared';
 
+import type { UserProfile } from '@/App';
+
 interface AnalysisScreenProps {
   position: CompassPosition;
   parties: Party[];
-  sessionId?: string | null;
+  profile?: UserProfile | null;
   onBack: () => void;
 }
 
@@ -60,30 +62,70 @@ function AxisBar({ axis, userVal, partyVal, partyColor }: {
 
 type Tab = 'resume' | 'citoyens' | 'partis' | 'biais';
 
-export function AnalysisScreen({ position, parties, sessionId, onBack }: AnalysisScreenProps) {
+const LS_ANALYSIS = 'partiprism_analysis';
+const LS_RESPONSES = 'partiprism_responses';
+const ANALYSIS_QUESTION_THRESHOLD = 40;
+
+interface CachedAnalysis {
+  result: Omit<AiAnalysis, 'loading'>;
+  questionCount: number;
+}
+
+export function AnalysisScreen({ position, parties, profile, onBack }: AnalysisScreenProps) {
   const [analysis, setAnalysis] = useState<AiAnalysis>({
     summary: '', vsCitoyens: '', vsPartis: '', biases: [], espritCritiquePistes: [], loading: true,
   });
   const [tab, setTab] = useState<Tab>('resume');
   const [selectedParty, setSelectedParty] = useState<string | null>(null);
+  const [canRerun, setCanRerun] = useState(false);
 
-  // Fetch AI analysis
+  // Load cached analysis or fetch new one
   useEffect(() => {
+    const responses: Array<{ questionId: string }> = JSON.parse(localStorage.getItem(LS_RESPONSES) || '[]');
+    const currentCount = responses.length;
+
+    // Check for cached analysis
+    try {
+      const cached: CachedAnalysis | null = JSON.parse(localStorage.getItem(LS_ANALYSIS) || 'null');
+      if (cached && cached.result) {
+        setAnalysis({ ...cached.result, loading: false });
+        // Can re-run if answered 40+ more questions since last analysis
+        setCanRerun(currentCount - cached.questionCount >= ANALYSIS_QUESTION_THRESHOLD);
+        return;
+      }
+    } catch {}
+
+    // No cache — fetch analysis (one-shot, ephemeral on server)
+    fetchAnalysis(currentCount);
+  }, []);
+
+  const fetchAnalysis = (questionCount: number) => {
+    setAnalysis((prev) => ({ ...prev, loading: true }));
+
     fetch('/api/analysis', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         position,
-        sessionId,
+        infoSource: profile?.infoSource,
+        perceivedBias: profile?.perceivedBias,
         parties: parties.map((p) => ({
           id: p.id, label: p.label, abbreviation: p.abbreviation, position: p.position,
         })),
       }),
     })
       .then((r) => r.json())
-      .then((data) => setAnalysis({ ...data, loading: false }))
+      .then((data) => {
+        setAnalysis({ ...data, loading: false });
+        setCanRerun(false);
+        // Cache result with current question count
+        localStorage.setItem(LS_ANALYSIS, JSON.stringify({
+          result: data,
+          questionCount,
+        } satisfies CachedAnalysis));
+      })
       .catch(() => setAnalysis((prev) => ({ ...prev, loading: false, summary: 'Analyse indisponible.' })));
-  }, [position, parties, sessionId]);
+  };
 
   // Party rankings
   const rankings = parties
@@ -141,6 +183,19 @@ export function AnalysisScreen({ position, parties, sessionId, onBack }: Analysi
           </button>
         ))}
       </div>
+
+      {/* Re-run button (visible after 40+ new deep questions) */}
+      {canRerun && !analysis.loading && (
+        <button
+          onClick={() => {
+            const responses: Array<{ questionId: string }> = JSON.parse(localStorage.getItem(LS_RESPONSES) || '[]');
+            fetchAnalysis(responses.length);
+          }}
+          className="mb-4 w-full py-2 bg-purple-900/30 border border-purple-800/40 text-purple-300 rounded-lg text-sm hover:bg-purple-900/50 transition-colors focus-ring"
+        >
+          Relancer l'analyse (tu as répondu à 40+ nouvelles questions)
+        </button>
+      )}
 
       {analysis.loading && (
         <div className="bg-gray-900 rounded-xl p-6 border border-gray-800 text-center" role="status" aria-live="polite">
