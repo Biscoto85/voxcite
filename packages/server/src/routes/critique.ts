@@ -4,6 +4,7 @@ import { medias, mediaRatings, sharedLinks } from '../db/schema.js';
 import { eq, desc, and, sql } from 'drizzle-orm';
 import Anthropic from '@anthropic-ai/sdk';
 import { clamp, isValidHttpUrl, parseClaudeJSON, extractClaudeText, extractJSON } from '../utils/helpers.js';
+import { aiRateLimit } from '../middleware/rateLimit.js';
 
 export const critiqueRouter = Router();
 
@@ -113,7 +114,7 @@ critiqueRouter.get('/links', async (req, res) => {
 
 // ── POST /links — Share a link (validated by Haiku) ─────────────────
 
-critiqueRouter.post('/links', async (req, res) => {
+critiqueRouter.post('/links', aiRateLimit, async (req, res) => {
   const { sessionId, domainId, url, description } = req.body as {
     sessionId?: string;
     domainId: string;

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 interface ProfileData {
   postalCode: string;
@@ -8,6 +8,7 @@ interface ProfileData {
 
 interface PostalCodeInputProps {
   onSubmit: (data: ProfileData) => void;
+  serverError?: string | null;
 }
 
 const INFO_SOURCES = [
@@ -25,18 +26,28 @@ const PERCEIVED_BIASES = [
   { value: 'les_deux', label: 'Je varie les sources' },
 ];
 
-export function PostalCodeInput({ onSubmit }: PostalCodeInputProps) {
-  const [step, setStep] = useState<'postal' | 'source' | 'bias'>('postal');
+export function PostalCodeInput({ onSubmit, serverError }: PostalCodeInputProps) {
+  const [step, setStep] = useState<'postal' | 'source' | 'bias'>(serverError ? 'postal' : 'postal');
   const [postalCode, setPostalCode] = useState('');
   const [infoSource, setInfoSource] = useState('');
   const [perceivedBias, setPerceivedBias] = useState('');
-  const [error, setError] = useState('');
+  const [error, setError] = useState(serverError || '');
+  const [submitting, setSubmitting] = useState(false);
+
+  // If server returns a validation error, go back to postal step
+  useEffect(() => {
+    if (serverError) {
+      setError(serverError);
+      setStep('postal');
+      setSubmitting(false);
+    }
+  }, [serverError]);
 
   const validatePostal = (val: string) => /^\d{5}$/.test(val);
 
   const handlePostalNext = () => {
     if (!validatePostal(postalCode)) {
-      setError('Entre un code postal à 5 chiffres (ou 00000 si tu es à l\'étranger)');
+      setError('Entre un code postal à 5 chiffres (ou clique sur le lien ci-dessous si tu es à l\'étranger)');
       return;
     }
     setStep('source');
@@ -91,7 +102,7 @@ export function PostalCodeInput({ onSubmit }: PostalCodeInputProps) {
           </button>
 
           <button
-            onClick={() => { setPostalCode('00000'); setStep('source'); }}
+            onClick={() => { setPostalCode('99999'); setStep('source'); }}
             className="text-xs text-gray-600 hover:text-gray-400 transition-colors py-2 focus-ring rounded"
           >
             Je suis à l'étranger / Je préfère ne pas donner
@@ -152,11 +163,13 @@ export function PostalCodeInput({ onSubmit }: PostalCodeInputProps) {
         {PERCEIVED_BIASES.map((b) => (
           <li key={b.value}>
             <button
+              disabled={submitting}
               onClick={() => {
                 setPerceivedBias(b.value);
+                setSubmitting(true);
                 onSubmit({ postalCode, infoSource, perceivedBias: b.value });
               }}
-              className="w-full text-left p-3 sm:p-4 rounded-lg border border-gray-800 bg-gray-900 hover:border-purple-600 transition-colors font-medium touch-target focus-ring"
+              className="w-full text-left p-3 sm:p-4 rounded-lg border border-gray-800 bg-gray-900 hover:border-purple-600 disabled:opacity-50 transition-colors font-medium touch-target focus-ring"
             >
               {b.label}
             </button>

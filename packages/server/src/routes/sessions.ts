@@ -4,24 +4,39 @@ import { sessions, responses, questions } from '../db/schema.js';
 import { eq } from 'drizzle-orm';
 import type { AxisId } from '@partiprism/shared';
 import { calculatePosition } from '../services/scoring.js';
-import { geolocateIP, isPostalCodePlausible } from '../services/geolocation.js';
+import { geolocateIP, validatePostalCode } from '../services/geolocation.js';
 
 export const sessionsRouter = Router();
 
-// POST / — créer une session anonyme avec code postal optionnel
+// POST / — créer une session anonyme avec code postal obligatoire
 sessionsRouter.post('/', async (req, res) => {
   const { postalCode, infoSource, perceivedBias } = req.body as {
     postalCode?: string;
     infoSource?: string;
     perceivedBias?: string;
   };
-  const ip = req.ip ?? req.socket.remoteAddress ?? '';
 
+  // Postal code is required
+  if (!postalCode || !/^\d{5}$/.test(postalCode)) {
+    res.status(400).json({ error: 'Code postal requis (5 chiffres)' });
+    return;
+  }
+
+  const ip = req.ip ?? req.socket.remoteAddress ?? '';
   const geo = await geolocateIP(ip);
-  const plausible = postalCode ? isPostalCodePlausible(postalCode, geo) : true;
+  const validation = validatePostalCode(postalCode, geo);
+
+  if (!validation.valid) {
+    console.warn(`[partiprism-api] Postal/IP mismatch: postal=${postalCode} ip=${ip} country=${geo?.country} reason=${validation.reason}`);
+    res.status(403).json({
+      error: 'Code postal incohérent avec ta localisation',
+      reason: validation.reason,
+    });
+    return;
+  }
 
   const [session] = await db.insert(sessions).values({
-    postalCode: postalCode ?? null,
+    postalCode,
     infoSource: infoSource ?? null,
     perceivedBias: perceivedBias ?? null,
     ipCountry: geo?.country ?? null,
@@ -31,7 +46,6 @@ sessionsRouter.post('/', async (req, res) => {
   res.status(201).json({
     id: session.id,
     createdAt: session.createdAt,
-    postalCodePlausible: plausible,
   });
 });
 

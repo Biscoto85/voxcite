@@ -21,13 +21,27 @@ export function OnboardingFlow({ questions, parties, onComplete }: OnboardingFlo
   const currentQuestion = questions[currentIndex];
   const progress = currentIndex / questions.length;
 
+  const [profileError, setProfileError] = useState<string | null>(null);
+
   const handleProfileSubmit = useCallback(async (data: { postalCode: string; infoSource: string; perceivedBias: string }) => {
+    setProfileError(null);
     try {
       const res = await fetch('/api/sessions', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data),
       });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({ error: 'Erreur serveur' }));
+        if (res.status === 403) {
+          setProfileError(err.error || 'Code postal incohérent avec ta localisation. Vérifie ton code postal.');
+          return;
+        }
+        if (res.status === 429) {
+          setProfileError('Trop de tentatives. Réessaie dans quelques minutes.');
+          return;
+        }
+      }
       const result = await res.json();
       setSessionId(result.id);
       setStep('questions');
@@ -63,7 +77,7 @@ export function OnboardingFlow({ questions, parties, onComplete }: OnboardingFlo
   }, [currentQuestion, responses, currentIndex, questions, sessionId, onComplete]);
 
   if (step === 'postal') {
-    return <PostalCodeInput onSubmit={handleProfileSubmit} />;
+    return <PostalCodeInput onSubmit={handleProfileSubmit} serverError={profileError} />;
   }
 
   if (!currentQuestion) return null;

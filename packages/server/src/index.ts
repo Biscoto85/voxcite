@@ -12,7 +12,7 @@ import { feedbackRouter } from './routes/feedback.js';
 import { proposalsRouter } from './routes/proposals.js';
 import { programRouter } from './routes/program.js';
 import { critiqueRouter } from './routes/critique.js';
-import { rateLimit } from './middleware/rateLimit.js';
+import { rateLimit, aiRateLimit, sessionRateLimit } from './middleware/rateLimit.js';
 
 // ── Environment validation ─────────────────────────────────────────
 
@@ -23,6 +23,8 @@ if (!process.env.DATABASE_URL) console.warn('[partiprism-api] WARNING: DATABASE_
 // ── App setup ──────────────────────────────────────────────────────
 
 const app = express();
+
+app.set('trust proxy', true); // Needed behind Nginx for correct req.ip
 
 app.use(cors({
   origin: process.env.ALLOWED_ORIGINS?.split(',') || ['http://localhost:5173', 'http://localhost:3000'],
@@ -40,20 +42,22 @@ app.use(`${API_PREFIX}/partis`, partisRouter);
 app.use(`${API_PREFIX}/questions`, questionsRouter);
 
 // Sessions et réponses
+// Session creation rate limited: 3/h/IP (prevents mass bot creation)
+app.post(`${API_PREFIX}/sessions`, sessionRateLimit);
 app.use(`${API_PREFIX}/sessions`, sessionsRouter);
 
 // Nébuleuse collective
 app.use(`${API_PREFIX}/nebula`, nebulaRouter);
 
-// Analyse IA
-app.use(`${API_PREFIX}/analysis`, analysisRouter);
+// Analyse IA (rate limited: 5 calls/h/IP — consomme des tokens)
+app.use(`${API_PREFIX}/analysis`, aiRateLimit, analysisRouter);
 
 // Programme citoyen et propositions
 app.use(`${API_PREFIX}/proposals`, proposalsRouter);
 app.use(`${API_PREFIX}/program`, programRouter);
 app.use(`${API_PREFIX}/feedback`, feedbackRouter);
 
-// Esprit critique
+// Esprit critique (links POST rate limited — consomme des tokens)
 app.use(`${API_PREFIX}/critique`, critiqueRouter);
 
 // Health check
