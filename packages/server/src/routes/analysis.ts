@@ -3,8 +3,9 @@ import type { CompassPosition, AxisId } from '@voxcite/shared';
 import { AXES } from '@voxcite/shared';
 import { runAiAnalysis } from '../services/ai-analysis.js';
 import { getPopulationStats, getUserPercentiles } from '../services/population.js';
+import { extractResponseSignals } from '../services/response-signals.js';
 import { db } from '../db/index.js';
-import { biases, sessions } from '../db/schema.js';
+import { biases, sessions, responses, questions } from '../db/schema.js';
 import { eq } from 'drizzle-orm';
 import fs from 'fs';
 import path from 'path';
@@ -113,6 +114,37 @@ analysisRouter.post('/', async (req, res) => {
     }
   }
 
+  // Extract response-level signals if sessionId provided
+  let responseSignals = undefined;
+  if (sessionId) {
+    try {
+      const [sessionResponses, allQuestions] = await Promise.all([
+        db.select().from(responses).where(eq(responses.sessionId, sessionId)),
+        db.select().from(questions),
+      ]);
+
+      if (sessionResponses.length > 0) {
+        const mappedResponses = sessionResponses.map((r) => ({
+          questionId: r.questionId,
+          value: r.value,
+        }));
+        const mappedQuestions = allQuestions.map((q) => ({
+          id: q.id,
+          text: q.text,
+          axis: q.axis,
+          axes: (q.axes as string[] | null),
+          polarity: q.polarity,
+          domainId: q.domainId,
+          phase: q.phase,
+          weight: q.weight,
+        }));
+        responseSignals = extractResponseSignals(mappedResponses, mappedQuestions);
+      }
+    } catch (err) {
+      console.error('[analysis] Failed to extract response signals:', err);
+    }
+  }
+
   // Try AI analysis first
   if (process.env.ANTHROPIC_API_KEY) {
     try {
@@ -129,6 +161,7 @@ analysisRouter.post('/', async (req, res) => {
         infoSource,
         perceivedBias,
         mediaPosition,
+        responseSignals,
       });
 
       // Store biases in DB

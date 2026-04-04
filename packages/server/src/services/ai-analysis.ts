@@ -1,6 +1,8 @@
 import Anthropic from '@anthropic-ai/sdk';
 import type { CompassPosition, AxisId } from '@voxcite/shared';
+import { AXES } from '@voxcite/shared';
 import type { PopulationStats, UserPercentiles } from './population.js';
+import type { ResponseSignals } from './response-signals.js';
 
 const ALL_AXES: AxisId[] = ['societal', 'economic', 'authority', 'ecology', 'sovereignty'];
 
@@ -19,6 +21,7 @@ export interface AnalysisInput {
   infoSource?: string;       // 'tv' | 'internet' | 'radio' | 'journal' | 'autre'
   perceivedBias?: string;    // 'gauche' | 'droite' | 'neutre' | 'les_deux'
   mediaPosition?: CompassPosition; // position agrégée de la source d'info
+  responseSignals?: ResponseSignals; // rich per-response data
 }
 
 export interface IdentifiedBias {
@@ -57,7 +60,7 @@ const BIAS_LABELS: Record<string, string> = {
 };
 
 function buildPrompt(input: AnalysisInput): string {
-  const { position, parties, populationStats, percentiles, infoSource, perceivedBias, mediaPosition } = input;
+  const { position, parties, populationStats, percentiles, infoSource, perceivedBias, mediaPosition, responseSignals } = input;
 
   const ranked = parties.map((p) => {
     const dist = Math.sqrt(ALL_AXES.reduce((s, ax) => s + (position[ax] - p.position[ax]) ** 2, 0));
@@ -99,6 +102,70 @@ Compare la position du répondant à celle de sa source d'info.
 Note : les réseaux sociaux (internet) ont un effet miroir — ils renforcent les positions existantes via les algorithmes.`;
   }
 
+  // ── Response signals block ─────────────────────────────────────
+  let signalsBlock = '';
+  if (responseSignals) {
+    const parts: string[] = [];
+
+    // Extreme responses — the "spicy" answers
+    if (responseSignals.extremeResponses.length > 0) {
+      const extremeLines = responseSignals.extremeResponses
+        .slice(0, 10) // top 10
+        .map((e) => {
+          const dir = e.contribution > 0 ? '+' : '-';
+          const axLabels = e.axes.map((a) => `${AXES[a].negative}↔${AXES[a].positive}`).join(', ');
+          return `  - "${e.questionText}" → réponse ${e.value > 0 ? 'fortement d\'accord' : 'fortement en désaccord'} (${dir} sur ${axLabels}) [domaine: ${e.domain}]`;
+        }).join('\n');
+      parts.push(`RÉPONSES LES PLUS TRANCHÉES (convictions fortes) :\n${extremeLines}`);
+    }
+
+    // Domain profiles — position varies by topic
+    if (responseSignals.domainProfiles.length > 1) {
+      const domainLines = responseSignals.domainProfiles
+        .filter((d) => d.questionCount >= 2)
+        .map((d) => {
+          const axisValues = ALL_AXES
+            .filter((a) => d.axes[a] !== undefined)
+            .map((a) => `${a}=${d.axes[a]!.toFixed(2)}`)
+            .join(', ');
+          return `  - ${d.domain} (${d.questionCount} questions) : ${axisValues}`;
+        }).join('\n');
+      parts.push(`PROFIL PAR DOMAINE THÉMATIQUE (la position varie selon le sujet !) :\n${domainLines}`);
+    }
+
+    // Contradictions — the most revealing signals
+    if (responseSignals.contradictions.length > 0) {
+      const contraLines = responseSignals.contradictions
+        .slice(0, 5)
+        .map((c) => {
+          const axInfo = AXES[c.axis];
+          return `  - Axe ${axInfo.negative}↔${axInfo.positive} : ${c.domainA} (${c.valueA.toFixed(2)}) vs ${c.domainB} (${c.valueB.toFixed(2)}) — écart de ${c.gap.toFixed(2)}`;
+        }).join('\n');
+      parts.push(`CONTRADICTIONS ENTRE DOMAINES (positions opposées sur le même axe selon le sujet) :\n${contraLines}\nCes contradictions sont le CŒUR de l'analyse — elles révèlent des tensions internes.`);
+    }
+
+    // Phase shifts — what changed between onboarding and deep questions
+    if (responseSignals.phaseShifts.length > 0) {
+      const shiftLines = responseSignals.phaseShifts
+        .map((s) => {
+          const axInfo = AXES[s.axis];
+          const dir = s.shift > 0 ? `→ plus ${axInfo.positive.toLowerCase()}` : `→ plus ${axInfo.negative.toLowerCase()}`;
+          return `  - ${axInfo.negative}↔${axInfo.positive} : ${s.onboarding.toFixed(2)} → ${s.afterDeep.toFixed(2)} (${s.shift > 0 ? '+' : ''}${s.shift.toFixed(2)}) ${dir}`;
+        }).join('\n');
+      parts.push(`ÉVOLUTION ENTRE PREMIÈRES QUESTIONS ET APPROFONDISSEMENT :\n${shiftLines}`);
+    }
+
+    // Axis spread — consistency vs ambivalence
+    const spreadLines = ALL_AXES.map((ax) => {
+      const spread = responseSignals.axisSpread[ax];
+      const label = spread > 1.2 ? 'TRÈS AMBIVALENT' : spread > 0.8 ? 'ambivalent' : 'cohérent';
+      return `  - ${AXES[ax].negative}↔${AXES[ax].positive} : σ=${spread.toFixed(2)} (${label})`;
+    }).join('\n');
+    parts.push(`COHÉRENCE PAR AXE (σ élevé = réponses contradictoires sur cet axe) :\n${spreadLines}`);
+
+    signalsBlock = '\n\n' + parts.join('\n\n');
+  }
+
   return `Tu es l'analyste politique de VoxCité, une application citoyenne française.
 Tu analyses le profil d'un répondant sur 5 axes politiques (échelle -1 à +1).
 
@@ -109,7 +176,7 @@ AXES :
 - écologie : -1=productiviste, +1=écologiste
 - souveraineté : -1=souverainiste, +1=mondialiste
 
-PROFIL DU RÉPONDANT :
+PROFIL GLOBAL DU RÉPONDANT (MOYENNES — attention, ces moyennes masquent des nuances) :
 sociétal=${position.societal.toFixed(2)}, économique=${position.economic.toFixed(2)}, autorité=${position.authority.toFixed(2)}, écologie=${position.ecology.toFixed(2)}, souveraineté=${position.sovereignty.toFixed(2)}
 
 POSITION PAR RAPPORT À LA POPULATION (${populationStats.totalRespondents} répondants) :
@@ -118,13 +185,15 @@ ${statsBlock}
 PARTIS POLITIQUES (triés par proximité) :
 ${partyBlock}
 ${mediaBiasBlock}
+${signalsBlock}
 
 INSTRUCTIONS :
 1. Tutoie le répondant. Sois direct, factuel, sans jargon. Pas de flatterie.
-2. Produis un JSON strict (pas de markdown, pas de texte autour) avec cette structure :
+2. PRIORITÉ : les contradictions, réponses tranchées et variations par domaine sont PLUS INTÉRESSANTES que les moyennes globales. Ne te focalise PAS sur un seul axe (ex: l'écologie) juste parce que la moyenne y est forte. Cherche les TENSIONS, les SURPRISES, les INCOHÉRENCES entre domaines. Un profil qui dit "libertaire" sur la démocratie mais "autoritaire" sur la sécurité, c'est ça qui fait le sel de l'analyse.
+3. Produis un JSON strict (pas de markdown, pas de texte autour) avec cette structure :
 
 {
-  "summary": "2-3 phrases d'accroche. Mentionne le trait le plus marqué, le parti le plus proche, et une surprise.",
+  "summary": "2-3 phrases d'accroche. Mentionne la CONTRADICTION la plus révélatrice, le trait le plus marqué, et une surprise. Ne résume PAS à un seul axe.",
   "vsCitoyens": "3-4 phrases avec les percentiles. Identifie où le répondant est dans la norme et où il est atypique. Utilise des formulations comme 'Tu es plus X que Y% des répondants.'",
   "vsPartis": "3-4 phrases. Parti le plus proche, parti le plus éloigné, au moins une surprise (accord inattendu ou désaccord avec le parti le plus proche). Mentionne les axes précis.",
   "biases": [
@@ -138,7 +207,7 @@ INSTRUCTIONS :
       "suggestedSource": "nom d'un média aux positions opposées à consulter (optionnel)"
     }
   ],
-  "espritCritiquePistes": ["3-5 sujets concrets qui challengeraient les convictions du répondant"]
+  "espritCritiquePistes": ["3-5 sujets concrets qui ciblent les CONTRADICTIONS INTERNES du répondant — pas ses positions les plus évidentes"]
 }
 
 TYPES DE BIAIS À IDENTIFIER :
@@ -178,7 +247,7 @@ export async function runAiAnalysis(input: AnalysisInput): Promise<AiAnalysisRes
 
   const response = await client.messages.create({
     model: 'claude-sonnet-4-20250514',
-    max_tokens: 2500,
+    max_tokens: 3500,
     messages: [{ role: 'user', content: prompt }],
   });
 
