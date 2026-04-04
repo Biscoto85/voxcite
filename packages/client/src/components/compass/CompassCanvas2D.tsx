@@ -1,6 +1,14 @@
-import { useRef, useEffect, useCallback } from 'react';
+import { useRef, useEffect, useCallback, useState } from 'react';
 import type { Party, CompassPosition, AxisId } from '@voxcite/shared';
 import { AXES, COMPASS_COLORS, COMPASS_SIZES } from '@voxcite/shared';
+
+interface NebulaData {
+  mode: 'points' | 'kde';
+  totalResponses: number;
+  points?: Array<{ x: number; y: number }>;
+  grid?: number[][];
+  gridSize?: number;
+}
 
 interface CompassCanvas2DProps {
   parties: Party[];
@@ -16,6 +24,15 @@ export function CompassCanvas2D({
 }: CompassCanvas2DProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
+  const [nebula, setNebula] = useState<NebulaData | null>(null);
+
+  // Fetch nebula data when axes change
+  useEffect(() => {
+    fetch(`/api/nebula?xAxis=${xAxis}&yAxis=${yAxis}`)
+      .then((r) => r.json())
+      .then(setNebula)
+      .catch(() => setNebula(null));
+  }, [xAxis, yAxis]);
 
   const draw = useCallback(() => {
     const canvas = canvasRef.current;
@@ -71,6 +88,38 @@ export function CompassCanvas2D({
     ctx.fillText(yInfo.positive, center, margin - 8);
     ctx.fillText(yInfo.negative, center, size - margin + 18);
 
+    // Nebula layer
+    if (nebula) {
+      if (nebula.mode === 'points' && nebula.points) {
+        for (const pt of nebula.points) {
+          const nx = toCanvas(pt.x, false);
+          const ny = toCanvas(pt.y, true);
+          ctx.globalAlpha = 0.15;
+          ctx.fillStyle = COMPASS_COLORS.nebula;
+          ctx.beginPath();
+          ctx.arc(nx, ny, 3, 0, Math.PI * 2);
+          ctx.fill();
+        }
+        ctx.globalAlpha = 1;
+      } else if (nebula.mode === 'kde' && nebula.grid && nebula.gridSize) {
+        const gs = nebula.gridSize;
+        const cellW = (extent * 2) / gs;
+        const cellH = (extent * 2) / gs;
+        for (let i = 0; i < gs; i++) {
+          for (let j = 0; j < gs; j++) {
+            const density = nebula.grid[i][j];
+            if (density < 0.02) continue;
+            const cx = margin + j * cellW;
+            const cy = margin + (gs - 1 - i) * cellH; // flip Y
+            ctx.globalAlpha = density * 0.35;
+            ctx.fillStyle = COMPASS_COLORS.nebula;
+            ctx.fillRect(cx, cy, cellW + 1, cellH + 1);
+          }
+        }
+        ctx.globalAlpha = 1;
+      }
+    }
+
     // Party dots
     for (const p of parties) {
       const px = toX(p.position);
@@ -119,7 +168,7 @@ export function CompassCanvas2D({
       ctx.textAlign = 'center';
       ctx.fillText('Toi', ux, uy - COMPASS_SIZES.userDotRadius - 8);
     }
-  }, [parties, userPosition, xAxis, yAxis, highlightedPartyId]);
+  }, [parties, userPosition, xAxis, yAxis, highlightedPartyId, nebula]);
 
   useEffect(() => {
     draw();
