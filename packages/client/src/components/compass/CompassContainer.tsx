@@ -1,6 +1,6 @@
 import { useState } from 'react';
-import type { Party, AxisId, CompassPosition } from '@voxcite/shared';
-import { AXES, SUGGESTED_VIEWS } from '@voxcite/shared';
+import type { Party, AxisId, CompassPosition } from '@partiprism/shared';
+import { AXES, SUGGESTED_VIEWS } from '@partiprism/shared';
 import { CompassCanvas1D } from './CompassCanvas1D';
 import { CompassCanvas2D } from './CompassCanvas2D';
 import { CompassCanvas3D } from './CompassCanvas3D';

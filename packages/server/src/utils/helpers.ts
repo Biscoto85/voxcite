@@ -1,4 +1,4 @@
-import type { AxisId, CompassPosition } from '@voxcite/shared';
+import type { AxisId, CompassPosition } from '@partiprism/shared';
 
 export const ALL_AXES: AxisId[] = ['societal', 'economic', 'authority', 'ecology', 'sovereignty'];
 

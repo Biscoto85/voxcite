@@ -1,8 +1,8 @@
-# VoxCité — Modèle de données
+# PartiPrism — Modèle de données
 
 ## Vue d'ensemble
 
-Ce document décrit la structure des données de VoxCité. Il sert de référence pour l'implémentation de la base de données et des API.
+Ce document décrit la structure des données de PartiPrism. Il sert de référence pour l'implémentation de la base de données et des API.
 
 ---
 
@@ -244,8 +244,8 @@ Généré à la fin du parcours pour le partage viral.
 ```json
 {
   "session_id": "uuid",
-  "image_url": "https://voxcite.fr/share/abc123.png",
-  "text": "Je suis dans le quadrant progressiste-interventionniste. 34% des Français sont comme moi mais aucun parti ne nous représente vraiment. Et toi ? #VoxCité",
+  "image_url": "https://partiprism.fr/share/abc123.png",
+  "text": "Je suis dans le quadrant progressiste-interventionniste. 34% des Français sont comme moi mais aucun parti ne nous représente vraiment. Et toi ? #PartiPrism",
   "position": { "societal": 0.25, "economic": -0.15 },
   "quadrant": "progressiste_interventionniste",
   "stat_choc": "34% des Français sont dans ton quadrant mais aucun parti ne les représente pleinement",

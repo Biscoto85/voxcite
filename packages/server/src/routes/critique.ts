@@ -143,7 +143,7 @@ critiqueRouter.post('/links', async (req, res) => {
         max_tokens: 300,
         messages: [{
           role: 'user',
-          content: `Tu valides un lien partagé par un citoyen sur VoxCité (plateforme de démocratie participative).
+          content: `Tu valides un lien partagé par un citoyen sur PartiPrism (plateforme de démocratie participative).
 
 Thème : ${domainId}
 URL : ${url}

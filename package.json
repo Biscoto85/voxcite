@@ -1,8 +1,8 @@
 {
-  "name": "voxcite",
+  "name": "partiprism",
   "version": "0.1.0",
   "private": true,
-  "description": "VoxCité — On fait parler la cité.",
+  "description": "PartiPrism — Voir plus clair, voir plus large.",
   "workspaces": [
     "packages/shared",
     "packages/client",

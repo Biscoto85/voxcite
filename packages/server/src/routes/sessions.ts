@@ -2,7 +2,7 @@ import { Router } from 'express';
 import { db } from '../db/index.js';
 import { sessions, responses, questions } from '../db/schema.js';
 import { eq } from 'drizzle-orm';
-import type { AxisId } from '@voxcite/shared';
+import type { AxisId } from '@partiprism/shared';
 import { calculatePosition } from '../services/scoring.js';
 import { geolocateIP, isPostalCodePlausible } from '../services/geolocation.js';
 

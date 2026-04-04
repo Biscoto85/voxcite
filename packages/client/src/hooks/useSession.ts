@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 
-const SESSION_KEY = 'voxcite_session_id';
+const SESSION_KEY = 'partiprism_session_id';
 
 /**
  * Gestion de la session anonyme via localStorage.

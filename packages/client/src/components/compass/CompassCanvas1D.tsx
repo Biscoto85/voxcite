@@ -1,6 +1,6 @@
 import { useRef, useEffect, useCallback } from 'react';
-import type { Party, CompassPosition } from '@voxcite/shared';
-import { COMPASS_COLORS, COMPASS_SIZES } from '@voxcite/shared';
+import type { Party, CompassPosition } from '@partiprism/shared';
+import { COMPASS_COLORS, COMPASS_SIZES } from '@partiprism/shared';
 
 interface CompassCanvas1DProps {
   parties: Party[];

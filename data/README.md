@@ -1,4 +1,4 @@
-# VoxCité — Données de référence (contenu éditorial)
+# PartiPrism — Données de référence (contenu éditorial)
 
 Ce dossier contient **tout le contenu politique et éditorial** du projet,
 séparé du code applicatif (`packages/`).

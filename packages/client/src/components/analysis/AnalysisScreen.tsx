@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
-import type { CompassPosition, Party, AxisId } from '@voxcite/shared';
-import { AXES } from '@voxcite/shared';
+import type { CompassPosition, Party, AxisId } from '@partiprism/shared';
+import { AXES } from '@partiprism/shared';
 
 interface AnalysisScreenProps {
   position: CompassPosition;

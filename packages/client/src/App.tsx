@@ -1,5 +1,5 @@
 import { useEffect, useState, useCallback } from 'react';
-import type { Party, Question, CompassPosition } from '@voxcite/shared';
+import type { Party, Question, CompassPosition } from '@partiprism/shared';
 import { CompassContainer } from './components/compass';
 import { CompassReveal } from './components/compass/CompassReveal';
 import { OnboardingFlow } from './components/onboarding';
@@ -12,7 +12,7 @@ import { FeedbackButton } from './components/feedback/FeedbackButton';
 
 export type AppScreen = 'loading' | 'onboarding' | 'reveal' | 'menu' | 'prisme' | 'affiner' | 'comparaison' | 'critique' | 'exprimer';
 
-const SESSION_KEY = 'voxcite_session_id';
+const SESSION_KEY = 'partiprism_session_id';
 
 const SCREEN_TITLES: Record<AppScreen, string> = {
   loading: 'Chargement',
@@ -93,12 +93,12 @@ export function App() {
           <button
             onClick={() => canGoHome && setScreen('menu')}
             className="hover:text-purple-400 transition-colors focus-ring rounded-lg px-2"
-            aria-label="Retour au menu principal VoxCité"
+            aria-label="Retour au menu principal PartiPrism"
           >
-            VoxCité
+            PartiPrism
           </button>
         </h1>
-        <p className="text-gray-400 mt-1 text-sm sm:text-base">On fait parler la cité.</p>
+        <p className="text-gray-400 mt-1 text-sm sm:text-base">Voir plus clair, voir plus large.</p>
       </header>
 
       <main

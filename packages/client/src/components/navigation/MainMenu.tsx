@@ -1,4 +1,4 @@
-import type { CompassPosition } from '@voxcite/shared';
+import type { CompassPosition } from '@partiprism/shared';
 import type { AppScreen } from '@/App';
 import { getProfileLabel } from '@/utils/scoring';
 

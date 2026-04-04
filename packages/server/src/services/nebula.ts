@@ -1,4 +1,4 @@
-import type { AxisId } from '@voxcite/shared';
+import type { AxisId } from '@partiprism/shared';
 
 interface Point2D {
   x: number;

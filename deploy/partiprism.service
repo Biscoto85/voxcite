@@ -1,0 +1,34 @@
+# PartiPrism — systemd service (alternative à PM2)
+# À copier dans : /etc/systemd/system/partiprism.service
+# puis : sudo systemctl daemon-reload
+# puis : sudo systemctl enable --now partiprism
+#
+# Note : si vous utilisez PM2 (ecosystem.config.js), ce fichier n'est pas nécessaire.
+# PM2 peut être configuré comme service avec : pm2 startup && pm2 save
+
+[Unit]
+Description=PartiPrism API Server
+After=network.target postgresql.service
+Wants=postgresql.service
+
+[Service]
+Type=simple
+User=www-data
+Group=www-data
+WorkingDirectory=/var/www/partiprism
+ExecStart=/usr/bin/node packages/server/dist/index.js
+Restart=on-failure
+RestartSec=5
+Environment=NODE_ENV=production
+Environment=PORT=3001
+EnvironmentFile=/var/www/partiprism/.env
+
+# Sécurité
+NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/var/www/partiprism
+PrivateTmp=true
+
+[Install]
+WantedBy=multi-user.target

@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import type { QuestionResponse } from '@voxcite/shared';
+import type { QuestionResponse } from '@partiprism/shared';
 
 type OnboardingPhase = 'intro' | 'phase1' | 'fracture' | 'phase3' | 'result';
 

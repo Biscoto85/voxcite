@@ -1,4 +1,4 @@
-import type { CompassPosition, Quadrant, CollectiveSynthesis } from '@voxcite/shared';
+import type { CompassPosition, Quadrant, CollectiveSynthesis } from '@partiprism/shared';
 
 interface OpinionRow {
   positionSocietal: number;

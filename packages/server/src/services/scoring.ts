@@ -1,4 +1,4 @@
-import type { CompassPosition, Question, AxisId } from '@voxcite/shared';
+import type { CompassPosition, Question, AxisId } from '@partiprism/shared';
 import { ALL_AXES, clamp } from '../utils/helpers.js';
 
 interface ResponseInput {

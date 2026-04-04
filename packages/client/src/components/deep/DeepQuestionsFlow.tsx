@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import type { Question, CompassPosition } from '@voxcite/shared';
+import type { Question, CompassPosition } from '@partiprism/shared';
 import { QuestionCard } from '../onboarding/QuestionCard';
 
 interface DeepQuestionsFlowProps {

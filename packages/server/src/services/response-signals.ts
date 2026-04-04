@@ -1,5 +1,5 @@
-import type { AxisId, CompassPosition } from '@voxcite/shared';
-import { AXES } from '@voxcite/shared';
+import type { AxisId, CompassPosition } from '@partiprism/shared';
+import { AXES } from '@partiprism/shared';
 import { ALL_AXES, clamp } from '../utils/helpers.js';
 
 interface QuestionRow {

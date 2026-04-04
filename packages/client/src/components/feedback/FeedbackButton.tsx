@@ -93,7 +93,7 @@ export function FeedbackButton({ sessionId, screen }: FeedbackButtonProps) {
             {sent ? (
               <div className="text-center py-6" role="status" aria-live="polite">
                 <p className="text-green-400 font-medium">Merci pour ton retour !</p>
-                <p className="text-gray-500 text-sm mt-1">Il sera pris en compte pour améliorer VoxCité.</p>
+                <p className="text-gray-500 text-sm mt-1">Il sera pris en compte pour améliorer PartiPrism.</p>
               </div>
             ) : (
               <>
@@ -110,7 +110,7 @@ export function FeedbackButton({ sessionId, screen }: FeedbackButtonProps) {
                 </div>
 
                 <p className="text-sm text-gray-400 mb-4">
-                  VoxCité est un projet en amélioration continue. Aide-nous à détecter
+                  PartiPrism est un projet en amélioration continue. Aide-nous à détecter
                   les biais, les formulations maladroites ou les thématiques oubliées.
                 </p>
 

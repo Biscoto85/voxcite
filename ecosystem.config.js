@@ -1,7 +1,7 @@
 module.exports = {
   apps: [
     {
-      name: 'voxcite-api',
+      name: 'partiprism-api',
       script: 'packages/server/dist/index.js',
       instances: 'max',
       exec_mode: 'cluster',

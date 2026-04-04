@@ -3,7 +3,7 @@ import { db } from '../db/index.js';
 import { sessions } from '../db/schema.js';
 import { isNotNull } from 'drizzle-orm';
 import { buildNebulaData } from '../services/nebula.js';
-import type { AxisId } from '@voxcite/shared';
+import type { AxisId } from '@partiprism/shared';
 import { ALL_AXES } from '../utils/helpers.js';
 
 export const nebulaRouter = Router();

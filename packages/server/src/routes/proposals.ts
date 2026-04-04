@@ -2,7 +2,7 @@ import { Router } from 'express';
 import { db } from '../db/index.js';
 import { proposals, suggestions } from '../db/schema.js';
 import { eq, sql } from 'drizzle-orm';
-import type { CompassPosition } from '@voxcite/shared';
+import type { CompassPosition } from '@partiprism/shared';
 import { validateSessionId } from '../middleware/validate.js';
 
 export const proposalsRouter = Router();

@@ -1,4 +1,4 @@
-import type { Party } from '@voxcite/shared';
+import type { Party } from '@partiprism/shared';
 
 interface PartyLegendProps {
   parties: Party[];

@@ -1,5 +1,5 @@
-import type { CompassPosition, Party } from '@voxcite/shared';
-import { AXES } from '@voxcite/shared';
+import type { CompassPosition, Party } from '@partiprism/shared';
+import { AXES } from '@partiprism/shared';
 import { getClosestParty, getQuadrantLabel } from '@/utils/scoring';
 
 interface ResultScreenProps {

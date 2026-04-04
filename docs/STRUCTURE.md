@@ -1,7 +1,7 @@
-# VoxCité — Structure du projet
+# PartiPrism — Structure du projet
 
 ```
-voxcite/
+partiprism/
 │
 ├── README.md                     # Vision, principes, architecture
 │

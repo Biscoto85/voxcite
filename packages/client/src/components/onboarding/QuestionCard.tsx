@@ -1,5 +1,5 @@
-import type { Question } from '@voxcite/shared';
-import { RESPONSE_LABELS_AFFIRMATION } from '@voxcite/shared';
+import type { Question } from '@partiprism/shared';
+import { RESPONSE_LABELS_AFFIRMATION } from '@partiprism/shared';
 
 interface QuestionCardProps {
   question: Question;

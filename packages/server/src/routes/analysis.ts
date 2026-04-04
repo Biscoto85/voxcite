@@ -1,6 +1,6 @@
 import { Router } from 'express';
-import type { CompassPosition, AxisId } from '@voxcite/shared';
-import { AXES } from '@voxcite/shared';
+import type { CompassPosition, AxisId } from '@partiprism/shared';
+import { AXES } from '@partiprism/shared';
 import { runAiAnalysis } from '../services/ai-analysis.js';
 import { getPopulationStats, getUserPercentiles } from '../services/population.js';
 import { extractResponseSignals } from '../services/response-signals.js';

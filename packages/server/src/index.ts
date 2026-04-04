@@ -1,7 +1,7 @@
 import 'dotenv/config';
 import express from 'express';
 import cors from 'cors';
-import { API_PREFIX } from '@voxcite/shared';
+import { API_PREFIX } from '@partiprism/shared';
 import { domainsRouter } from './routes/domains.js';
 import { partisRouter } from './routes/parties.js';
 import { questionsRouter } from './routes/questions.js';
@@ -18,7 +18,7 @@ import { rateLimit } from './middleware/rateLimit.js';
 
 const port = parseInt(process.env.PORT || '3001', 10);
 if (isNaN(port)) throw new Error('PORT must be a number');
-if (!process.env.DATABASE_URL) console.warn('[voxcite-api] WARNING: DATABASE_URL not set');
+if (!process.env.DATABASE_URL) console.warn('[partiprism-api] WARNING: DATABASE_URL not set');
 
 // ── App setup ──────────────────────────────────────────────────────
 
@@ -64,11 +64,11 @@ app.get(`${API_PREFIX}/health`, (_req, res) => {
 // ── Global error handler ───────────────────────────────────────────
 
 app.use((err: Error, _req: express.Request, res: express.Response, _next: express.NextFunction) => {
-  console.error('[voxcite-api] Unhandled error:', err.message);
+  console.error('[partiprism-api] Unhandled error:', err.message);
   res.status(500).json({ error: 'Internal server error' });
 });
 
 app.listen(port, () => {
-  console.log(`[voxcite-api] Listening on http://localhost:${port}`);
-  console.log(`[voxcite-api] API: http://localhost:${port}${API_PREFIX}`);
+  console.log(`[partiprism-api] Listening on http://localhost:${port}`);
+  console.log(`[partiprism-api] API: http://localhost:${port}${API_PREFIX}`);
 });

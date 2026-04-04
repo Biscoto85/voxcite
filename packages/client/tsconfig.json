@@ -8,7 +8,7 @@
     "noEmit": true,
     "paths": {
       "@/*": ["./src/*"],
-      "@voxcite/shared": ["../shared/dist"]
+      "@partiprism/shared": ["../shared/dist"]
     }
   },
   "include": ["src"]

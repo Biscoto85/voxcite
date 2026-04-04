@@ -2,8 +2,10 @@
 
 ## Projet
 
-VoxCité est une application citoyenne qui remplace l'axe politique gauche-droite
+PartiPrism est une application citoyenne qui remplace l'axe politique gauche-droite
 par un compas à 2 axes (sociétal + économique). TypeScript monorepo.
+
+Domaine : partiprism.fr | Repo GitHub : biscoto85/voxcite
 
 ## Architecture
 
@@ -13,6 +15,7 @@ packages/server/   → Backend Express + Drizzle ORM + PostgreSQL (port 3001)
 packages/shared/   → Types et constantes partagés
 data/              → Contenu éditorial (questions, partis, domaines) — PAS du code
 docs/              → Documentation (specs, modèle de données)
+deploy/            → Config déploiement (nginx, systemd, scripts)
 ```
 
 ## Séparation code / contenu
@@ -43,5 +46,12 @@ npm run db:seed      # Injecter les données de data/ en base
 
 - TypeScript strict partout
 - Imports avec alias `@/` côté client
-- Types partagés via `@voxcite/shared`
+- Types partagés via `@partiprism/shared`
 - API préfixée `/api`
+
+## Déploiement (VPS)
+
+- Chemin : `/var/www/partiprism`
+- User PostgreSQL : `partiprism` / DB : `partiprisms`
+- Nginx reverse proxy → PM2 cluster sur port 3001
+- Domaine : partiprism.fr

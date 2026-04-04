@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import type { CompassPosition, Question, QuestionResponse, AxisId } from '@voxcite/shared';
+import type { CompassPosition, Question, QuestionResponse, AxisId } from '@partiprism/shared';
 
 /**
  * Calcule la position sur les 5 axes du compas depuis les réponses.

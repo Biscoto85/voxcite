@@ -1,4 +1,4 @@
-// ── Les 5 axes du compas VoxCité ───────────────────────────────────
+// ── Les 5 axes du compas PartiPrism ───────────────────────────────────
 //
 // Vue 1D : gauche ↔ droite (éditorial, défini manuellement)
 // Vue 2D : sociétal × économique (les 2 axes fondateurs)

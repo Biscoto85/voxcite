@@ -1,5 +1,5 @@
-import type { AxisId } from '@voxcite/shared';
-import { AXES } from '@voxcite/shared';
+import type { AxisId } from '@partiprism/shared';
+import { AXES } from '@partiprism/shared';
 import type { CompassView } from './CompassContainer';
 
 const ALL_AXES: AxisId[] = ['societal', 'economic', 'authority', 'ecology', 'sovereignty'];

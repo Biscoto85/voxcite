@@ -1,4 +1,4 @@
-# VoxCité — Stack technique et instructions de scaffolding
+# PartiPrism — Stack technique et instructions de scaffolding
 
 ## Stack validée
 
@@ -18,7 +18,7 @@
 ## Architecture du projet
 
 ```
-voxcite/
+partiprism/
 ├── packages/
 │   ├── client/                    # Frontend React + Vite
 │   │   ├── index.html
@@ -224,14 +224,14 @@ export const opinions = pgTable('opinions', {
 module.exports = {
   apps: [
     {
-      name: 'voxcite-api',
+      name: 'partiprism-api',
       script: 'packages/server/dist/index.js',
       instances: 'max',
       exec_mode: 'cluster',
       env: {
         NODE_ENV: 'production',
         PORT: 3001,
-        DATABASE_URL: 'postgresql://user:pass@localhost:5432/voxcite',
+        DATABASE_URL: 'postgresql://user:pass@localhost:5432/partiprisms',
       },
     },
   ],
@@ -272,7 +272,7 @@ export default defineConfig({
 
 ```bash
 # Initialiser le workspace
-mkdir voxcite && cd voxcite
+mkdir partiprism && cd partiprism
 npm init -y
 
 # Créer la structure monorepo
@@ -329,7 +329,7 @@ npm install -D pm2
 # packages/server/.env
 NODE_ENV=development
 PORT=3001
-DATABASE_URL=postgresql://voxcite:voxcite@localhost:5432/voxcite
+DATABASE_URL=postgresql://partiprism:partiprism@localhost:5432/partiprisms
 
 # packages/client/.env
 VITE_API_URL=http://localhost:3001

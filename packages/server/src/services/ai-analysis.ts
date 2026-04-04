@@ -1,6 +1,6 @@
 import Anthropic from '@anthropic-ai/sdk';
-import type { CompassPosition, AxisId } from '@voxcite/shared';
-import { AXES } from '@voxcite/shared';
+import type { CompassPosition, AxisId } from '@partiprism/shared';
+import { AXES } from '@partiprism/shared';
 import type { PopulationStats, UserPercentiles } from './population.js';
 import type { ResponseSignals } from './response-signals.js';
 import { ALL_AXES, extractClaudeText, extractJSON } from '../utils/helpers.js';
@@ -165,7 +165,7 @@ Note : les réseaux sociaux (internet) ont un effet miroir — ils renforcent le
     signalsBlock = '\n\n' + parts.join('\n\n');
   }
 
-  return `Tu es l'analyste politique de VoxCité, une application citoyenne française.
+  return `Tu es l'analyste politique de PartiPrism, une application citoyenne française.
 Tu analyses le profil d'un répondant sur 5 axes politiques (échelle -1 à +1).
 
 AXES :

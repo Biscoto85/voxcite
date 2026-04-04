@@ -74,7 +74,7 @@ ${domainProposals.length > 0 ? domainProposals.map((p, i) => `${i + 1}. ${p}`).j
     ? `\nPROGRAMME PRÉCÉDENT (pour comparer l'évolution) :\n${JSON.stringify(previousProgram.content, null, 2).slice(0, 3000)}`
     : '';
 
-  const prompt = `Tu es le rédacteur du Programme Citoyen de VoxCité, une plateforme de démocratie participative française.
+  const prompt = `Tu es le rédacteur du Programme Citoyen de PartiPrism, une plateforme de démocratie participative française.
 
 MISSION : Synthétise les propositions des citoyens en un programme cohérent, structuré par domaine thématique.
 
@@ -253,7 +253,7 @@ async function processFeedback() {
 // ── Main ─────────────────────────────────────────────────────────────
 
 async function main() {
-  console.log('[batch] === VoxCité Daily Batch ===');
+  console.log('[batch] === PartiPrism Daily Batch ===');
   console.log(`[batch] Started at ${new Date().toISOString()}`);
 
   await generateProgram();

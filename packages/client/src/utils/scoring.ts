@@ -1,5 +1,5 @@
-import type { CompassPosition, Quadrant, Party, AxisId } from '@voxcite/shared';
-import { QUADRANT_LABELS, QUADRANT_POPULATION_ESTIMATE, AXES } from '@voxcite/shared';
+import type { CompassPosition, Quadrant, Party, AxisId } from '@partiprism/shared';
+import { QUADRANT_LABELS, QUADRANT_POPULATION_ESTIMATE, AXES } from '@partiprism/shared';
 
 const ALL_AXES: AxisId[] = ['societal', 'economic', 'authority', 'ecology', 'sovereignty'];
 

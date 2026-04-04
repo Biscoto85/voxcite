@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import type { CompassPosition } from '@voxcite/shared';
+import type { CompassPosition } from '@partiprism/shared';
 
 interface CritiqueScreenProps {
   sessionId: string;

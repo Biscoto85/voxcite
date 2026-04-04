@@ -1,4 +1,4 @@
-import type { CompassPosition } from '@voxcite/shared';
+import type { CompassPosition } from '@partiprism/shared';
 import { getQuadrant, getQuadrantLabel } from './scoring';
 
 /**
@@ -6,7 +6,7 @@ import { getQuadrant, getQuadrantLabel } from './scoring';
  */
 export function generateShareText(position: CompassPosition, statChoc: string): string {
   const label = getQuadrantLabel(position);
-  return `Je suis dans le quadrant ${label}. ${statChoc} Et toi ? #VoxCité`;
+  return `Je suis dans le quadrant ${label}. ${statChoc} Et toi ? #PartiPrism`;
 }
 
 /**

@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import type { Party, CompassPosition } from '@voxcite/shared';
+import type { Party, CompassPosition } from '@partiprism/shared';
 import { CompassCanvas1D } from './CompassCanvas1D';
 import { CompassCanvas2D } from './CompassCanvas2D';
 import { PartyLegend } from './PartyLegend';

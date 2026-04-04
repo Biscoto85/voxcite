@@ -1,6 +1,6 @@
-# VoxCité
+# PartiPrism
 
-**On fait parler la cité.**
+**Voir plus clair, voir plus large.**
 
 > Application citoyenne qui donne les clés de compréhension du paysage politique en remplaçant l'axe unique droite-gauche par un compas à 2 axes, et permet à chaque citoyen d'exprimer son avis sur les sujets qui comptent.
 
@@ -10,7 +10,7 @@
 
 La représentation politique sur un seul axe (droite-gauche) est la cause fondamentale de l'incompréhension du débat public. Elle permet la fracturation du bloc populaire sur les sujets sociétaux, au profit de la minorité qui détient le pouvoir économique.
 
-VoxCité rend visible ce que le système cache : **le champ politique a 2 dimensions, pas 1.**
+PartiPrism rend visible ce que le système cache : **le champ politique a 2 dimensions, pas 1.**
 
 - **Axe sociétal** : progressiste ↔ conservateur
 - **Axe économique** : libéral ↔ interventionniste
@@ -64,12 +64,6 @@ Le parcours d'onboarding viral, conçu pour transformer le dégoût en lucidité
 
 10 domaines de vie couvrent l'intégralité du débat politique. Chacun se lit sur les 2 axes du compas.
 
-Chaque domaine contient :
-- Des **thèmes permanents** (stables dans le temps)
-- De l'**actualité rattachée** (renouvelée, raison de revenir)
-- Une **dimension sociétale** (axe progressiste ↔ conservateur)
-- Une **dimension économique** (axe libéral ↔ interventionniste)
-
 | # | Domaine | Thèmes permanents |
 |---|---------|-------------------|
 | 1 | **Travail et emploi** | Retraites, chômage, temps de travail, formation, fonction publique |
@@ -87,22 +81,18 @@ Chaque domaine contient :
 
 ## Stack technique
 
-> À définir — le projet démarre. Les choix seront guidés par : rapidité de prototypage, accessibilité web+mobile, et capacité à gérer les visualisations 2D du compas.
-
-### Contraintes identifiées
-- Rendu 2D performant (compas + nébuleuse de points)
-- Pas de compte utilisateur obligatoire (anonymat)
-- API IA pour le décryptage et la synthèse
-- Base de données pour les avis collectifs agrégés
-- Partage natif (Open Graph, stories Instagram, tweets)
-- Progressive Web App ou app native (web + mobile dès le départ)
+TypeScript monorepo :
+- **Frontend** : React + Vite + Tailwind CSS
+- **Backend** : Express + Drizzle ORM + PostgreSQL
+- **IA** : Claude API (Anthropic)
+- **Déploiement** : PM2 + Nginx sur VPS
 
 ---
 
 ## Liens
 
-- **Site** : [voxcite.fr](https://voxcite.fr) *(à venir)*
-- **Slogan** : *On fait parler la cité.*
+- **Site** : [partiprism.fr](https://partiprism.fr)
+- **Slogan** : *Voir plus clair, voir plus large.*
 
 ---
 

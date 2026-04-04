@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react';
-import type { Question, QuestionResponse, CompassPosition, Party } from '@voxcite/shared';
+import type { Question, QuestionResponse, CompassPosition, Party } from '@partiprism/shared';
 import { calculatePosition } from '@/hooks/useCompassPosition';
 import { QuestionCard } from './QuestionCard';
 import { PostalCodeInput } from './PostalCodeInput';

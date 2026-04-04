@@ -1,8 +1,8 @@
-# VoxCité — Spécification technique : Compas 2D et animation de fracture
+# PartiPrism — Spécification technique : Compas 2D et animation de fracture
 
 ## Contexte
 
-Ce document décrit le composant central de VoxCité : le compas politique à 2 axes et l'animation de "fracture" qui constitue le moment clé du parcours d'onboarding. Il est destiné à être utilisé comme brief dans Claude Code pour l'implémentation.
+Ce document décrit le composant central de PartiPrism : le compas politique à 2 axes et l'animation de "fracture" qui constitue le moment clé du parcours d'onboarding. Il est destiné à être utilisé comme brief dans Claude Code pour l'implémentation.
 
 Un prototype interactif fonctionnel a été validé. Ce document en extrait les principes pour une implémentation production-ready.
 
@@ -168,7 +168,7 @@ Pour la v1, les pourcentages par quadrant peuvent être codés en dur (estimatio
 - Le point de l'utilisateur bien visible
 - Le quadrant mis en valeur
 - La stat choc en texte
-- Le logo VoxCité + "voxcite.fr"
+- Le logo PartiPrism + "partiprism.fr"
 - Le slogan "On fait parler la cité."
 
 ### Génération

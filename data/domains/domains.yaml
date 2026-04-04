@@ -1,4 +1,4 @@
-# VoxCité — Données de référence : Domaines
+# PartiPrism — Données de référence : Domaines
 
 # Ce fichier contient les 10 domaines thématiques avec leurs dimensions sur les 2 axes.
 # Format : YAML pour lisibilité humaine, à convertir en JSON/DB selon la stack choisie.
