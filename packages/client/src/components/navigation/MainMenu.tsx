@@ -46,7 +46,7 @@ const MENU_ITEMS: Array<{
     title: 'M\'exprimer',
     description: 'Donne ton avis sur les grands thèmes et contribue au programme des citoyens.',
     icon: '📢',
-    ready: false,
+    ready: true,
   },
 ];
 

@@ -6,8 +6,12 @@ import { OnboardingFlow } from './components/onboarding';
 import { MainMenu } from './components/navigation/MainMenu';
 import { DeepQuestionsFlow } from './components/deep/DeepQuestionsFlow';
 import { AnalysisScreen } from './components/analysis/AnalysisScreen';
+import { ExprimerScreen } from './components/exprimer/ExprimerScreen';
+import { FeedbackButton } from './components/feedback/FeedbackButton';
 
 export type AppScreen = 'loading' | 'onboarding' | 'reveal' | 'menu' | 'prisme' | 'affiner' | 'comparaison' | 'critique' | 'exprimer';
+
+const SESSION_KEY = 'voxcite_session_id';
 
 export function App() {
   const [screen, setScreen] = useState<AppScreen>('loading');
@@ -17,16 +21,31 @@ export function App() {
   const [sessionId, setSessionId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  // Load data
+  // Load data + try to restore session
   useEffect(() => {
+    const savedSessionId = localStorage.getItem(SESSION_KEY);
+
     Promise.all([
       fetch('/api/partis').then((r) => r.json()),
       fetch('/api/questions/onboarding').then((r) => r.json()),
+      savedSessionId
+        ? fetch(`/api/sessions/${savedSessionId}`).then((r) => r.ok ? r.json() : null).catch(() => null)
+        : Promise.resolve(null),
     ])
-      .then(([p, q]) => {
+      .then(([p, q, existingSession]) => {
         setParties(p);
         setOnboardingQuestions(q);
-        setScreen('onboarding');
+
+        if (existingSession && existingSession.position) {
+          // Restore session
+          setSessionId(existingSession.id);
+          setUserPosition(existingSession.position);
+          setScreen('menu');
+        } else {
+          // Clear stale session
+          if (savedSessionId) localStorage.removeItem(SESSION_KEY);
+          setScreen('onboarding');
+        }
       })
       .catch((err) => setError(err.message));
   }, []);
@@ -34,12 +53,16 @@ export function App() {
   const handleOnboardingComplete = useCallback((position: CompassPosition, sid: string) => {
     setUserPosition(position);
     setSessionId(sid);
+    localStorage.setItem(SESSION_KEY, sid);
     setScreen('reveal');
   }, []);
 
   const handlePositionUpdate = useCallback((position: CompassPosition) => {
     setUserPosition(position);
   }, []);
+
+  // Show feedback button on all screens except loading/onboarding
+  const showFeedback = screen !== 'loading' && screen !== 'onboarding';
 
   return (
     <div className="min-h-screen bg-gray-950 text-white">
@@ -118,14 +141,19 @@ export function App() {
           </div>
         )}
 
-        {screen === 'exprimer' && (
-          <div className="max-w-lg mx-auto text-center py-12">
-            <h2 className="text-xl font-bold mb-2">M'exprimer</h2>
-            <p className="text-gray-400">Bientôt disponible.</p>
-            <button onClick={() => setScreen('menu')} className="mt-4 text-purple-400 hover:text-purple-300">← Retour</button>
-          </div>
+        {screen === 'exprimer' && sessionId && userPosition && (
+          <ExprimerScreen
+            sessionId={sessionId}
+            userPosition={userPosition}
+            onBack={() => setScreen('menu')}
+          />
         )}
       </main>
+
+      {/* Global feedback button */}
+      {showFeedback && (
+        <FeedbackButton sessionId={sessionId} screen={screen} />
+      )}
     </div>
   );
 }

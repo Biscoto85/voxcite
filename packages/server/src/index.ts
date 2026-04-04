@@ -12,6 +12,9 @@ import { subjectsRouter } from './routes/subjects.js';
 import { shareRouter } from './routes/share.js';
 import { nebulaRouter } from './routes/nebula.js';
 import { analysisRouter } from './routes/analysis.js';
+import { feedbackRouter } from './routes/feedback.js';
+import { proposalsRouter } from './routes/proposals.js';
+import { programRouter } from './routes/program.js';
 import { rateLimit } from './middleware/rateLimit.js';
 
 const app = express();
@@ -40,6 +43,11 @@ app.use(`${API_PREFIX}/opinions`, opinionsRouter);
 app.use(`${API_PREFIX}/synthesis`, synthesisRouter);
 app.use(`${API_PREFIX}/subjects`, subjectsRouter);
 app.use(`${API_PREFIX}/share`, shareRouter);
+
+// Programme citoyen et propositions
+app.use(`${API_PREFIX}/proposals`, proposalsRouter);
+app.use(`${API_PREFIX}/program`, programRouter);
+app.use(`${API_PREFIX}/feedback`, feedbackRouter);
 
 // Health check
 app.get(`${API_PREFIX}/health`, (_req, res) => {

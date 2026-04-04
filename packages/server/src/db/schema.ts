@@ -145,3 +145,78 @@ export const opinions = pgTable('opinions', {
   positionSovereignty: real('position_sovereignty').notNull(),
   createdAt: timestamp('created_at').notNull().defaultNow(),
 });
+
+// ── Propositions citoyennes ──
+// Source :
+//   'user' = rédigée par un citoyen
+//   'ai_suggested' = générée par IA, en attente de réaction
+//   'ai_accepted' = proposition IA acceptée par un citoyen
+//   'ai_rejected' = proposition IA refusée par un citoyen
+//   'ai_amended'  = proposition IA amendée par un citoyen
+
+export const proposals = pgTable('proposals', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  sessionId: uuid('session_id').references(() => sessions.id).notNull(),
+  domainId: text('domain_id').references(() => domains.id).notNull(),
+  text: text('text').notNull(),
+  source: text('source').notNull(),             // 'user' | 'ai_suggested' | 'ai_accepted' | 'ai_rejected' | 'ai_amended'
+  originalProposalId: uuid('original_proposal_id'),  // si amendement, réf à la proposition originale
+  // Position du proposant au moment de la soumission (pour pondération)
+  positionSocietal: real('position_societal'),
+  positionEconomic: real('position_economic'),
+  positionAuthority: real('position_authority'),
+  positionEcology: real('position_ecology'),
+  positionSovereignty: real('position_sovereignty'),
+  createdAt: timestamp('created_at').notNull().defaultNow(),
+});
+
+// ── Versions du programme citoyen (générées par batch quotidien) ──
+
+export const programVersions = pgTable('program_versions', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  generatedAt: timestamp('generated_at').notNull().defaultNow(),
+  // Programme complet par domaine : { domainId: { title, proposals: string[], summary } }
+  content: jsonb('content').notNull(),
+  // Court paragraphe décrivant l'évolution depuis la version précédente
+  evolutionSummary: text('evolution_summary'),
+  // Statistiques
+  totalProposals: integer('total_proposals').notNull().default(0),
+  totalContributors: integer('total_contributors').notNull().default(0),
+  // Version neutre initiale ou version citoyenne
+  isInitial: boolean('is_initial').notNull().default(false),
+});
+
+// ── Suggestions pré-générées (batch quotidien, par domaine × profil type) ──
+
+export const suggestions = pgTable('suggestions', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  domainId: text('domain_id').references(() => domains.id).notNull(),
+  text: text('text').notNull(),
+  // Profil cible approximatif (pour matcher avec l'utilisateur)
+  targetSocietal: real('target_societal'),
+  targetEconomic: real('target_economic'),
+  targetAuthority: real('target_authority'),
+  targetEcology: real('target_ecology'),
+  targetSovereignty: real('target_sovereignty'),
+  generatedAt: timestamp('generated_at').notNull().defaultNow(),
+  isActive: boolean('is_active').notNull().default(true),
+});
+
+// ── Feedback utilisateur (biais, formulation, thématiques manquantes) ──
+
+export const feedback = pgTable('feedback', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  sessionId: uuid('session_id').references(() => sessions.id),
+  // Contexte : sur quoi porte le feedback
+  targetType: text('target_type').notNull(),     // 'question' | 'proposal' | 'analysis' | 'suggestion' | 'general'
+  targetId: text('target_id'),                    // ID de la question/proposition concernée (optionnel)
+  // Le feedback lui-même
+  feedbackType: text('feedback_type').notNull(),  // 'bias' | 'formulation' | 'missing_topic' | 'other'
+  description: text('description').notNull(),
+  // Métadonnées
+  screen: text('screen'),                         // écran d'où vient le feedback
+  createdAt: timestamp('created_at').notNull().defaultNow(),
+  // Traitement batch
+  processed: boolean('processed').notNull().default(false),
+  processedAt: timestamp('processed_at'),
+});
