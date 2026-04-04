@@ -3,6 +3,7 @@ import { db } from '../db/index.js';
 import { medias, mediaRatings, sharedLinks } from '../db/schema.js';
 import { eq, desc, and, sql } from 'drizzle-orm';
 import Anthropic from '@anthropic-ai/sdk';
+import { clamp, isValidHttpUrl, parseClaudeJSON, extractClaudeText, extractJSON } from '../utils/helpers.js';
 
 export const critiqueRouter = Router();
 
@@ -54,8 +55,8 @@ critiqueRouter.post('/medias/:id/rate', async (req, res) => {
   await db.insert(mediaRatings).values({
     sessionId,
     mediaId,
-    ratedSocietal: Math.max(-1, Math.min(1, societal)),
-    ratedEconomic: Math.max(-1, Math.min(1, economic)),
+    ratedSocietal: clamp(societal),
+    ratedEconomic: clamp(economic),
   });
 
   // Recalculate citizen average for this media
@@ -125,9 +126,8 @@ critiqueRouter.post('/links', async (req, res) => {
     return;
   }
 
-  // Basic URL validation
-  try { new URL(url); } catch {
-    res.status(400).json({ error: 'Invalid URL' });
+  if (!isValidHttpUrl(url)) {
+    res.status(400).json({ error: 'Invalid URL (must be http or https)' });
     return;
   }
 

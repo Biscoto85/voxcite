@@ -1,7 +1,6 @@
 import type { AxisId, CompassPosition } from '@voxcite/shared';
 import { AXES } from '@voxcite/shared';
-
-const ALL_AXES: AxisId[] = ['societal', 'economic', 'authority', 'ecology', 'sovereignty'];
+import { ALL_AXES, clamp } from '../utils/helpers.js';
 
 interface QuestionRow {
   id: string;
@@ -124,7 +123,7 @@ export function extractResponseSignals(
     const axes: Partial<Record<AxisId, number>> = {};
     for (const ax of ALL_AXES) {
       if (domainWeights[domain][ax] > 0) {
-        axes[ax] = Math.max(-1, Math.min(1, domainTotals[domain][ax] / domainWeights[domain][ax]));
+        axes[ax] = clamp(domainTotals[domain][ax] / domainWeights[domain][ax]);
       }
     }
     return { domain, axes, questionCount: domainCounts[domain] };
@@ -176,7 +175,6 @@ export function extractResponseSignals(
           wts[ax] += m;
         }
       }
-      const clamp = (v: number) => Math.max(-1, Math.min(1, v));
       return {
         societal: wts.societal > 0 ? clamp(totals.societal / wts.societal) : 0,
         economic: wts.economic > 0 ? clamp(totals.economic / wts.economic) : 0,

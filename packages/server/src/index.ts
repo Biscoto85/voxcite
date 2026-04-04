@@ -6,10 +6,6 @@ import { domainsRouter } from './routes/domains.js';
 import { partisRouter } from './routes/parties.js';
 import { questionsRouter } from './routes/questions.js';
 import { sessionsRouter } from './routes/sessions.js';
-import { opinionsRouter } from './routes/opinions.js';
-import { synthesisRouter } from './routes/synthesis.js';
-import { subjectsRouter } from './routes/subjects.js';
-import { shareRouter } from './routes/share.js';
 import { nebulaRouter } from './routes/nebula.js';
 import { analysisRouter } from './routes/analysis.js';
 import { feedbackRouter } from './routes/feedback.js';
@@ -18,12 +14,25 @@ import { programRouter } from './routes/program.js';
 import { critiqueRouter } from './routes/critique.js';
 import { rateLimit } from './middleware/rateLimit.js';
 
-const app = express();
-const port = process.env.PORT || 3001;
+// ── Environment validation ─────────────────────────────────────────
 
-app.use(cors());
-app.use(express.json());
+const port = parseInt(process.env.PORT || '3001', 10);
+if (isNaN(port)) throw new Error('PORT must be a number');
+if (!process.env.DATABASE_URL) console.warn('[voxcite-api] WARNING: DATABASE_URL not set');
+
+// ── App setup ──────────────────────────────────────────────────────
+
+const app = express();
+
+app.use(cors({
+  origin: process.env.ALLOWED_ORIGINS?.split(',') || ['http://localhost:5173', 'http://localhost:3000'],
+  methods: ['GET', 'POST'],
+  allowedHeaders: ['Content-Type'],
+}));
+app.use(express.json({ limit: '100kb' }));
 app.use(rateLimit);
+
+// ── Routes ─────────────────────────────────────────────────────────
 
 // Données de référence (lecture)
 app.use(`${API_PREFIX}/domains`, domainsRouter);
@@ -39,12 +48,6 @@ app.use(`${API_PREFIX}/nebula`, nebulaRouter);
 // Analyse IA
 app.use(`${API_PREFIX}/analysis`, analysisRouter);
 
-// Avis citoyens et synthèse (v2)
-app.use(`${API_PREFIX}/opinions`, opinionsRouter);
-app.use(`${API_PREFIX}/synthesis`, synthesisRouter);
-app.use(`${API_PREFIX}/subjects`, subjectsRouter);
-app.use(`${API_PREFIX}/share`, shareRouter);
-
 // Programme citoyen et propositions
 app.use(`${API_PREFIX}/proposals`, proposalsRouter);
 app.use(`${API_PREFIX}/program`, programRouter);
@@ -56,6 +59,13 @@ app.use(`${API_PREFIX}/critique`, critiqueRouter);
 // Health check
 app.get(`${API_PREFIX}/health`, (_req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
+});
+
+// ── Global error handler ───────────────────────────────────────────
+
+app.use((err: Error, _req: express.Request, res: express.Response, _next: express.NextFunction) => {
+  console.error('[voxcite-api] Unhandled error:', err.message);
+  res.status(500).json({ error: 'Internal server error' });
 });
 
 app.listen(port, () => {

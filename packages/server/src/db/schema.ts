@@ -1,4 +1,4 @@
-import { pgTable, uuid, text, real, timestamp, integer, boolean, jsonb } from 'drizzle-orm/pg-core';
+import { pgTable, uuid, text, real, timestamp, integer, boolean, jsonb, index } from 'drizzle-orm/pg-core';
 
 // ── Domaines thématiques (10 entrées, seed depuis data/domains.yaml) ──
 
@@ -104,7 +104,9 @@ export const responses = pgTable('responses', {
   questionId: text('question_id').references(() => questions.id).notNull(),
   value: real('value').notNull(),
   createdAt: timestamp('created_at').notNull().defaultNow(),
-});
+}, (table) => [
+  index('responses_session_id_idx').on(table.sessionId),
+]);
 
 // ── Biais identifiés ──
 // 2 catégories :
@@ -166,15 +168,18 @@ export const proposals = pgTable('proposals', {
   domainId: text('domain_id').references(() => domains.id).notNull(),
   text: text('text').notNull(),
   source: text('source').notNull(),             // 'user' | 'ai_suggested' | 'ai_accepted' | 'ai_rejected' | 'ai_amended'
-  originalProposalId: uuid('original_proposal_id'),  // si amendement, réf à la proposition originale
-  // Position du proposant au moment de la soumission (pour pondération)
+  originalProposalId: uuid('original_proposal_id'),
   positionSocietal: real('position_societal'),
   positionEconomic: real('position_economic'),
   positionAuthority: real('position_authority'),
   positionEcology: real('position_ecology'),
   positionSovereignty: real('position_sovereignty'),
   createdAt: timestamp('created_at').notNull().defaultNow(),
-});
+}, (table) => [
+  index('proposals_session_id_idx').on(table.sessionId),
+  index('proposals_domain_id_idx').on(table.domainId),
+  index('proposals_source_idx').on(table.source),
+]);
 
 // ── Versions du programme citoyen (générées par batch quotidien) ──
 
@@ -227,26 +232,26 @@ export const mediaRatings = pgTable('media_ratings', {
   id: uuid('id').primaryKey().defaultRandom(),
   sessionId: uuid('session_id').references(() => sessions.id).notNull(),
   mediaId: text('media_id').references(() => medias.id).notNull(),
-  ratedSocietal: real('rated_societal').notNull(),     // -1 (conservateur) → +1 (progressiste)
-  ratedEconomic: real('rated_economic').notNull(),     // -1 (interventionniste) → +1 (libéral)
+  ratedSocietal: real('rated_societal').notNull(),
+  ratedEconomic: real('rated_economic').notNull(),
   createdAt: timestamp('created_at').notNull().defaultNow(),
-});
+}, (table) => [
+  index('media_ratings_media_id_idx').on(table.mediaId),
+]);
 
 // ── Feedback utilisateur (biais, formulation, thématiques manquantes) ──
 
 export const feedback = pgTable('feedback', {
   id: uuid('id').primaryKey().defaultRandom(),
   sessionId: uuid('session_id').references(() => sessions.id),
-  // Contexte : sur quoi porte le feedback
   targetType: text('target_type').notNull(),     // 'question' | 'proposal' | 'analysis' | 'suggestion' | 'general'
-  targetId: text('target_id'),                    // ID de la question/proposition concernée (optionnel)
-  // Le feedback lui-même
+  targetId: text('target_id'),
   feedbackType: text('feedback_type').notNull(),  // 'bias' | 'formulation' | 'missing_topic' | 'other'
   description: text('description').notNull(),
-  // Métadonnées
-  screen: text('screen'),                         // écran d'où vient le feedback
+  screen: text('screen'),
   createdAt: timestamp('created_at').notNull().defaultNow(),
-  // Traitement batch
   processed: boolean('processed').notNull().default(false),
   processedAt: timestamp('processed_at'),
-});
+}, (table) => [
+  index('feedback_processed_idx').on(table.processed),
+]);

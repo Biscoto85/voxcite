@@ -17,13 +17,10 @@ import { db } from '../db/index.js';
 import { proposals, programVersions, suggestions, feedback, domains, sessions } from '../db/schema.js';
 import { desc, eq, inArray, sql, isNotNull } from 'drizzle-orm';
 
+import { extractJSON, extractClaudeText } from '../utils/helpers.js';
+
 const MODEL = 'claude-haiku-4-5-20251001';
 const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY! });
-
-/** Strip markdown code fences from Claude responses */
-function extractJSON(raw: string): string {
-  return raw.replace(/^```(?:json)?\s*\n?/i, '').replace(/\n?```\s*$/i, '').trim();
-}
 
 // ── 1. Générer le programme citoyen ─────────────────────────────────
 
@@ -117,7 +114,7 @@ Réponds UNIQUEMENT avec le JSON.`;
     messages: [{ role: 'user', content: prompt }],
   });
 
-  const rawText = response.content[0].type === 'text' ? response.content[0].text : '';
+  const rawText = extractClaudeText(response);
   let parsed: { domains: Record<string, any>; evolutionSummary: string };
   try {
     parsed = JSON.parse(extractJSON(rawText));
@@ -188,7 +185,7 @@ Réponds UNIQUEMENT avec le JSON.`;
         messages: [{ role: 'user', content: prompt }],
       });
 
-      const rawSugg = response.content[0].type === 'text' ? response.content[0].text : '';
+      const rawSugg = extractClaudeText(response);
       const parsed = JSON.parse(extractJSON(rawSugg)) as Array<{ domainId: string; text: string }>;
 
       for (const s of parsed) {

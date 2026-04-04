@@ -1,4 +1,5 @@
 import type { CompassPosition, Question, AxisId } from '@voxcite/shared';
+import { ALL_AXES, clamp } from '../utils/helpers.js';
 
 interface ResponseInput {
   questionId: string;
@@ -6,11 +7,11 @@ interface ResponseInput {
 }
 
 /** Résout les axes qu'une question mesure */
-function resolveAxes(q: Question): AxisId[] {
+export function resolveAxes(q: Pick<Question, 'axis' | 'axes'>): AxisId[] {
   if (q.axes && q.axes.length > 0) return q.axes;
   switch (q.axis) {
     case 'both': return ['societal', 'economic'];
-    case 'all': return ['societal', 'economic', 'authority', 'ecology', 'sovereignty'];
+    case 'all': return [...ALL_AXES];
     default: return [q.axis as AxisId];
   }
 }
@@ -38,8 +39,6 @@ export function calculatePosition(
       weights[axis] += maxContrib;
     }
   }
-
-  const clamp = (val: number) => Math.max(-1, Math.min(1, val));
 
   return {
     societal: weights.societal > 0 ? clamp(totals.societal / weights.societal) : 0,

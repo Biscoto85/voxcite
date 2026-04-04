@@ -7,13 +7,12 @@ import { extractResponseSignals } from '../services/response-signals.js';
 import { db } from '../db/index.js';
 import { biases, sessions, responses, questions } from '../db/schema.js';
 import { eq } from 'drizzle-orm';
+import { ALL_AXES, isValidUUID } from '../utils/helpers.js';
 import fs from 'fs';
 import path from 'path';
 import yaml from 'js-yaml';
 
 export const analysisRouter = Router();
-
-const ALL_AXES: AxisId[] = ['societal', 'economic', 'authority', 'ecology', 'sovereignty'];
 
 // Load media aggregate positions from YAML
 const DATA_DIR = path.resolve(import.meta.dirname, '../../../../data');

@@ -2,8 +2,7 @@ import { db } from '../db/index.js';
 import { sessions } from '../db/schema.js';
 import { isNotNull } from 'drizzle-orm';
 import type { AxisId } from '@voxcite/shared';
-
-const ALL_AXES: AxisId[] = ['societal', 'economic', 'authority', 'ecology', 'sovereignty'];
+import { ALL_AXES } from '../utils/helpers.js';
 
 export interface AxisStats {
   mean: number;

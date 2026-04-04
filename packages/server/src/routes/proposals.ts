@@ -1,12 +1,11 @@
 import { Router } from 'express';
 import { db } from '../db/index.js';
 import { proposals, suggestions } from '../db/schema.js';
-import { eq, and, isNull } from 'drizzle-orm';
-import type { CompassPosition, AxisId } from '@voxcite/shared';
+import { eq, sql } from 'drizzle-orm';
+import type { CompassPosition } from '@voxcite/shared';
+import { validateSessionId } from '../middleware/validate.js';
 
 export const proposalsRouter = Router();
-
-const ALL_AXES: AxisId[] = ['societal', 'economic', 'authority', 'ecology', 'sovereignty'];
 
 // POST / — soumettre une proposition (user ou réaction à suggestion)
 proposalsRouter.post('/', async (req, res) => {
@@ -44,27 +43,13 @@ proposalsRouter.post('/', async (req, res) => {
 proposalsRouter.get('/suggestions', async (req, res) => {
   const { sessionId } = req.query as { sessionId?: string };
 
-  // Get all active suggestions
-  const allSuggestions = await db
-    .select()
+  // Return shuffled subset (DB-level random for proper distribution)
+  const shuffled = await db
+    .select({ id: suggestions.id, domainId: suggestions.domainId, text: suggestions.text })
     .from(suggestions)
-    .where(eq(suggestions.isActive, true));
-
-  if (allSuggestions.length === 0) {
-    res.json([]);
-    return;
-  }
-
-  // TODO: Filter/sort by proximity to user profile when we have enough data
-  // For now, return all shuffled
-  const shuffled = allSuggestions
-    .sort(() => Math.random() - 0.5)
-    .slice(0, 20)
-    .map((s) => ({
-      id: s.id,
-      domainId: s.domainId,
-      text: s.text,
-    }));
+    .where(eq(suggestions.isActive, true))
+    .orderBy(sql`RANDOM()`)
+    .limit(20);
 
   res.json(shuffled);
 });

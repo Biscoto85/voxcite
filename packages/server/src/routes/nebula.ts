@@ -4,8 +4,7 @@ import { sessions } from '../db/schema.js';
 import { isNotNull } from 'drizzle-orm';
 import { buildNebulaData } from '../services/nebula.js';
 import type { AxisId } from '@voxcite/shared';
-
-const VALID_AXES: AxisId[] = ['societal', 'economic', 'authority', 'ecology', 'sovereignty'];
+import { ALL_AXES } from '../utils/helpers.js';
 
 export const nebulaRouter = Router();
 
@@ -14,8 +13,8 @@ nebulaRouter.get('/', async (req, res) => {
   const xAxis = (req.query.xAxis as string) || 'societal';
   const yAxis = (req.query.yAxis as string) || 'economic';
 
-  if (!VALID_AXES.includes(xAxis as AxisId) || !VALID_AXES.includes(yAxis as AxisId)) {
-    res.status(400).json({ error: 'Invalid axis. Valid: ' + VALID_AXES.join(', ') });
+  if (!ALL_AXES.includes(xAxis as AxisId) || !ALL_AXES.includes(yAxis as AxisId)) {
+    res.status(400).json({ error: 'Invalid axis. Valid: ' + ALL_AXES.join(', ') });
     return;
   }
 

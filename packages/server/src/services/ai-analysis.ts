@@ -3,8 +3,7 @@ import type { CompassPosition, AxisId } from '@voxcite/shared';
 import { AXES } from '@voxcite/shared';
 import type { PopulationStats, UserPercentiles } from './population.js';
 import type { ResponseSignals } from './response-signals.js';
-
-const ALL_AXES: AxisId[] = ['societal', 'economic', 'authority', 'ecology', 'sovereignty'];
+import { ALL_AXES, extractClaudeText, extractJSON } from '../utils/helpers.js';
 
 interface PartyInput {
   id: string;
@@ -251,11 +250,10 @@ export async function runAiAnalysis(input: AnalysisInput): Promise<AiAnalysisRes
     messages: [{ role: 'user', content: prompt }],
   });
 
-  const text = response.content[0].type === 'text' ? response.content[0].text : '';
+  const text = extractClaudeText(response);
 
   try {
-    const cleaned = text.replace(/^```(?:json)?\s*\n?/i, '').replace(/\n?```\s*$/i, '').trim();
-    return JSON.parse(cleaned) as AiAnalysisResult;
+    return JSON.parse(extractJSON(text)) as AiAnalysisResult;
   } catch {
     return {
       summary: text.slice(0, 500),
