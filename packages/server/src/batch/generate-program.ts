@@ -54,13 +54,8 @@ async function generateProgram() {
     .orderBy(desc(programVersions.generatedAt))
     .limit(1);
 
-  // Count unique contributors
-  const contributorCount = await db
-    .select({ count: sql<number>`count(distinct ${proposals.sessionId})` })
-    .from(proposals)
-    .where(inArray(proposals.source, validSources));
-
-  const totalContributors = Number(contributorCount[0]?.count ?? 0);
+  // Count proposals as proxy for contributors (anonymous — no session to deduplicate)
+  const totalContributors = allProposals.length;
 
   // Build prompt
   const domainBlocks = allDomains.map((d) => {

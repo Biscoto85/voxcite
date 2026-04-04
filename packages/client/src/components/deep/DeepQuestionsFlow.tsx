@@ -69,7 +69,7 @@ export function DeepQuestionsFlow({
       const deepQs = await deepQsRes.json();
       const allQuestions = [...onboardingQs, ...deepQs];
 
-      const allResponses = saved.map((r) => ({ questionId: r.questionId, value: r.value }));
+      const allResponses = saved.map((r) => ({ questionId: r.questionId, value: r.value as -2 | -1 | 0 | 1 | 2 }));
       const newPosition = calculatePosition(allResponses, allQuestions);
       onPositionUpdate(newPosition);
     } catch {
