@@ -23,7 +23,7 @@ try {
   const data = yaml.load(raw) as { aggregates: Array<{ id: string; position: Record<string, number> }> };
   for (const agg of data.aggregates) {
     const key = agg.id.replace('aggregate_', '');
-    mediaAggregates[key] = agg.position as CompassPosition;
+    mediaAggregates[key] = agg.position as unknown as CompassPosition;
   }
 } catch { /* will work without media data */ }
 

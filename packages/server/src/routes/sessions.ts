@@ -2,6 +2,7 @@ import { Router } from 'express';
 import { db } from '../db/index.js';
 import { sessions, responses, questions } from '../db/schema.js';
 import { eq } from 'drizzle-orm';
+import type { AxisId } from '@voxcite/shared';
 import { calculatePosition } from '../services/scoring.js';
 import { geolocateIP, isPostalCodePlausible } from '../services/geolocation.js';
 
@@ -73,7 +74,7 @@ sessionsRouter.post('/:id/responses', async (req, res) => {
     text: q.text,
     type: q.type as 'affirmation' | 'dilemme',
     axis: q.axis as 'societal' | 'economic' | 'authority' | 'ecology' | 'sovereignty' | 'both' | 'all',
-    axes: (q.axes as string[] | null) ?? undefined,
+    axes: (q.axes as AxisId[] | null) ?? undefined,
     polarity: q.polarity as -1 | 1,
     domain: q.domainId,
     phase: q.phase as 'onboarding' | 'deep',

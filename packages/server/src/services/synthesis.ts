@@ -3,6 +3,9 @@ import type { CompassPosition, Quadrant, CollectiveSynthesis } from '@voxcite/sh
 interface OpinionRow {
   positionSocietal: number;
   positionEconomic: number;
+  positionAuthority: number;
+  positionEcology: number;
+  positionSovereignty: number;
 }
 
 function getQuadrant(p: CompassPosition): Quadrant {
@@ -24,13 +27,19 @@ export function aggregateOpinions(
     (acc, o) => ({
       societal: acc.societal + o.positionSocietal,
       economic: acc.economic + o.positionEconomic,
+      authority: acc.authority + o.positionAuthority,
+      ecology: acc.ecology + o.positionEcology,
+      sovereignty: acc.sovereignty + o.positionSovereignty,
     }),
-    { societal: 0, economic: 0 },
+    { societal: 0, economic: 0, authority: 0, ecology: 0, sovereignty: 0 },
   );
 
   const mean: CompassPosition = {
     societal: total > 0 ? sum.societal / total : 0,
     economic: total > 0 ? sum.economic / total : 0,
+    authority: total > 0 ? sum.authority / total : 0,
+    ecology: total > 0 ? sum.ecology / total : 0,
+    sovereignty: total > 0 ? sum.sovereignty / total : 0,
   };
 
   // Quadrant counts
@@ -42,7 +51,7 @@ export function aggregateOpinions(
   };
 
   for (const o of opinions) {
-    const q = getQuadrant({ societal: o.positionSocietal, economic: o.positionEconomic });
+    const q = getQuadrant({ societal: o.positionSocietal, economic: o.positionEconomic, authority: o.positionAuthority, ecology: o.positionEcology, sovereignty: o.positionSovereignty });
     quadrantCounts[q]++;
   }
 
@@ -59,7 +68,7 @@ export function aggregateOpinions(
     distribution: {
       mean,
       median: mean, // TODO: compute real median
-      stdDev: { societal: 0, economic: 0 }, // TODO: compute real std dev
+      stdDev: { societal: 0, economic: 0, authority: 0, ecology: 0, sovereignty: 0 }, // TODO: compute real std dev
     },
     quadrants,
   };
