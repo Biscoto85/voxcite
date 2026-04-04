@@ -122,7 +122,7 @@ Réponds UNIQUEMENT avec le JSON.`;
   try {
     parsed = JSON.parse(extractJSON(rawText));
   } catch {
-    console.error('[batch] Failed to parse program JSON:', text.slice(0, 500));
+    console.error('[batch] Failed to parse program JSON:', rawText.slice(0, 500));
     return;
   }
 
