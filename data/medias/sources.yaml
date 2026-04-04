@@ -1,0 +1,239 @@
+# VoxCité — Données de référence : Sources médiatiques françaises
+#
+# Positionnement éditorial sur les 5 axes.
+# Ces positions reflètent la ligne éditoriale dominante de chaque source,
+# pas la diversité des opinions qui y sont exprimées.
+#
+# IMPORTANT : Ces positions sont des estimations éditoriales.
+# Elles sont transparentes et publiées pour être débattues.
+
+# ── Télévision ──────────────────────────────────────────────────────
+
+sources:
+
+  - id: tf1
+    label: "TF1 / LCI"
+    type: tv
+    position_1d: 0.2
+    position:
+      societal: -0.1
+      economic: 0.3
+      authority: -0.2
+      ecology: -0.1
+      sovereignty: 0.1
+    owner: "Bouygues"
+
+  - id: france2
+    label: "France 2 / France Info TV"
+    type: tv
+    position_1d: -0.1
+    position:
+      societal: 0.2
+      economic: 0.1
+      authority: -0.1
+      ecology: 0.1
+      sovereignty: 0.2
+    owner: "France Télévisions (État)"
+
+  - id: bfmtv
+    label: "BFM TV"
+    type: tv
+    position_1d: 0.2
+    position:
+      societal: -0.1
+      economic: 0.4
+      authority: -0.3
+      ecology: -0.2
+      sovereignty: 0.1
+    owner: "Altice (Patrick Drahi)"
+
+  - id: cnews
+    label: "CNews"
+    type: tv
+    position_1d: 0.6
+    position:
+      societal: -0.6
+      economic: 0.3
+      authority: -0.5
+      ecology: -0.4
+      sovereignty: -0.4
+    owner: "Vivendi (Bolloré)"
+
+# ── Presse écrite / web ─────────────────────────────────────────────
+
+  - id: lemonde
+    label: "Le Monde"
+    type: presse
+    position_1d: -0.1
+    position:
+      societal: 0.3
+      economic: 0.2
+      authority: 0.1
+      ecology: 0.2
+      sovereignty: 0.3
+    owner: "Groupe Le Monde"
+
+  - id: lefigaro
+    label: "Le Figaro"
+    type: presse
+    position_1d: 0.4
+    position:
+      societal: -0.3
+      economic: 0.5
+      authority: -0.3
+      ecology: -0.2
+      sovereignty: 0.1
+    owner: "Dassault"
+
+  - id: liberation
+    label: "Libération"
+    type: presse
+    position_1d: -0.4
+    position:
+      societal: 0.6
+      economic: -0.3
+      authority: 0.3
+      ecology: 0.3
+      sovereignty: 0.2
+    owner: "Groupe SFR Presse"
+
+  - id: mediapart
+    label: "Mediapart"
+    type: presse
+    position_1d: -0.5
+    position:
+      societal: 0.5
+      economic: -0.4
+      authority: 0.5
+      ecology: 0.4
+      sovereignty: -0.1
+    owner: "Indépendant (abonnés)"
+
+  - id: valeurs_actuelles
+    label: "Valeurs Actuelles"
+    type: presse
+    position_1d: 0.7
+    position:
+      societal: -0.7
+      economic: 0.4
+      authority: -0.6
+      ecology: -0.5
+      sovereignty: -0.5
+    owner: "Privinvest"
+
+# ── Radio ────────────────────────────────────────────────────────────
+
+  - id: franceinter
+    label: "France Inter"
+    type: radio
+    position_1d: -0.2
+    position:
+      societal: 0.3
+      economic: -0.1
+      authority: 0.2
+      ecology: 0.3
+      sovereignty: 0.2
+    owner: "Radio France (État)"
+
+  - id: europe1
+    label: "Europe 1"
+    type: radio
+    position_1d: 0.3
+    position:
+      societal: -0.2
+      economic: 0.3
+      authority: -0.3
+      ecology: -0.2
+      sovereignty: -0.1
+    owner: "Lagardère / Vivendi"
+
+  - id: rtl
+    label: "RTL"
+    type: radio
+    position_1d: 0.1
+    position:
+      societal: 0.0
+      economic: 0.2
+      authority: -0.1
+      ecology: 0.0
+      sovereignty: 0.1
+    owner: "M6 / RTL Group"
+
+# ── Web / réseaux ────────────────────────────────────────────────────
+
+  - id: reseaux_sociaux
+    label: "Réseaux sociaux (X, TikTok, Facebook)"
+    type: web
+    position_1d: 0.0
+    position:
+      societal: 0.0
+      economic: 0.0
+      authority: 0.0
+      ecology: 0.0
+      sovereignty: 0.0
+    owner: "Algorithmes"
+    # NOTE: Les réseaux sociaux n'ont pas de biais éditorial fixe.
+    # Leur biais est de RENFORCER celui de l'utilisateur (bulle algorithmique).
+    # Le positionnement 0 signifie : "miroir de tes propres biais".
+
+# ── Agrégats par type (pour l'analyse quand on connait seulement le type) ──
+# Utilisés quand le répondant déclare "TV" ou "Internet" sans préciser
+
+aggregates:
+
+  - id: aggregate_tv
+    label: "Télévision (moyenne)"
+    type: tv
+    position:
+      societal: -0.15
+      economic: 0.25
+      authority: -0.28
+      ecology: -0.15
+      sovereignty: 0.0
+
+  - id: aggregate_radio
+    label: "Radio (moyenne)"
+    type: radio
+    position:
+      societal: 0.03
+      economic: 0.13
+      authority: -0.07
+      ecology: 0.03
+      sovereignty: 0.07
+
+  - id: aggregate_presse
+    label: "Presse (moyenne)"
+    type: presse
+    position:
+      societal: 0.08
+      economic: 0.08
+      authority: 0.0
+      ecology: 0.04
+      sovereignty: 0.0
+
+  - id: aggregate_internet
+    label: "Internet / Réseaux sociaux"
+    type: web
+    position:
+      societal: 0.0
+      economic: 0.0
+      authority: 0.0
+      ecology: 0.0
+      sovereignty: 0.0
+
+# ── Ce que les positions des médias révèlent ────────────────────────
+#
+# Le paysage médiatique français est DÉSÉQUILIBRÉ :
+#
+# - La TV est massivement autoritaire (BFM -0.3, CNews -0.5, TF1 -0.2)
+#   et plutôt libérale économiquement → biais "droite autoritaire"
+# - La presse de référence (Le Monde, Libération) est plus progressiste
+#   et libertaire → biais "gauche ouverte"
+# - La radio est la plus centriste
+# - Les réseaux sociaux amplifient les positions existantes
+#
+# Conséquence pour VoxCité :
+# Si quelqu'un regarde principalement la TV et se retrouve autoritaire,
+# la question est : est-ce sa conviction profonde, ou le reflet de ce
+# qu'il entend tous les jours ?
+# C'est EXACTEMENT la question que l'esprit critique doit poser.

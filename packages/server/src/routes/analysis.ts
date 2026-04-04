@@ -4,11 +4,35 @@ import { AXES } from '@voxcite/shared';
 import { runAiAnalysis } from '../services/ai-analysis.js';
 import { getPopulationStats, getUserPercentiles } from '../services/population.js';
 import { db } from '../db/index.js';
-import { biases } from '../db/schema.js';
+import { biases, sessions } from '../db/schema.js';
+import { eq } from 'drizzle-orm';
+import fs from 'fs';
+import path from 'path';
+import yaml from 'js-yaml';
 
 export const analysisRouter = Router();
 
 const ALL_AXES: AxisId[] = ['societal', 'economic', 'authority', 'ecology', 'sovereignty'];
+
+// Load media aggregate positions from YAML
+const DATA_DIR = path.resolve(import.meta.dirname, '../../../../data');
+let mediaAggregates: Record<string, CompassPosition> = {};
+try {
+  const raw = fs.readFileSync(path.join(DATA_DIR, 'medias/sources.yaml'), 'utf-8');
+  const data = yaml.load(raw) as { aggregates: Array<{ id: string; position: Record<string, number> }> };
+  for (const agg of data.aggregates) {
+    const key = agg.id.replace('aggregate_', '');
+    mediaAggregates[key] = agg.position as CompassPosition;
+  }
+} catch { /* will work without media data */ }
+
+// Map info source to aggregate key
+const SOURCE_TO_AGGREGATE: Record<string, string> = {
+  tv: 'tv',
+  internet: 'internet',
+  radio: 'radio',
+  journal: 'presse',
+};
 
 interface PartyInput {
   id: string;
@@ -70,6 +94,25 @@ analysisRouter.post('/', async (req, res) => {
     return;
   }
 
+  // Fetch session info (source, perceived bias) if sessionId provided
+  let infoSource: string | undefined;
+  let perceivedBias: string | undefined;
+  let mediaPosition: CompassPosition | undefined;
+
+  if (sessionId) {
+    const [session] = await db.select().from(sessions).where(eq(sessions.id, sessionId));
+    if (session) {
+      infoSource = session.infoSource ?? undefined;
+      perceivedBias = session.perceivedBias ?? undefined;
+
+      // Resolve media aggregate position
+      if (infoSource) {
+        const aggKey = SOURCE_TO_AGGREGATE[infoSource] || infoSource;
+        mediaPosition = mediaAggregates[aggKey];
+      }
+    }
+  }
+
   // Try AI analysis first
   if (process.env.ANTHROPIC_API_KEY) {
     try {
@@ -83,18 +126,24 @@ analysisRouter.post('/', async (req, res) => {
         parties,
         populationStats,
         percentiles,
+        infoSource,
+        perceivedBias,
+        mediaPosition,
       });
 
-      // Store biases in DB if sessionId provided
+      // Store biases in DB
       if (sessionId && result.biases.length > 0) {
         for (const bias of result.biases) {
           await db.insert(biases).values({
             sessionId,
+            category: bias.category,
             biasType: bias.biasType,
             axis: bias.axis,
             description: bias.description,
             strength: bias.strength,
+            detectedBy: 'ai',
             suggestedContent: bias.suggestedContent,
+            suggestedSource: bias.suggestedSource ?? null,
           });
         }
       }

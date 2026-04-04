@@ -81,9 +81,11 @@ export const sessions = pgTable('sessions', {
   positionEcology: real('position_ecology'),
   positionSovereignty: real('position_sovereignty'),
   onboardingCompleted: boolean('onboarding_completed').notNull().default(false),
-  postalCode: text('postal_code'),                         // code postal du répondant
-  ipCountry: text('ip_country'),                           // pays déduit de l'IP
-  ipRegion: text('ip_region'),                             // région déduite de l'IP
+  postalCode: text('postal_code'),
+  infoSource: text('info_source'),                         // 'internet' | 'tv' | 'radio' | 'journal' | 'autre'
+  perceivedBias: text('perceived_bias'),                   // 'gauche' | 'droite' | 'neutre' | 'les_deux'
+  ipCountry: text('ip_country'),
+  ipRegion: text('ip_region'),
   deviceFingerprint: text('device_fingerprint'),
   shareCount: integer('share_count').notNull().default(0),
 });
@@ -98,16 +100,22 @@ export const responses = pgTable('responses', {
   createdAt: timestamp('created_at').notNull().defaultNow(),
 });
 
-// ── Biais idéologiques identifiés par l'IA ──
+// ── Biais identifiés ──
+// 2 catégories :
+//   'media' = biais résultant des sources d'information (bulle informationnelle)
+//   'values' = biais résultant des valeurs/histoire personnelle (cohérence interne)
 
 export const biases = pgTable('biases', {
   id: uuid('id').primaryKey().defaultRandom(),
   sessionId: uuid('session_id').references(() => sessions.id).notNull(),
-  biasType: text('bias_type').notNull(),          // ex: "confirmation", "ancrage", "cadrage"
+  category: text('category').notNull(),            // 'media' | 'values'
+  biasType: text('bias_type').notNull(),           // ex: "bulle_info", "confirmation", "cadrage", "tribalisme"
   axis: text('axis').notNull(),                    // axe concerné
-  description: text('description').notNull(),      // description du biais
-  strength: real('strength').notNull(),            // 0-1, force du biais
-  suggestedContent: text('suggested_content'),     // contenu à proposer pour l'esprit critique
+  description: text('description').notNull(),
+  strength: real('strength').notNull(),            // 0-1
+  detectedBy: text('detected_by').notNull(),       // 'rules' | 'ai' — traçabilité
+  suggestedContent: text('suggested_content'),     // contenu pour l'esprit critique
+  suggestedSource: text('suggested_source'),       // source d'info opposée à proposer
   createdAt: timestamp('created_at').notNull().defaultNow(),
 });
 

@@ -9,17 +9,20 @@ export const sessionsRouter = Router();
 
 // POST / — créer une session anonyme avec code postal optionnel
 sessionsRouter.post('/', async (req, res) => {
-  const { postalCode } = req.body as { postalCode?: string };
+  const { postalCode, infoSource, perceivedBias } = req.body as {
+    postalCode?: string;
+    infoSource?: string;
+    perceivedBias?: string;
+  };
   const ip = req.ip ?? req.socket.remoteAddress ?? '';
 
-  // Géolocaliser l'IP
   const geo = await geolocateIP(ip);
-
-  // Vérifier la cohérence code postal / IP
   const plausible = postalCode ? isPostalCodePlausible(postalCode, geo) : true;
 
   const [session] = await db.insert(sessions).values({
     postalCode: postalCode ?? null,
+    infoSource: infoSource ?? null,
+    perceivedBias: perceivedBias ?? null,
     ipCountry: geo?.country ?? null,
     ipRegion: geo?.region ?? null,
   }).returning();

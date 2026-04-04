@@ -25,19 +25,18 @@ export function OnboardingFlow({ questions, parties, onComplete }: OnboardingFlo
   const currentQuestion = questions[currentIndex];
   const progress = currentIndex / questions.length;
 
-  const handlePostalSubmit = useCallback(async (code: string) => {
-    setPostalCode(code);
+  const handleProfileSubmit = useCallback(async (data: { postalCode: string; infoSource: string; perceivedBias: string }) => {
+    setPostalCode(data.postalCode);
     try {
       const res = await fetch('/api/sessions', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ postalCode: code }),
+        body: JSON.stringify(data),
       });
-      const data = await res.json();
-      setSessionId(data.id);
+      const result = await res.json();
+      setSessionId(result.id);
       setStep('questions');
     } catch {
-      // Create session without postal code
       setStep('questions');
     }
   }, []);
@@ -71,7 +70,7 @@ export function OnboardingFlow({ questions, parties, onComplete }: OnboardingFlo
   }, [currentQuestion, responses, currentIndex, questions, sessionId, onComplete]);
 
   if (step === 'postal') {
-    return <PostalCodeInput onSubmit={handlePostalSubmit} />;
+    return <PostalCodeInput onSubmit={handleProfileSubmit} />;
   }
 
   if (step === 'result' && position) {

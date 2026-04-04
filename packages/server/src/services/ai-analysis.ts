@@ -1,6 +1,6 @@
 import Anthropic from '@anthropic-ai/sdk';
 import type { CompassPosition, AxisId } from '@voxcite/shared';
-import type { AxisStats, PopulationStats, UserPercentiles } from './population.js';
+import type { PopulationStats, UserPercentiles } from './population.js';
 
 const ALL_AXES: AxisId[] = ['societal', 'economic', 'authority', 'ecology', 'sovereignty'];
 
@@ -11,19 +11,24 @@ interface PartyInput {
   position: CompassPosition;
 }
 
-interface AnalysisInput {
+export interface AnalysisInput {
   position: CompassPosition;
   parties: PartyInput[];
   populationStats: PopulationStats;
   percentiles: UserPercentiles;
+  infoSource?: string;       // 'tv' | 'internet' | 'radio' | 'journal' | 'autre'
+  perceivedBias?: string;    // 'gauche' | 'droite' | 'neutre' | 'les_deux'
+  mediaPosition?: CompassPosition; // position agrégée de la source d'info
 }
 
 export interface IdentifiedBias {
+  category: 'media' | 'values';
   biasType: string;
   axis: AxisId;
   description: string;
   strength: number;
   suggestedContent: string;
+  suggestedSource?: string;
 }
 
 export interface AiAnalysisResult {
@@ -34,26 +39,65 @@ export interface AiAnalysisResult {
   espritCritiquePistes: string[];
 }
 
-function buildPrompt(input: AnalysisInput): string {
-  const { position, parties, populationStats, percentiles } = input;
+// ── Media source labels ─────────────────────────────────────────────
 
-  // Sort parties by distance to user
+const SOURCE_LABELS: Record<string, string> = {
+  tv: 'la télévision',
+  internet: 'internet et les réseaux sociaux',
+  radio: 'la radio',
+  journal: 'la presse écrite/web',
+  autre: 'des sources variées',
+};
+
+const BIAS_LABELS: Record<string, string> = {
+  gauche: 'de gauche',
+  droite: 'de droite',
+  neutre: 'neutres',
+  les_deux: 'variées (gauche et droite)',
+};
+
+function buildPrompt(input: AnalysisInput): string {
+  const { position, parties, populationStats, percentiles, infoSource, perceivedBias, mediaPosition } = input;
+
   const ranked = parties.map((p) => {
-    const dist = Math.sqrt(
-      ALL_AXES.reduce((s, ax) => s + (position[ax] - p.position[ax]) ** 2, 0),
-    );
+    const dist = Math.sqrt(ALL_AXES.reduce((s, ax) => s + (position[ax] - p.position[ax]) ** 2, 0));
     return { ...p, distance: dist };
   }).sort((a, b) => a.distance - b.distance);
 
   const partyBlock = ranked.map((p) =>
-    `- ${p.abbreviation} (${p.label}) : sociétal=${p.position.societal.toFixed(2)}, économique=${p.position.economic.toFixed(2)}, autorité=${p.position.authority.toFixed(2)}, écologie=${p.position.ecology.toFixed(2)}, souveraineté=${p.position.sovereignty.toFixed(2)} → distance=${p.distance.toFixed(3)}`,
+    `- ${p.abbreviation} (${p.label}) : soc=${p.position.societal.toFixed(2)} éco=${p.position.economic.toFixed(2)} aut=${p.position.authority.toFixed(2)} écol=${p.position.ecology.toFixed(2)} souv=${p.position.sovereignty.toFixed(2)} → distance=${p.distance.toFixed(3)}`,
   ).join('\n');
 
   const statsBlock = ALL_AXES.map((ax) => {
     const s = populationStats.axes[ax];
     const pct = percentiles.axes[ax];
-    return `- ${ax} : répondant=${position[ax].toFixed(2)}, moyenne population=${s.mean.toFixed(2)}, écart-type=${s.stdDev.toFixed(2)}, percentile=${pct}% (${pct > 50 ? 'au-dessus' : 'en-dessous'} de la médiane)`;
+    return `- ${ax} : répondant=${position[ax].toFixed(2)}, moy.pop=${s.mean.toFixed(2)}, σ=${s.stdDev.toFixed(2)}, percentile=${pct}%`;
   }).join('\n');
+
+  // Media bias section
+  let mediaBiasBlock = '';
+  if (infoSource && mediaPosition) {
+    const mediaDeltas = ALL_AXES.map((ax) => {
+      const delta = position[ax] - mediaPosition[ax];
+      return `${ax}: répondant=${position[ax].toFixed(2)} vs média=${mediaPosition[ax].toFixed(2)} (écart=${delta > 0 ? '+' : ''}${delta.toFixed(2)})`;
+    }).join('\n  ');
+
+    mediaBiasBlock = `
+
+SOURCE D'INFORMATION PRINCIPALE : ${SOURCE_LABELS[infoSource] || infoSource}
+Le répondant pense que ses sources sont : ${BIAS_LABELS[perceivedBias || ''] || perceivedBias || 'non renseigné'}
+
+POSITION ÉDITORIALE MOYENNE DE SA SOURCE D'INFO (sur les 5 axes) :
+  ${mediaBiasBlock ? mediaDeltas : 'Non disponible'}
+
+ANALYSE DU BIAIS MÉDIATIQUE :
+Compare la position du répondant à celle de sa source d'info.
+- Si les positions sont proches → la source renforce ses convictions (bulle informationnelle)
+- Si les positions divergent → le répondant a des convictions qui résistent à sa bulle info
+- Si le répondant pense que ses sources sont "neutres" mais que la source a un biais mesurable → biais de perception
+
+Note : les réseaux sociaux (internet) ont un effet miroir — ils renforcent les positions existantes via les algorithmes.`;
+  }
 
   return `Tu es l'analyste politique de VoxCité, une application citoyenne française.
 Tu analyses le profil d'un répondant sur 5 axes politiques (échelle -1 à +1).
@@ -73,34 +117,49 @@ ${statsBlock}
 
 PARTIS POLITIQUES (triés par proximité) :
 ${partyBlock}
+${mediaBiasBlock}
 
 INSTRUCTIONS :
-1. Tutoie le répondant. Sois direct, factuel, sans jargon.
+1. Tutoie le répondant. Sois direct, factuel, sans jargon. Pas de flatterie.
 2. Produis un JSON strict (pas de markdown, pas de texte autour) avec cette structure :
 
 {
-  "summary": "2-3 phrases d'accroche percutantes sur le profil global du répondant. Mentionne le parti le plus proche et la principale surprise.",
-  "vsCitoyens": "3-4 phrases comparant le répondant à la population. Utilise les percentiles. Ex: 'Tu es plus libéral que 78% des répondants.' Identifie où il est dans la norme et où il est atypique.",
-  "vsPartis": "3-4 phrases sur la proximité avec les partis. Mentionne le plus proche, le plus éloigné, et au moins une surprise (un accord inattendu ou un désaccord avec le parti le plus proche).",
+  "summary": "2-3 phrases d'accroche. Mentionne le trait le plus marqué, le parti le plus proche, et une surprise.",
+  "vsCitoyens": "3-4 phrases avec les percentiles. Identifie où le répondant est dans la norme et où il est atypique. Utilise des formulations comme 'Tu es plus X que Y% des répondants.'",
+  "vsPartis": "3-4 phrases. Parti le plus proche, parti le plus éloigné, au moins une surprise (accord inattendu ou désaccord avec le parti le plus proche). Mentionne les axes précis.",
   "biases": [
     {
-      "biasType": "type de biais cognitif/idéologique (ex: confirmation, ancrage, cadrage, tribalisme, moralisation)",
-      "axis": "axe concerné (societal/economic/authority/ecology/sovereignty)",
-      "description": "description concrète du biais potentiel, en lien avec les positions extrêmes ou incohérences du répondant",
+      "category": "media ou values",
+      "biasType": "type (voir liste ci-dessous)",
+      "axis": "axe concerné",
+      "description": "description concrète en 1-2 phrases",
       "strength": 0.7,
-      "suggestedContent": "type de contenu factuel à proposer pour challenger ce biais (ex: 'Données sur l'efficacité économique des services publics privatisés en Europe')"
+      "suggestedContent": "contenu factuel et vérifiable à proposer",
+      "suggestedSource": "nom d'un média aux positions opposées à consulter (optionnel)"
     }
   ],
-  "espritCritiquePistes": ["3-5 pistes concrètes de sujets ou faits vérifiés qui challengeraient les convictions du répondant, basées sur ses positions les plus extrêmes"]
+  "espritCritiquePistes": ["3-5 sujets concrets qui challengeraient les convictions du répondant"]
 }
 
-RÈGLES POUR LES BIAIS :
-- Identifie 2-4 biais potentiels basés sur les positions extrêmes (>0.5 ou <-0.5)
-- Un score extrême sur un axe suggère un biais de confirmation sur ce sujet
-- Des positions contradictoires entre axes suggèrent un biais de cadrage
-- La proximité forte avec un seul parti suggère un biais de tribalisme
+TYPES DE BIAIS À IDENTIFIER :
+
+Catégorie "media" (biais lié aux sources d'information) :
+- "bulle_info" : la position du répondant est très proche de celle de sa source d'info → il baigne dans une bulle
+- "perception_erronee" : le répondant pense que ses sources sont neutres/de gauche/de droite mais la réalité mesurée est différente
+- "echo_algorithmique" : si source = internet/réseaux sociaux, les algorithmes renforcent ses positions existantes
+
+Catégorie "values" (biais lié aux convictions profondes) :
+- "confirmation" : position extrême (>0.6 ou <-0.6) sur un axe → tendance à ne retenir que les infos qui confirment
+- "cadrage" : positions contradictoires entre 2 axes (ex: libertaire + interventionniste fort → comment concilier liberté individuelle et État fort ?)
+- "tribalisme" : distance très faible avec un seul parti → risque d'identification partisane qui empêche la nuance
+- "moralisation" : position extrême sur l'axe sociétal → tendance à moraliser le débat plutôt qu'à argumenter
+
+RÈGLES :
+- Identifie 2-5 biais (au moins 1 de chaque catégorie si source d'info renseignée)
 - strength: 0.3=léger, 0.5=modéré, 0.7=marqué, 0.9=très marqué
-- suggestedContent doit être FACTUEL et VÉRIFIABLE, jamais idéologique
+- suggestedContent : TOUJOURS factuel et vérifiable
+- suggestedSource : un média RÉEL dont la ligne éditoriale est OPPOSÉE à la position du répondant sur l'axe du biais
+- Les pistes esprit critique doivent être CONCRÈTES (pas "renseigne-toi sur X" mais "les données de l'INSEE montrent que..." ou "le rapport du GIEC 2025 indique que...")
 
 Réponds UNIQUEMENT avec le JSON, rien d'autre.`;
 }
@@ -119,17 +178,15 @@ export async function runAiAnalysis(input: AnalysisInput): Promise<AiAnalysisRes
 
   const response = await client.messages.create({
     model: 'claude-sonnet-4-20250514',
-    max_tokens: 2000,
+    max_tokens: 2500,
     messages: [{ role: 'user', content: prompt }],
   });
 
   const text = response.content[0].type === 'text' ? response.content[0].text : '';
 
   try {
-    const result = JSON.parse(text) as AiAnalysisResult;
-    return result;
+    return JSON.parse(text) as AiAnalysisResult;
   } catch {
-    // If JSON parsing fails, return the raw text as summary
     return {
       summary: text.slice(0, 500),
       vsCitoyens: '',
