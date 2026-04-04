@@ -12,7 +12,8 @@ Toutes les questions utilisent une échelle à 5 niveaux :
 - `id` : identifiant unique
 - `text` : la question telle qu'affichée à l'utilisateur
 - `type` : `affirmation` ou `dilemme`
-- `axis` : `societal`, `economic` ou `both`
+- `axis` : axe principal — `societal`, `economic`, `authority`, `ecology`, `sovereignty`, `both` (sociétal+économique), `all` (les 5 axes)
+- `axes` : (optionnel) liste d'axes pour les questions multi-axes, ex. `["societal", "authority"]`
 - `polarity` : sens du score quand l'utilisateur répond positivement (+1 = d'accord pousse vers progressiste/libéral, -1 = d'accord pousse vers conservateur/interventionniste)
 - `domain` : domaine thématique principal
 - `phase` : `onboarding` (10 premières questions) ou `deep` (approfondissement)
@@ -84,7 +85,7 @@ Ces 10 questions produisent la première image du positionnement. Elles sont pos
 - **id** : `onb-06`
 - **text** : "L'État devrait pouvoir accéder aux communications privées pour lutter contre le terrorisme et la criminalité."
 - **type** : affirmation
-- **axis** : societal
+- **axis** : authority
 - **polarity** : -1
 - **domain** : securite
 - **phase** : onboarding
@@ -117,7 +118,7 @@ Ces 10 questions produisent la première image du positionnement. Elles sont pos
 - **id** : `onb-09`
 - **text** : "Préfères-tu que la France privilégie sa souveraineté nationale, ou qu'elle s'intègre davantage dans une Europe fédérale ?"
 - **type** : dilemme
-- **axis** : both
+- **axis** : sovereignty
 - **polarity** : +1
 - **domain** : international
 - **phase** : onboarding
@@ -129,7 +130,8 @@ Ces 10 questions produisent la première image du positionnement. Elles sont pos
 - **id** : `onb-10`
 - **text** : "La transition écologique doit passer par des interdictions (voitures polluantes, pesticides), même si ça contraint les libertés individuelles et coûte des emplois."
 - **type** : affirmation
-- **axis** : both
+- **axis** : ecology
+- **axes** : ["ecology", "authority"]
 - **polarity** : +1
 - **domain** : environnement
 - **phase** : onboarding
@@ -294,7 +296,7 @@ Ces questions affinent le positionnement. Elles sont proposées après l'onboard
 - **id** : `deep-securite-01`
 - **text** : "Les peines de prison devraient être beaucoup plus longues pour les récidivistes."
 - **type** : affirmation
-- **axis** : societal
+- **axis** : authority
 - **polarity** : -1
 - **domain** : securite
 - **phase** : deep
@@ -305,7 +307,7 @@ Ces questions affinent le positionnement. Elles sont proposées après l'onboard
 - **id** : `deep-securite-02`
 - **text** : "La police devrait porter des caméras individuelles obligatoires lors de chaque intervention."
 - **type** : affirmation
-- **axis** : societal
+- **axis** : authority
 - **polarity** : +1
 - **domain** : securite
 - **phase** : deep
@@ -316,7 +318,7 @@ Ces questions affinent le positionnement. Elles sont proposées après l'onboard
 - **id** : `deep-securite-03`
 - **text** : "La justice est trop laxiste en France aujourd'hui."
 - **type** : affirmation
-- **axis** : societal
+- **axis** : authority
 - **polarity** : -1
 - **domain** : securite
 - **phase** : deep
@@ -328,6 +330,7 @@ Ces questions affinent le positionnement. Elles sont proposées après l'onboard
 - **text** : "Préfères-tu investir massivement dans la prévention (éducateurs, associations), ou dans les forces de l'ordre et les prisons ?"
 - **type** : dilemme
 - **axis** : both
+- **axes** : ["authority", "economic"]
 - **polarity** : +1
 - **domain** : securite
 - **phase** : deep
@@ -344,6 +347,7 @@ Ces questions affinent le positionnement. Elles sont proposées après l'onboard
 - **text** : "Un immigré qui travaille et paie ses impôts depuis 5 ans devrait être automatiquement régularisé."
 - **type** : affirmation
 - **axis** : both
+- **axes** : ["societal", "sovereignty"]
 - **polarity** : +1
 - **domain** : immigration
 - **phase** : deep
@@ -377,6 +381,7 @@ Ces questions affinent le positionnement. Elles sont proposées après l'onboard
 - **text** : "La double nationalité devrait être supprimée : on est français ou on ne l'est pas."
 - **type** : affirmation
 - **axis** : societal
+- **axes** : ["societal", "sovereignty"]
 - **polarity** : -1
 - **domain** : immigration
 - **phase** : deep
@@ -392,6 +397,7 @@ Ces questions affinent le positionnement. Elles sont proposées après l'onboard
 - **text** : "Le nucléaire est indispensable pour réussir la transition écologique."
 - **type** : affirmation
 - **axis** : economic
+- **axes** : ["economic", "ecology"]
 - **polarity** : +1
 - **domain** : environnement
 - **phase** : deep
@@ -402,7 +408,8 @@ Ces questions affinent le positionnement. Elles sont proposées après l'onboard
 - **id** : `deep-environnement-02`
 - **text** : "Il faudrait interdire la vente de viande issue de l'élevage intensif, même si ça fait monter les prix."
 - **type** : affirmation
-- **axis** : both
+- **axis** : ecology
+- **axes** : ["ecology", "economic"]
 - **polarity** : +1
 - **domain** : environnement
 - **phase** : deep
@@ -414,6 +421,7 @@ Ces questions affinent le positionnement. Elles sont proposées après l'onboard
 - **text** : "Les entreprises qui polluent devraient payer une taxe carbone très élevée, quitte à délocaliser."
 - **type** : affirmation
 - **axis** : economic
+- **axes** : ["economic", "ecology"]
 - **polarity** : -1
 - **domain** : environnement
 - **phase** : deep
@@ -425,6 +433,7 @@ Ces questions affinent le positionnement. Elles sont proposées après l'onboard
 - **text** : "Préfères-tu qu'on laisse chacun libre de ses choix de consommation, ou qu'on impose des normes écologiques strictes à tous ?"
 - **type** : dilemme
 - **axis** : both
+- **axes** : ["ecology", "authority"]
 - **polarity** : -1
 - **domain** : environnement
 - **phase** : deep
@@ -488,7 +497,7 @@ Ces questions affinent le positionnement. Elles sont proposées après l'onboard
 - **id** : `deep-numerique-01`
 - **text** : "Les réseaux sociaux devraient vérifier l'identité réelle de chaque utilisateur pour lutter contre le harcèlement."
 - **type** : affirmation
-- **axis** : societal
+- **axis** : authority
 - **polarity** : -1
 - **domain** : numerique
 - **phase** : deep
@@ -522,6 +531,7 @@ Ces questions affinent le positionnement. Elles sont proposées après l'onboard
 - **text** : "Les enfants de moins de 16 ans ne devraient pas avoir accès aux réseaux sociaux, même avec l'accord de leurs parents."
 - **type** : affirmation
 - **axis** : societal
+- **axes** : ["societal", "authority"]
 - **polarity** : -1
 - **domain** : numerique
 - **phase** : deep
@@ -537,6 +547,7 @@ Ces questions affinent le positionnement. Elles sont proposées après l'onboard
 - **text** : "Les citoyens devraient pouvoir déclencher un référendum sur n'importe quel sujet avec suffisamment de signatures (RIC)."
 - **type** : affirmation
 - **axis** : societal
+- **axes** : ["societal", "authority"]
 - **polarity** : +1
 - **domain** : democratie
 - **phase** : deep
@@ -569,7 +580,7 @@ Ces questions affinent le positionnement. Elles sont proposées après l'onboard
 - **id** : `deep-democratie-04`
 - **text** : "Préfères-tu un président fort qui peut décider vite, ou un parlement fort qui oblige au compromis ?"
 - **type** : dilemme
-- **axis** : societal
+- **axis** : authority
 - **polarity** : +1
 - **domain** : democratie
 - **phase** : deep
@@ -586,6 +597,7 @@ Ces questions affinent le positionnement. Elles sont proposées après l'onboard
 - **text** : "La France devrait augmenter son budget militaire à 3% du PIB, même si ça se fait au détriment des dépenses sociales."
 - **type** : affirmation
 - **axis** : both
+- **axes** : ["sovereignty", "economic"]
 - **polarity** : -1
 - **domain** : international
 - **phase** : deep
@@ -597,6 +609,7 @@ Ces questions affinent le positionnement. Elles sont proposées après l'onboard
 - **text** : "La France devrait arrêter de vendre des armes aux pays qui ne respectent pas les droits de l'homme."
 - **type** : affirmation
 - **axis** : societal
+- **axes** : ["societal", "sovereignty"]
 - **polarity** : +1
 - **domain** : international
 - **phase** : deep
@@ -608,6 +621,7 @@ Ces questions affinent le positionnement. Elles sont proposées après l'onboard
 - **text** : "Les accords de libre-échange (CETA, Mercosur) sont une bonne chose pour l'économie française."
 - **type** : affirmation
 - **axis** : economic
+- **axes** : ["economic", "sovereignty"]
 - **polarity** : +1
 - **domain** : international
 - **phase** : deep
@@ -618,7 +632,7 @@ Ces questions affinent le positionnement. Elles sont proposées après l'onboard
 - **id** : `deep-international-04`
 - **text** : "Préfères-tu que la France agisse seule pour défendre ses intérêts, ou qu'elle s'appuie sur des alliances internationales comme l'OTAN ou l'UE ?"
 - **type** : dilemme
-- **axis** : both
+- **axis** : sovereignty
 - **polarity** : +1
 - **domain** : international
 - **phase** : deep

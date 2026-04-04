@@ -25,8 +25,9 @@ export const themes = pgTable('themes', {
 export const questions = pgTable('questions', {
   id: text('id').primaryKey(),
   text: text('text').notNull(),
-  type: text('type').notNull(),
-  axis: text('axis').notNull(),
+  type: text('type').notNull(),           // 'affirmation' | 'dilemme'
+  axis: text('axis').notNull(),           // axe principal (rétrocompat)
+  axes: jsonb('axes'),                    // tableau d'axes spécifiques si multi-axes
   polarity: real('polarity').notNull(),
   domainId: text('domain_id').references(() => domains.id).notNull(),
   phase: text('phase').notNull(),
@@ -35,15 +36,18 @@ export const questions = pgTable('questions', {
 });
 
 // ── Partis politiques (seed depuis data/parties/parties.yaml) ──
+// Les 5 positions sont issues du fichier YAML (estimations éditoriales)
 
 export const partis = pgTable('partis', {
   id: text('id').primaryKey(),
   label: text('label').notNull(),
   abbreviation: text('abbreviation').notNull(),
-  position1d: real('position_1d').notNull(),              // -1 (gauche) → +1 (droite) — éditorial
-  positionSocietal: real('position_societal').notNull(),   // -1 (conservateur) → +1 (progressiste)
-  positionEconomic: real('position_economic').notNull(),   // -1 (interventionniste) → +1 (libéral)
-  positionAuthority: real('position_authority').notNull(), // -1 (autoritaire) → +1 (libertaire)
+  position1d: real('position_1d').notNull(),
+  positionSocietal: real('position_societal').notNull(),
+  positionEconomic: real('position_economic').notNull(),
+  positionAuthority: real('position_authority').notNull(),
+  positionEcology: real('position_ecology').notNull(),
+  positionSovereignty: real('position_sovereignty').notNull(),
   color: text('color').notNull(),
   leader: text('leader'),
   visibleOnCompass: boolean('visible_on_compass').notNull().default(true),
@@ -59,6 +63,8 @@ export const medias = pgTable('medias', {
   positionSocietal: real('position_societal').notNull(),
   positionEconomic: real('position_economic').notNull(),
   positionAuthority: real('position_authority').notNull(),
+  positionEcology: real('position_ecology').notNull(),
+  positionSovereignty: real('position_sovereignty').notNull(),
   owner: text('owner'),
   visibleOnCompass: boolean('visible_on_compass').notNull().default(true),
 });
@@ -68,10 +74,12 @@ export const medias = pgTable('medias', {
 export const sessions = pgTable('sessions', {
   id: uuid('id').primaryKey().defaultRandom(),
   createdAt: timestamp('created_at').notNull().defaultNow(),
-  position1d: real('position_1d'),                         // calculé depuis les réponses
+  position1d: real('position_1d'),
   positionSocietal: real('position_societal'),
   positionEconomic: real('position_economic'),
   positionAuthority: real('position_authority'),
+  positionEcology: real('position_ecology'),
+  positionSovereignty: real('position_sovereignty'),
   onboardingCompleted: boolean('onboarding_completed').notNull().default(false),
   deviceFingerprint: text('device_fingerprint'),
   shareCount: integer('share_count').notNull().default(0),
@@ -109,5 +117,7 @@ export const opinions = pgTable('opinions', {
   positionSocietal: real('position_societal').notNull(),
   positionEconomic: real('position_economic').notNull(),
   positionAuthority: real('position_authority').notNull(),
+  positionEcology: real('position_ecology').notNull(),
+  positionSovereignty: real('position_sovereignty').notNull(),
   createdAt: timestamp('created_at').notNull().defaultNow(),
 });

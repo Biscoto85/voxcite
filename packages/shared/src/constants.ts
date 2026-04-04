@@ -1,47 +1,55 @@
-import type { Quadrant, Octant } from './types.js';
+import type { Quadrant, Octant, AxisId } from './types.js';
 
-// ── Axes du compas ─────────────────────────────────────────────────
+// ── Les 5 axes ─────────────────────────────────────────────────────
 
-export const AXIS_LABELS = {
+export const AXES: Record<AxisId, { negative: string; positive: string; description: string }> = {
   societal: {
     negative: 'Conservateur',
     positive: 'Progressiste',
+    description: 'Rapport aux valeurs, aux moeurs et aux évolutions de société',
   },
   economic: {
     negative: 'Interventionniste',
     positive: 'Libéral',
+    description: 'Rapport à l\'État dans l\'économie, au marché et à la redistribution',
   },
   authority: {
     negative: 'Autoritaire',
     positive: 'Libertaire',
+    description: 'Rapport au pouvoir, au contrôle, à la hiérarchie et aux libertés individuelles',
   },
-} as const;
-
-// ── Axes candidats pour évolutions futures ─────────────────────────
-// Documentés ici pour référence, pas encore implémentés.
-
-export const FUTURE_AXES = [
-  {
-    id: 'ecology',
+  ecology: {
     negative: 'Productiviste',
     positive: 'Écologiste',
     description: 'Rapport à la croissance, aux limites planétaires et à la sobriété',
   },
-  {
-    id: 'sovereignty',
+  sovereignty: {
     negative: 'Souverainiste',
     positive: 'Mondialiste',
     description: 'Rapport aux frontières, à la nation et aux institutions internationales',
   },
-  {
-    id: 'pragmatism',
-    negative: 'Idéologique',
-    positive: 'Pragmatique',
-    description: 'Rapport au compromis, à la pureté doctrinale et au réalisme politique',
-  },
+};
+
+/** Rétrocompatibilité */
+export const AXIS_LABELS = {
+  societal: { negative: AXES.societal.negative, positive: AXES.societal.positive },
+  economic: { negative: AXES.economic.negative, positive: AXES.economic.positive },
+  authority: { negative: AXES.authority.negative, positive: AXES.authority.positive },
+  ecology: { negative: AXES.ecology.negative, positive: AXES.ecology.positive },
+  sovereignty: { negative: AXES.sovereignty.negative, positive: AXES.sovereignty.positive },
+} as const;
+
+// ── Paires d'axes suggérées (pour le sélecteur de vue) ─────────────
+
+export const SUGGESTED_VIEWS = [
+  { x: 'societal' as AxisId, y: 'economic' as AxisId, label: 'Compas classique' },
+  { x: 'societal' as AxisId, y: 'authority' as AxisId, label: 'Société × Autorité' },
+  { x: 'economic' as AxisId, y: 'ecology' as AxisId, label: 'Économie × Écologie' },
+  { x: 'sovereignty' as AxisId, y: 'economic' as AxisId, label: 'Souveraineté × Économie' },
+  { x: 'authority' as AxisId, y: 'ecology' as AxisId, label: 'Autorité × Écologie' },
 ] as const;
 
-// ── Quadrants (vue 2D) ─────────────────────────────────────────────
+// ── Quadrants (vue 2D sociétal × économique) ───────────────────────
 
 export const QUADRANT_LABELS: Record<Quadrant, string> = {
   progressiste_liberal: 'Progressiste-Libéral',
@@ -50,7 +58,6 @@ export const QUADRANT_LABELS: Record<Quadrant, string> = {
   conservateur_interventionniste: 'Conservateur-Interventionniste',
 };
 
-// Estimations initiales (à remplacer par les vraies données)
 export const QUADRANT_POPULATION_ESTIMATE: Record<Quadrant, number> = {
   progressiste_liberal: 18,
   conservateur_liberal: 15,
@@ -58,7 +65,7 @@ export const QUADRANT_POPULATION_ESTIMATE: Record<Quadrant, number> = {
   conservateur_interventionniste: 32,
 };
 
-// ── Octants (vue 3D) ──────────────────────────────────────────────
+// ── Octants (vue 3D sociétal × économique × autorité) ──────────────
 
 export const OCTANT_LABELS: Record<Octant, string> = {
   progressiste_liberal_libertaire: 'Progressiste-Libéral-Libertaire',
@@ -73,8 +80,8 @@ export const OCTANT_LABELS: Record<Octant, string> = {
 
 // ── Onboarding ─────────────────────────────────────────────────────
 
-export const ONBOARDING_PHASE1_COUNT = 5; // questions sur axe 1D
-export const ONBOARDING_PHASE3_COUNT = 5; // questions sur compas 2D
+export const ONBOARDING_PHASE1_COUNT = 5;
+export const ONBOARDING_PHASE3_COUNT = 5;
 export const ONBOARDING_TOTAL = 10;
 
 // ── Réponses ───────────────────────────────────────────────────────

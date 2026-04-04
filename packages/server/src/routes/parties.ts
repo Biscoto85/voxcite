@@ -17,6 +17,8 @@ partisRouter.get('/', async (_req, res) => {
       societal: p.positionSocietal,
       economic: p.positionEconomic,
       authority: p.positionAuthority,
+      ecology: p.positionEcology,
+      sovereignty: p.positionSovereignty,
     },
     color: p.color,
     leader: p.leader,

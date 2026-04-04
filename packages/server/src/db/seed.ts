@@ -32,7 +32,7 @@ interface RawParti {
   label: string;
   abbreviation: string;
   position_1d: number;
-  position: { societal: number; economic: number; authority: number };
+  position: { societal: number; economic: number; authority: number; ecology: number; sovereignty: number };
   color: string;
   leader?: string;
 }
@@ -50,6 +50,7 @@ interface ParsedQuestion {
   text: string;
   type: string;
   axis: string;
+  axes?: string[];
   polarity: number;
   domain: string;
   phase: string;
@@ -81,6 +82,15 @@ function parseQuestions(): ParsedQuestion[] {
     q.domain = match('domain') ?? '';
     q.phase = match('phase') ?? 'deep';
     q.weight = parseFloat(match('weight') ?? '1.0');
+
+    const axesRaw = match('axes');
+    if (axesRaw) {
+      try {
+        q.axes = JSON.parse(axesRaw);
+      } catch {
+        // ignore parse errors
+      }
+    }
 
     const optionsRaw = match('options');
     if (optionsRaw) {
@@ -147,6 +157,8 @@ async function main() {
       positionSocietal: p.position.societal,
       positionEconomic: p.position.economic,
       positionAuthority: p.position.authority,
+      positionEcology: p.position.ecology,
+      positionSovereignty: p.position.sovereignty,
       color: p.color,
       leader: p.leader ?? null,
     });
@@ -166,6 +178,7 @@ async function main() {
       domainId: q.domain,
       phase: q.phase,
       weight: q.weight,
+      axes: q.axes ?? null,
       options: q.options ?? null,
     });
   }

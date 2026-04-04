@@ -1,24 +1,37 @@
-// ── Les 3 axes du compas VoxCité ───────────────────────────────────
+// ── Les 5 axes du compas VoxCité ───────────────────────────────────
 //
 // Vue 1D : gauche ↔ droite (éditorial, défini manuellement)
-// Vue 2D : sociétal × économique (calculé depuis les réponses/programmes)
-// Vue 3D : sociétal × économique × autorité (idem, plus fin)
+// Vue 2D : sociétal × économique (les 2 axes fondateurs)
+// Vue 3D : + autorité (pour l'analyse approfondie)
+// Vue 5D : + écologie + souveraineté (profil complet)
 //
-// Axes possibles pour évolutions futures :
-//   - Écologiste ↔ Productiviste (rapport à la croissance et aux limites)
-//   - Souverainiste ↔ Mondialiste (rapport aux frontières et institutions internationales)
-//   - Pragmatique ↔ Idéologique (rapport au compromis et à la pureté doctrinale)
+// L'utilisateur choisit quels axes afficher.
+// L'onboarding calcule les 5 axes dès les 10 premières questions.
 
 // ── Positions sur le compas ────────────────────────────────────────
 
 export interface CompassPosition {
-  societal: number;  // -1 (conservateur) → +1 (progressiste)
-  economic: number;  // -1 (interventionniste) → +1 (libéral)
-  authority: number; // -1 (autoritaire) → +1 (libertaire)
+  societal: number;     // -1 (conservateur) → +1 (progressiste)
+  economic: number;     // -1 (interventionniste) → +1 (libéral)
+  authority: number;    // -1 (autoritaire) → +1 (libertaire)
+  ecology: number;      // -1 (productiviste) → +1 (écologiste)
+  sovereignty: number;  // -1 (souverainiste) → +1 (mondialiste)
 }
 
-/** Vue 2D (sans l'axe autorité) — pour l'affichage compas classique */
-export type CompassPosition2D = Pick<CompassPosition, 'societal' | 'economic'>;
+/** Les 5 axes possibles */
+export type AxisId = keyof CompassPosition;
+
+/** Vue 2D : n'importe quelle paire d'axes */
+export interface CompassView2D {
+  xAxis: AxisId;
+  yAxis: AxisId;
+}
+
+/** Vue 2D classique (par défaut) */
+export const DEFAULT_VIEW_2D: CompassView2D = {
+  xAxis: 'societal',
+  yAxis: 'economic',
+};
 
 // ── Domaines thématiques ───────────────────────────────────────────
 
@@ -30,6 +43,10 @@ export interface DomainDimension {
   exemples_liberal?: string;
   exemples_autoritaire?: string;
   exemples_libertaire?: string;
+  exemples_productiviste?: string;
+  exemples_ecologiste?: string;
+  exemples_souverainiste?: string;
+  exemples_mondialiste?: string;
 }
 
 export interface ThemeRef {
@@ -45,13 +62,27 @@ export interface Domain {
   dimension_societale: DomainDimension;
   dimension_economique: DomainDimension;
   dimension_autorite?: DomainDimension;
+  dimension_ecologie?: DomainDimension;
+  dimension_souverainete?: DomainDimension;
   themes_permanents: ThemeRef[];
 }
 
 // ── Questions de positionnement ────────────────────────────────────
 
 export type QuestionType = 'affirmation' | 'dilemme';
-export type QuestionAxis = 'societal' | 'economic' | 'authority' | 'both' | 'all';
+
+/**
+ * Axes qu'une question mesure :
+ * - Un axe unique : 'societal', 'economic', 'authority', 'ecology', 'sovereignty'
+ * - 'both' : sociétal + économique (rétrocompat)
+ * - 'all' : les 5 axes
+ * - Tableau explicite : ['societal', 'authority'] etc.
+ */
+export type QuestionAxis =
+  | AxisId
+  | 'both'   // sociétal + économique (rétrocompat)
+  | 'all';   // les 5 axes
+
 export type QuestionPhase = 'onboarding' | 'deep';
 
 export interface Question {
@@ -59,11 +90,12 @@ export interface Question {
   text: string;
   type: QuestionType;
   axis: QuestionAxis;
+  axes?: AxisId[];       // si la question mesure une combinaison spécifique (priorité sur axis)
   polarity: -1 | 1;
   domain: string;
   phase: QuestionPhase;
   weight: number;
-  options?: string[]; // pour les dilemmes
+  options?: string[];    // pour les dilemmes
 }
 
 // ── Réponses ───────────────────────────────────────────────────────
@@ -80,7 +112,7 @@ export interface Party {
   label: string;
   abbreviation: string;
   position1d: number;         // -1 (gauche) → +1 (droite) — éditorial
-  position: CompassPosition;  // compas 3D complet
+  position: CompassPosition;  // 5 axes complets
   color: string;
   leader?: string;
   visibleOnCompass: boolean;
@@ -150,9 +182,13 @@ export interface Opinion {
   createdAt: string;
 }
 
-// ── Octants (8 zones en 3D) ────────────────────────────────────────
-//
-// En 2D on avait 4 quadrants. En 3D on a 8 octants.
+// ── Zones (quadrants en 2D, octants en 3D) ─────────────────────────
+
+export type Quadrant =
+  | 'progressiste_liberal'
+  | 'progressiste_interventionniste'
+  | 'conservateur_liberal'
+  | 'conservateur_interventionniste';
 
 export type Octant =
   | 'progressiste_liberal_libertaire'
@@ -163,13 +199,6 @@ export type Octant =
   | 'conservateur_liberal_autoritaire'
   | 'conservateur_interventionniste_libertaire'
   | 'conservateur_interventionniste_autoritaire';
-
-/** Rétrocompatibilité : quadrant = projection 2D d'un octant */
-export type Quadrant =
-  | 'progressiste_liberal'
-  | 'progressiste_interventionniste'
-  | 'conservateur_liberal'
-  | 'conservateur_interventionniste';
 
 export interface ZoneDistribution {
   count: number;

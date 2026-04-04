@@ -5,11 +5,13 @@
 # Elles doivent être affinées par un comité éditorial et seront
 # transparentes pour les utilisateurs (méthodologie publiée).
 #
-# Échelle : -1.0 à +1.0
-#   position_1d :  -1 = gauche, +1 = droite (classement éditorial traditionnel)
-#   Sociétal :     -1 = conservateur, +1 = progressiste
-#   Économique :   -1 = interventionniste, +1 = libéral
-#   Autorité :     -1 = autoritaire, +1 = libertaire
+# Échelle : -1.0 à +1.0 pour chaque axe
+#   position_1d :    -1 = gauche, +1 = droite (classement éditorial traditionnel)
+#   Sociétal :       -1 = conservateur, +1 = progressiste
+#   Économique :     -1 = interventionniste, +1 = libéral
+#   Autorité :       -1 = autoritaire, +1 = libertaire
+#   Écologie :       -1 = productiviste, +1 = écologiste
+#   Souveraineté :   -1 = souverainiste, +1 = mondialiste
 
 partis:
 
@@ -21,6 +23,8 @@ partis:
       societal: 0.9
       economic: -0.95
       authority: 0.7       # Autogestion, démocratie directe, anti-répression
+      ecology: 0.7         # Écosocialisme, décroissance, anti-capitalisme vert
+      sovereignty: -0.3    # Internationaliste mais anti-UE libérale
     color: "#B80000"
     leader: "Philippe Poutou"
 
@@ -31,7 +35,9 @@ partis:
     position:
       societal: 0.7
       economic: -0.8
-      authority: 0.3       # Libertaire sur les libertés civiles, mais verticale dans son fonctionnement
+      authority: 0.3       # Libertaire sur les libertés civiles, verticale en interne
+      ecology: 0.6         # Planification écologique, règle verte, bifurcation
+      sovereignty: -0.4    # Souverainisme de gauche, désobéissance aux traités UE
     color: "#CC2443"
     leader: "Jean-Luc Mélenchon"
 
@@ -42,7 +48,9 @@ partis:
     position:
       societal: 0.4
       economic: -0.9
-      authority: -0.2      # Tradition centraliste, État fort, mais attaché aux libertés syndicales
+      authority: -0.2      # Tradition centraliste, État fort, libertés syndicales
+      ecology: 0.2         # Écologie industrielle, pro-nucléaire, emploi d'abord
+      sovereignty: -0.3    # Souveraineté populaire, critique de l'UE libérale
     color: "#DD0000"
     leader: "Fabien Roussel"
 
@@ -53,7 +61,9 @@ partis:
     position:
       societal: 0.8
       economic: -0.4
-      authority: 0.6       # Désobéissance civile, démocratie participative, décentralisation
+      authority: 0.6       # Désobéissance civile, démocratie participative
+      ecology: 0.95        # Le plus écologiste — raison d'être du parti
+      sovereignty: 0.4     # Pro-Europe, coopération internationale, climat mondial
     color: "#00A650"
     leader: "Marine Tondelier"
 
@@ -64,7 +74,9 @@ partis:
     position:
       societal: 0.5
       economic: -0.3
-      authority: 0.2       # Modérément libertaire, attaché aux libertés mais institutionnel
+      authority: 0.2       # Modérément libertaire, institutionnel
+      ecology: 0.3         # Écologie de compromis, transition sans rupture
+      sovereignty: 0.5     # Pro-européen, multilatéralisme, institutions internationales
     color: "#FF6084"
     leader: "Olivier Faure"
 
@@ -75,7 +87,9 @@ partis:
     position:
       societal: 0.2
       economic: 0.3
-      authority: 0.1       # Centriste, équilibre institutions/libertés
+      authority: 0.1       # Centriste, équilibre
+      ecology: 0.2         # Écologie modérée, pragmatique
+      sovereignty: 0.6     # Très pro-européen (Bayrou historiquement)
     color: "#FF8C00"
     leader: "François Bayrou"
 
@@ -86,13 +100,11 @@ partis:
     position:
       societal: 0.3
       economic: 0.6
-      authority: -0.5      # 49.3, état d'urgence prolongé, surveillance, verticalité du pouvoir
+      authority: -0.5      # 49.3, état d'urgence, surveillance, verticalité
+      ecology: 0.1         # Discours vert mais relance nucléaire, croissance verte
+      sovereignty: 0.5     # Pro-UE, souveraineté européenne, OTAN
     color: "#FFEB00"
     leader: "Emmanuel Macron"
-    # NOTE: Renaissance révèle la puissance du 3ème axe —
-    # "progressiste-libéral" en 2D mais AUTORITAIRE en 3D.
-    # C'est le "libéralisme autoritaire" que beaucoup ressentent
-    # sans pouvoir le nommer sur l'axe gauche-droite.
 
   - id: lr
     label: "Les Républicains"
@@ -101,7 +113,9 @@ partis:
     position:
       societal: -0.4
       economic: 0.5
-      authority: -0.5      # Ordre, autorité de l'État, sécurité, peines plus lourdes
+      authority: -0.5      # Ordre, autorité, sécurité, peines plus lourdes
+      ecology: -0.4        # Productiviste, anti-écologie punitive, pro-nucléaire
+      sovereignty: 0.2     # Pro-européen modéré mais souveraineté régalienne
     color: "#0066CC"
     leader: "Laurent Wauquiez"
 
@@ -112,7 +126,9 @@ partis:
     position:
       societal: -0.8
       economic: -0.2
-      authority: -0.7      # Police renforcée, anti-immigration, ordre, contrôle
+      authority: -0.7      # Police renforcée, anti-immigration, contrôle
+      ecology: -0.5        # Anti-éolien, pro-voiture, climato-sceptique soft
+      sovereignty: -0.8    # Très souverainiste — Frexit soft, anti-UE, anti-OTAN
     color: "#0D378A"
     leader: "Jordan Bardella"
 
@@ -123,25 +139,28 @@ partis:
     position:
       societal: -0.9
       economic: 0.4
-      authority: -0.8      # Le plus autoritaire — civilisationnel, identitaire, répressif
+      authority: -0.8      # Le plus autoritaire — civilisationnel, identitaire
+      ecology: -0.7        # Le plus productiviste — croissance, anti-décroissance
+      sovereignty: -0.6    # Souverainiste civilisationnel mais pas anti-UE en bloc
     color: "#1A1A2E"
     leader: "Éric Zemmour"
 
-# ── Ce que le 3ème axe révèle ──────────────────────────────────────
+# ── Ce que les 5 axes révèlent ─────────────────────────────────────
 #
-# Renaissance (-0.5 autorité) : "libéralisme autoritaire"
-#   → Libéral économiquement, progressiste sociétalement,
-#     mais gouverne par 49.3 et prolonge l'état d'urgence.
-#   → En 2D il semble proche du MoDem. En 3D on voit l'écart.
+# ÉCOLOGIE :
+#   EELV (0.95) vs R! (-0.7) → l'écart le plus grand de tous les axes
+#   PCF (0.2) vs LFI (0.6) → la gauche est divisée sur l'écologie
+#   RE (0.1) → discours vert mais position quasi-neutre
 #
-# LFI (+0.3 libertaire) vs PCF (-0.2 autoritaire) :
-#   → Proches sur sociétal et économique, mais divergent sur l'autorité.
-#   → LFI = VIème République, RIC. PCF = État fort centralisé.
+# SOUVERAINETÉ :
+#   RN (-0.8) vs PS (0.5) → clivage massif
+#   LFI (-0.4) et RN (-0.8) → les deux sont souverainistes !
+#     C'est le 2ème point commun du bloc populaire (après l'économie)
+#   EELV (0.4) vs LFI (-0.4) → la gauche est divisée sur l'Europe
 #
-# RN (-0.7) vs LFI (+0.3) :
-#   → Tous deux interventionnistes, mais aux antipodes sur l'autorité.
-#   → C'est le clivage le plus profond du "bloc populaire".
-#
-# EELV (+0.6) vs Renaissance (-0.5) :
-#   → Tous deux "progressistes", mais 1.1 point d'écart sur l'autorité.
-#   → Explique pourquoi ils ne gouvernent jamais ensemble.
+# COMBINAISONS SURPRENANTES :
+#   RE : progressiste + libéral + AUTORITAIRE + neutre écologie + mondialiste
+#   RN : conservateur + interventionniste + AUTORITAIRE + productiviste + SOUVERAINISTE
+#   LFI : progressiste + interventionniste + libertaire + écologiste + SOUVERAINISTE
+#   → LFI et RN partagent 2 axes sur 5 (économique + souveraineté)
+#     mais divergent sur 3 (sociétal, autorité, écologie)

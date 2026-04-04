@@ -1,21 +1,29 @@
-import type { CompassPosition, Question } from '@voxcite/shared';
+import type { CompassPosition, Question, AxisId } from '@voxcite/shared';
 
 interface ResponseInput {
   questionId: string;
   value: number;
 }
 
+/** Résout les axes qu'une question mesure */
+function resolveAxes(q: Question): AxisId[] {
+  if (q.axes && q.axes.length > 0) return q.axes;
+  switch (q.axis) {
+    case 'both': return ['societal', 'economic'];
+    case 'all': return ['societal', 'economic', 'authority', 'ecology', 'sovereignty'];
+    default: return [q.axis as AxisId];
+  }
+}
+
 /**
- * Calcul de la position sur les 3 axes depuis les réponses.
- * Même algorithme que le client (packages/client/src/hooks/useCompassPosition.ts).
+ * Calcul de la position sur les 5 axes depuis les réponses.
  */
 export function calculatePosition(
   responses: ResponseInput[],
   questions: Question[],
 ): CompassPosition {
-  let socTotal = 0, socWeight = 0;
-  let ecoTotal = 0, ecoWeight = 0;
-  let authTotal = 0, authWeight = 0;
+  const totals: Record<AxisId, number> = { societal: 0, economic: 0, authority: 0, ecology: 0, sovereignty: 0 };
+  const weights: Record<AxisId, number> = { societal: 0, economic: 0, authority: 0, ecology: 0, sovereignty: 0 };
 
   for (const resp of responses) {
     const q = questions.find((q) => q.id === resp.questionId);
@@ -23,26 +31,21 @@ export function calculatePosition(
 
     const contribution = resp.value * q.polarity * q.weight;
     const maxContrib = Math.abs(q.weight) * 2;
+    const axes = resolveAxes(q);
 
-    if (q.axis === 'societal' || q.axis === 'both' || q.axis === 'all') {
-      socTotal += contribution;
-      socWeight += maxContrib;
-    }
-    if (q.axis === 'economic' || q.axis === 'both' || q.axis === 'all') {
-      ecoTotal += contribution;
-      ecoWeight += maxContrib;
-    }
-    if (q.axis === 'authority' || q.axis === 'all') {
-      authTotal += contribution;
-      authWeight += maxContrib;
+    for (const axis of axes) {
+      totals[axis] += contribution;
+      weights[axis] += maxContrib;
     }
   }
 
   const clamp = (val: number) => Math.max(-1, Math.min(1, val));
 
   return {
-    societal: socWeight > 0 ? clamp(socTotal / socWeight) : 0,
-    economic: ecoWeight > 0 ? clamp(ecoTotal / ecoWeight) : 0,
-    authority: authWeight > 0 ? clamp(authTotal / authWeight) : 0,
+    societal: weights.societal > 0 ? clamp(totals.societal / weights.societal) : 0,
+    economic: weights.economic > 0 ? clamp(totals.economic / weights.economic) : 0,
+    authority: weights.authority > 0 ? clamp(totals.authority / weights.authority) : 0,
+    ecology: weights.ecology > 0 ? clamp(totals.ecology / weights.ecology) : 0,
+    sovereignty: weights.sovereignty > 0 ? clamp(totals.sovereignty / weights.sovereignty) : 0,
   };
 }

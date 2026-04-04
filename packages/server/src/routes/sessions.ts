@@ -50,7 +50,8 @@ sessionsRouter.post('/:id/responses', async (req, res) => {
     id: q.id,
     text: q.text,
     type: q.type as 'affirmation' | 'dilemme',
-    axis: q.axis as 'societal' | 'economic' | 'authority' | 'both' | 'all',
+    axis: q.axis as 'societal' | 'economic' | 'authority' | 'ecology' | 'sovereignty' | 'both' | 'all',
+    axes: (q.axes as string[] | null) ?? undefined,
     polarity: q.polarity as -1 | 1,
     domain: q.domainId,
     phase: q.phase as 'onboarding' | 'deep',
@@ -66,6 +67,8 @@ sessionsRouter.post('/:id/responses', async (req, res) => {
       positionSocietal: position.societal,
       positionEconomic: position.economic,
       positionAuthority: position.authority,
+      positionEcology: position.ecology,
+      positionSovereignty: position.sovereignty,
       onboardingCompleted: allResponses.length >= 10,
     })
     .where(eq(sessions.id, sessionId));
@@ -93,6 +96,8 @@ sessionsRouter.get('/:id', async (req, res) => {
           societal: session.positionSocietal,
           economic: session.positionEconomic,
           authority: session.positionAuthority,
+          ecology: session.positionEcology,
+          sovereignty: session.positionSovereignty,
         }
       : null,
     onboardingCompleted: session.onboardingCompleted,
