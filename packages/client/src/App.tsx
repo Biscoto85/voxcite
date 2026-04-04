@@ -14,6 +14,18 @@ export type AppScreen = 'loading' | 'onboarding' | 'reveal' | 'menu' | 'prisme' 
 
 const SESSION_KEY = 'voxcite_session_id';
 
+const SCREEN_TITLES: Record<AppScreen, string> = {
+  loading: 'Chargement',
+  onboarding: 'Bienvenue',
+  reveal: 'Ton positionnement',
+  menu: 'Menu principal',
+  prisme: 'Prisme',
+  affiner: 'Affiner',
+  comparaison: 'Comparaison',
+  critique: 'Esprit critique',
+  exprimer: 'M\'exprimer',
+};
+
 export function App() {
   const [screen, setScreen] = useState<AppScreen>('loading');
   const [parties, setParties] = useState<Party[]>([]);
@@ -64,29 +76,48 @@ export function App() {
 
   // Show feedback button on all screens except loading/onboarding
   const showFeedback = screen !== 'loading' && screen !== 'onboarding';
+  const canGoHome = screen !== 'loading' && screen !== 'onboarding' && screen !== 'reveal';
 
   return (
-    <div className="min-h-screen bg-gray-950 text-white">
-      <header className="py-6 px-4 text-center">
-        <h1 className="text-3xl font-bold">
+    <div className="min-h-screen bg-gray-950 text-white safe-bottom">
+      {/* Skip to content link for keyboard navigation */}
+      <a
+        href="#main-content"
+        className="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-50 focus:bg-purple-600 focus:px-4 focus:py-2 focus:rounded-lg focus:text-white"
+      >
+        Aller au contenu principal
+      </a>
+
+      <header className="py-4 px-4 text-center sm:py-6" role="banner">
+        <h1 className="text-2xl font-bold sm:text-3xl">
           <button
-            onClick={() => screen !== 'loading' && screen !== 'onboarding' && screen !== 'reveal' && setScreen('menu')}
-            className="hover:text-purple-400 transition-colors"
+            onClick={() => canGoHome && setScreen('menu')}
+            className="hover:text-purple-400 transition-colors focus-ring rounded-lg px-2"
+            aria-label="Retour au menu principal VoxCité"
           >
             VoxCité
           </button>
         </h1>
-        <p className="text-gray-400 mt-1">On fait parler la cité.</p>
+        <p className="text-gray-400 mt-1 text-sm sm:text-base">On fait parler la cité.</p>
       </header>
 
-      <main className="px-4 pb-12">
+      <main
+        id="main-content"
+        className="px-4 pb-16 sm:pb-12"
+        role="main"
+        aria-label={SCREEN_TITLES[screen]}
+      >
         {screen === 'loading' && !error && (
-          <p className="text-center text-gray-500">Chargement...</p>
+          <div role="status" aria-live="polite">
+            <p className="text-center text-gray-500">Chargement...</p>
+          </div>
         )}
         {error && (
-          <p className="text-center text-red-400">
-            Erreur : {error}. Le serveur tourne sur le port 3001 ?
-          </p>
+          <div role="alert">
+            <p className="text-center text-red-400">
+              Erreur : {error}. Le serveur tourne sur le port 3001 ?
+            </p>
+          </div>
         )}
 
         {screen === 'onboarding' && onboardingQuestions.length > 0 && (

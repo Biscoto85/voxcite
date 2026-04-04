@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect } from 'react';
 import type { CompassPosition } from '@voxcite/shared';
 
 interface CritiqueScreenProps {
@@ -49,30 +49,40 @@ const DOMAIN_LABELS: Record<string, string> = {
   international: 'International et défense',
 };
 
+const TABS: Array<{ id: Tab; label: string }> = [
+  { id: 'sources', label: 'Carte des sources' },
+  { id: 'infos', label: 'Infos partagées' },
+  { id: 'partager', label: 'Partager un lien' },
+];
+
 export function CritiqueScreen({ sessionId, userPosition, onBack }: CritiqueScreenProps) {
   const [tab, setTab] = useState<Tab>('sources');
 
   return (
-    <div className="max-w-2xl mx-auto">
+    <section className="max-w-2xl mx-auto" aria-label="Esprit critique">
       <div className="flex items-center justify-between mb-4">
         <h2 className="text-xl font-bold">Esprit critique</h2>
-        <button onClick={onBack} className="text-sm text-purple-400 hover:text-purple-300">← Menu</button>
+        <button onClick={onBack} className="text-sm text-purple-400 hover:text-purple-300 focus-ring rounded py-1 px-2">← Menu</button>
       </div>
 
       <p className="text-sm text-gray-400 mb-4">
         Des infos et sources intéressantes pour élargir ton horizon.
       </p>
 
-      <div className="flex gap-2 mb-6">
-        {([
-          { id: 'sources' as Tab, label: 'Carte des sources' },
-          { id: 'infos' as Tab, label: 'Infos partagées' },
-          { id: 'partager' as Tab, label: 'Partager un lien' },
-        ]).map((t) => (
+      {/* Tabs — scrollable on mobile */}
+      <div
+        className="flex gap-2 mb-6 overflow-x-auto scrollbar-hide -mx-4 px-4 sm:mx-0 sm:px-0"
+        role="tablist"
+        aria-label="Sections esprit critique"
+      >
+        {TABS.map((t) => (
           <button
             key={t.id}
             onClick={() => setTab(t.id)}
-            className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+            role="tab"
+            aria-selected={tab === t.id}
+            aria-controls={`critique-panel-${t.id}`}
+            className={`px-4 py-2.5 rounded-lg text-sm font-medium transition-colors whitespace-nowrap touch-target focus-ring ${
               tab === t.id
                 ? 'bg-purple-600 text-white'
                 : 'bg-gray-800 text-gray-400 hover:bg-gray-700'
@@ -83,10 +93,12 @@ export function CritiqueScreen({ sessionId, userPosition, onBack }: CritiqueScre
         ))}
       </div>
 
-      {tab === 'sources' && <SourcesTab sessionId={sessionId} userPosition={userPosition} />}
-      {tab === 'infos' && <InfosTab />}
-      {tab === 'partager' && <PartagerTab sessionId={sessionId} />}
-    </div>
+      <div id={`critique-panel-${tab}`} role="tabpanel">
+        {tab === 'sources' && <SourcesTab sessionId={sessionId} userPosition={userPosition} />}
+        {tab === 'infos' && <InfosTab />}
+        {tab === 'partager' && <PartagerTab sessionId={sessionId} />}
+      </div>
+    </section>
   );
 }
 
@@ -117,7 +129,7 @@ function SourcesTab({ sessionId, userPosition }: { sessionId: string; userPositi
     setRatingEco(0);
   };
 
-  if (loading) return <p className="text-gray-500 text-center">Chargement...</p>;
+  if (loading) return <p className="text-gray-500 text-center" role="status">Chargement...</p>;
 
   // Compute distance to user for sorting
   const withDistance = sources.map((s) => {
@@ -164,17 +176,20 @@ function SourcesTab({ sessionId, userPosition }: { sessionId: string; userPositi
                 const isFar = s.distance > 1.2;
                 return (
                   <div key={s.id}>
-                    <div
-                      className="flex items-center gap-3 p-2.5 rounded-lg bg-gray-900 border border-gray-800 hover:border-gray-700 transition-colors cursor-pointer"
+                    <button
+                      className="w-full flex items-center gap-3 p-2.5 sm:p-3 rounded-lg bg-gray-900 border border-gray-800 hover:border-gray-700 transition-colors text-left touch-target focus-ring"
                       onClick={() => {
                         if (ratingMedia === s.id) { setRatingMedia(null); }
                         else { setRatingMedia(s.id); setRatingSoc(s.editorialPosition.societal); setRatingEco(s.editorialPosition.economic); }
                       }}
+                      aria-expanded={ratingMedia === s.id}
+                      aria-label={`${s.label} — ${s.editorialLabel}${isClose ? ' (proche de toi)' : ''}${isFar ? ' (éloigné)' : ''}`}
                     >
                       {/* Color gauge bar */}
                       <div
                         className="w-1.5 h-10 rounded-full flex-shrink-0"
                         style={{ backgroundColor: gaugeColor(s.position.societal) }}
+                        aria-hidden="true"
                       />
 
                       <div className="flex-1 min-w-0">
@@ -191,11 +206,11 @@ function SourcesTab({ sessionId, userPosition }: { sessionId: string; userPositi
                           {s.citizenRatingCount} avis
                         </span>
                       )}
-                    </div>
+                    </button>
 
                     {/* Rating panel */}
                     {ratingMedia === s.id && (
-                      <div className="ml-5 mt-1 p-3 bg-gray-800 rounded-lg border border-gray-700">
+                      <div className="ml-5 mt-1 p-3 bg-gray-800 rounded-lg border border-gray-700" role="form" aria-label={`Évaluer ${s.label}`}>
                         <p className="text-xs text-gray-400 mb-2">Selon toi, {s.label} est plutôt :</p>
 
                         <div className="mb-3">
@@ -210,6 +225,7 @@ function SourcesTab({ sessionId, userPosition }: { sessionId: string; userPositi
                             value={ratingSoc * 100}
                             onChange={(e) => setRatingSoc(Number(e.target.value) / 100)}
                             className="w-full accent-purple-500"
+                            aria-label="Axe sociétal — de conservateur à progressiste"
                           />
                         </div>
 
@@ -225,12 +241,13 @@ function SourcesTab({ sessionId, userPosition }: { sessionId: string; userPositi
                             value={ratingEco * 100}
                             onChange={(e) => setRatingEco(Number(e.target.value) / 100)}
                             className="w-full accent-purple-500"
+                            aria-label="Axe économique — d'interventionniste à libéral"
                           />
                         </div>
 
                         <button
                           onClick={() => submitRating(s.id)}
-                          className="w-full py-1.5 bg-purple-600 hover:bg-purple-500 rounded text-sm font-medium transition-colors"
+                          className="w-full py-2 bg-purple-600 hover:bg-purple-500 rounded text-sm font-medium transition-colors touch-target focus-ring"
                         >
                           Envoyer mon évaluation
                         </button>
@@ -266,10 +283,12 @@ function InfosTab() {
     <div>
       {/* Domain filter */}
       <div className="mb-4">
+        <label htmlFor="infos-domain-filter" className="sr-only">Filtrer par thème</label>
         <select
+          id="infos-domain-filter"
           value={domain}
           onChange={(e) => { setDomain(e.target.value); setLoading(true); }}
-          className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-purple-500"
+          className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2.5 text-sm text-white focus:outline-none focus:border-purple-500 touch-target"
         >
           <option value="">Tous les thèmes</option>
           {Object.entries(DOMAIN_LABELS).map(([id, label]) => (
@@ -278,7 +297,7 @@ function InfosTab() {
         </select>
       </div>
 
-      {loading && <p className="text-gray-500 text-center">Chargement...</p>}
+      {loading && <p className="text-gray-500 text-center" role="status">Chargement...</p>}
 
       {!loading && links.length === 0 && (
         <p className="text-gray-400 text-center py-8">
@@ -293,10 +312,10 @@ function InfosTab() {
             href={l.url}
             target="_blank"
             rel="noopener noreferrer"
-            className="block p-3 bg-gray-900 border border-gray-800 rounded-lg hover:border-purple-600 transition-colors"
+            className="block p-3 sm:p-4 bg-gray-900 border border-gray-800 rounded-lg hover:border-purple-600 transition-colors touch-target focus-ring"
           >
             <p className="text-sm text-gray-200">{l.description}</p>
-            <div className="flex justify-between mt-1">
+            <div className="flex justify-between mt-1 flex-wrap gap-1">
               <span className="text-xs text-gray-500">{DOMAIN_LABELS[l.domainId] || l.domainId}</span>
               <span className="text-xs text-purple-400 truncate max-w-[200px]">{new URL(l.url).hostname}</span>
             </div>
@@ -345,11 +364,12 @@ function PartagerTab({ sessionId }: { sessionId: string }) {
       </p>
 
       <div className="mb-3">
-        <label className="text-xs text-gray-500 block mb-1">Thème</label>
+        <label htmlFor="partager-theme" className="text-xs text-gray-500 block mb-1">Thème</label>
         <select
+          id="partager-theme"
           value={domain}
           onChange={(e) => setDomain(e.target.value)}
-          className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-purple-500"
+          className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2.5 text-sm text-white focus:outline-none focus:border-purple-500 touch-target"
         >
           {Object.entries(DOMAIN_LABELS).map(([id, label]) => (
             <option key={id} value={id}>{label}</option>
@@ -358,40 +378,48 @@ function PartagerTab({ sessionId }: { sessionId: string }) {
       </div>
 
       <div className="mb-3">
-        <label className="text-xs text-gray-500 block mb-1">Lien (URL)</label>
+        <label htmlFor="partager-url" className="text-xs text-gray-500 block mb-1">Lien (URL)</label>
         <input
+          id="partager-url"
           type="url"
           value={url}
           onChange={(e) => setUrl(e.target.value)}
           placeholder="https://..."
-          className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-purple-500"
+          className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2.5 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-purple-500"
+          aria-required="true"
         />
       </div>
 
       <div className="mb-3">
-        <label className="text-xs text-gray-500 block mb-1">Description (1 phrase)</label>
+        <label htmlFor="partager-desc" className="text-xs text-gray-500 block mb-1">Description (1 phrase)</label>
         <input
+          id="partager-desc"
           type="text"
           value={description}
           onChange={(e) => setDescription(e.target.value)}
           placeholder="Ex: Enquête sur le coût réel de l'énergie nucléaire en France"
-          className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-purple-500"
+          className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2.5 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-purple-500"
           maxLength={200}
+          aria-required="true"
         />
       </div>
 
       <button
         onClick={handleSubmit}
         disabled={!url.trim() || !description.trim() || sending}
-        className="w-full py-2 bg-purple-600 hover:bg-purple-500 disabled:bg-gray-700 disabled:text-gray-500 rounded-lg font-medium text-sm transition-colors"
+        className="w-full py-3 bg-purple-600 hover:bg-purple-500 disabled:bg-gray-700 disabled:text-gray-500 rounded-lg font-medium text-sm transition-colors touch-target focus-ring"
       >
         {sending ? 'Vérification en cours...' : 'Partager'}
       </button>
 
       {result && (
-        <div className={`mt-3 p-3 rounded-lg text-sm ${
-          result.status === 'approved' ? 'bg-green-900/30 text-green-300' : 'bg-red-900/30 text-red-300'
-        }`}>
+        <div
+          className={`mt-3 p-3 rounded-lg text-sm ${
+            result.status === 'approved' ? 'bg-green-900/30 text-green-300' : 'bg-red-900/30 text-red-300'
+          }`}
+          role="status"
+          aria-live="polite"
+        >
           {result.status === 'approved'
             ? `Lien publié ! Description : "${result.description}"`
             : 'Ce lien a été refusé (hors sujet ou contenu inapproprié).'

@@ -55,39 +55,46 @@ export function MainMenu({ userPosition, onNavigate }: MainMenuProps) {
   return (
     <div className="max-w-lg mx-auto">
       {userPosition && (
-        <div className="mb-6 p-4 bg-gray-900 rounded-xl border border-gray-800 text-center">
+        <section
+          className="mb-6 p-4 bg-gray-900 rounded-xl border border-gray-800 text-center"
+          aria-label="Ton profil"
+        >
           <p className="text-sm text-gray-400 mb-1">Ton parti pris'm :</p>
           <p className="text-lg font-semibold text-purple-300">
             {getProfileLabel(userPosition)}
           </p>
-        </div>
+        </section>
       )}
 
-      <div className="flex flex-col gap-3">
-        {MENU_ITEMS.map((item) => (
-          <button
-            key={item.screen}
-            onClick={() => onNavigate(item.screen)}
-            disabled={!item.ready}
-            className={`text-left p-4 rounded-xl border transition-all ${
-              item.ready
-                ? 'bg-gray-900 border-gray-800 hover:border-purple-600 hover:bg-gray-900/80'
-                : 'bg-gray-900/50 border-gray-800/50 opacity-50 cursor-not-allowed'
-            }`}
-          >
-            <div className="flex items-start gap-3">
-              <span className="text-2xl">{item.icon}</span>
-              <div>
-                <h3 className="font-medium">
-                  {item.title}
-                  {!item.ready && <span className="ml-2 text-xs text-gray-600">(bientôt)</span>}
-                </h3>
-                <p className="text-sm text-gray-400 mt-0.5">{item.description}</p>
-              </div>
-            </div>
-          </button>
-        ))}
-      </div>
+      <nav aria-label="Menu principal">
+        <ul className="flex flex-col gap-3" role="list">
+          {MENU_ITEMS.map((item) => (
+            <li key={item.screen}>
+              <button
+                onClick={() => onNavigate(item.screen)}
+                disabled={!item.ready}
+                aria-label={`${item.title} — ${item.description}`}
+                className={`w-full text-left p-4 rounded-xl border transition-all touch-target focus-ring ${
+                  item.ready
+                    ? 'bg-gray-900 border-gray-800 hover:border-purple-600 hover:bg-gray-900/80'
+                    : 'bg-gray-900/50 border-gray-800/50 opacity-50 cursor-not-allowed'
+                }`}
+              >
+                <div className="flex items-start gap-3">
+                  <span className="text-2xl" aria-hidden="true">{item.icon}</span>
+                  <div>
+                    <h3 className="font-medium">
+                      {item.title}
+                      {!item.ready && <span className="ml-2 text-xs text-gray-600">(bientôt)</span>}
+                    </h3>
+                    <p className="text-sm text-gray-400 mt-0.5">{item.description}</p>
+                  </div>
+                </div>
+              </button>
+            </li>
+          ))}
+        </ul>
+      </nav>
     </div>
   );
 }

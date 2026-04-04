@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import type { Question, CompassPosition } from '@voxcite/shared';
 import { QuestionCard } from '../onboarding/QuestionCard';
 
@@ -62,7 +62,7 @@ export function DeepQuestionsFlow({
   }, [activeQuestion, currentIndex, questions.length, sessionId, onPositionUpdate]);
 
   if (loading) {
-    return <p className="text-center text-gray-500">Chargement...</p>;
+    return <p className="text-center text-gray-500" role="status">Chargement...</p>;
   }
 
   if (done || questions.length === 0) {
@@ -76,7 +76,7 @@ export function DeepQuestionsFlow({
         </p>
         <button
           onClick={onBack}
-          className="px-6 py-3 bg-purple-600 hover:bg-purple-500 rounded-lg font-medium transition-colors"
+          className="px-6 py-3 bg-purple-600 hover:bg-purple-500 rounded-lg font-medium transition-colors touch-target focus-ring"
         >
           Retour au menu
         </button>
@@ -89,11 +89,11 @@ export function DeepQuestionsFlow({
   const progress = currentIndex / questions.length;
 
   return (
-    <div className="max-w-lg mx-auto">
+    <section className="max-w-lg mx-auto" aria-label="Questions approfondies">
       <div className="flex items-center justify-between mb-4">
         <button
           onClick={onBack}
-          className="text-sm text-purple-400 hover:text-purple-300"
+          className="text-sm text-purple-400 hover:text-purple-300 focus-ring rounded py-1 px-2"
         >
           ← Menu
         </button>
@@ -102,7 +102,7 @@ export function DeepQuestionsFlow({
         </span>
       </div>
 
-      <div className="mb-4">
+      <div className="mb-4" role="progressbar" aria-valuenow={currentIndex + 1} aria-valuemin={1} aria-valuemax={questions.length} aria-label={`Question ${currentIndex + 1} sur ${questions.length}`}>
         <div className="h-1.5 bg-gray-800 rounded-full overflow-hidden">
           <div
             className="h-full bg-purple-600 rounded-full transition-all duration-300"
@@ -116,6 +116,6 @@ export function DeepQuestionsFlow({
         onAnswer={handleAnswer}
         questionNumber={currentIndex + 1}
       />
-    </div>
+    </section>
   );
 }

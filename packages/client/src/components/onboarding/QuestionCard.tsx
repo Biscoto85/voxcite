@@ -30,22 +30,25 @@ export function QuestionCard({ question, onAnswer, questionNumber }: QuestionCar
   ];
 
   return (
-    <div className="bg-gray-900 rounded-xl p-6 border border-gray-800">
-      <p className="text-lg leading-relaxed mb-8">
+    <section
+      className="bg-gray-900 rounded-xl p-5 sm:p-6 border border-gray-800"
+      aria-label={`Question ${questionNumber}`}
+    >
+      <p className="text-base sm:text-lg leading-relaxed mb-6 sm:mb-8">
         {question.text}
       </p>
 
-      <div className="flex flex-col gap-2">
+      <div className="flex flex-col gap-2" role="group" aria-label="Choisis ta réponse">
         {options.map((opt, i) => (
           <button
             key={opt.value}
             onClick={() => onAnswer(opt.value)}
-            className={`w-full py-3 px-4 rounded-lg border border-gray-700 text-sm text-left transition-all ${buttonColors[i]} active:scale-[0.98]`}
+            className={`w-full py-3 px-4 rounded-lg border border-gray-700 text-sm text-left transition-all touch-target focus-ring ${buttonColors[i]} active:scale-[0.98]`}
           >
             {opt.label}
           </button>
         ))}
       </div>
-    </div>
+    </section>
   );
 }

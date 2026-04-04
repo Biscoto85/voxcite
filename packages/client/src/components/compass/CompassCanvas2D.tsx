@@ -40,7 +40,9 @@ export function CompassCanvas2D({
     if (!canvas || !container) return;
 
     const dpr = window.devicePixelRatio || 1;
-    const size = Math.min(container.clientWidth, 500);
+    // Scale up on larger screens: 500px on mobile, up to 600px on tablet, 700px on desktop
+    const maxSize = window.innerWidth >= 1024 ? 700 : window.innerWidth >= 768 ? 600 : 500;
+    const size = Math.min(container.clientWidth, maxSize);
     canvas.width = size * dpr;
     canvas.height = size * dpr;
     canvas.style.width = `${size}px`;

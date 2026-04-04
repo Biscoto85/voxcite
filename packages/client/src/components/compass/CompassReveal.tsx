@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect } from 'react';
 import type { Party, CompassPosition } from '@voxcite/shared';
 import { CompassCanvas1D } from './CompassCanvas1D';
 import { CompassCanvas2D } from './CompassCanvas2D';
@@ -44,10 +44,10 @@ export function CompassReveal({ parties, userPosition, onContinue }: CompassReve
   }, []);
 
   return (
-    <div className="max-w-4xl mx-auto flex flex-col gap-4">
+    <section className="max-w-4xl mx-auto flex flex-col gap-4" aria-label="Révélation du positionnement">
       {/* Title */}
       <div className="text-center">
-        <h2 className="text-xl font-bold mb-1">Ton positionnement</h2>
+        <h2 className="text-lg sm:text-xl font-bold mb-1">Ton positionnement</h2>
         {closest && (
           <p className="text-gray-400 text-sm">
             Parti le plus proche :
@@ -59,7 +59,12 @@ export function CompassReveal({ parties, userPosition, onContinue }: CompassReve
       </div>
 
       {/* Canvas area with crossfade */}
-      <div className="relative bg-gray-900 rounded-xl overflow-hidden" style={{ minHeight: 400 }}>
+      <div
+        className="relative bg-gray-900 rounded-xl overflow-hidden"
+        style={{ minHeight: 'min(60vh, 500px)' }}
+        role="img"
+        aria-label={`Ton positionnement politique — vue ${phase === '2d' ? '2D' : '1D'}`}
+      >
         {(phase === '1d' || phase === 'transition') && (
           <div
             className="absolute inset-0 transition-opacity duration-700"
@@ -104,18 +109,18 @@ export function CompassReveal({ parties, userPosition, onContinue }: CompassReve
       {/* Hint + Continue */}
       <div className="text-center">
         {phase === '1d' && (
-          <p className="text-xs text-gray-500 animate-pulse">L'axe gauche-droite ne dit pas tout...</p>
+          <p className="text-xs text-gray-500 animate-pulse" aria-live="polite">L'axe gauche-droite ne dit pas tout...</p>
         )}
         {phase !== '1d' && (
           <p className="text-xs text-gray-500 mb-3">Axe sociétal × économique — ton vrai positionnement</p>
         )}
         <button
           onClick={onContinue}
-          className="px-6 py-3 bg-purple-600 hover:bg-purple-500 rounded-lg font-medium transition-colors"
+          className="px-6 py-3 bg-purple-600 hover:bg-purple-500 rounded-lg font-medium transition-colors touch-target focus-ring"
         >
           Continuer
         </button>
       </div>
-    </div>
+    </section>
   );
 }

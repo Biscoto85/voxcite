@@ -71,7 +71,7 @@ export function OnboardingFlow({ questions, parties, onComplete }: OnboardingFlo
   return (
     <div className="max-w-lg mx-auto">
       {/* Progress bar */}
-      <div className="mb-6">
+      <div className="mb-6" role="progressbar" aria-valuenow={currentIndex + 1} aria-valuemin={1} aria-valuemax={questions.length} aria-label={`Question ${currentIndex + 1} sur ${questions.length}`}>
         <div className="flex justify-between text-xs text-gray-500 mb-1">
           <span>Question {currentIndex + 1} / {questions.length}</span>
           <span>{Math.round(progress * 100)}%</span>
