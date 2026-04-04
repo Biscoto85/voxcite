@@ -160,7 +160,8 @@ async function generateSuggestions() {
   ];
 
   for (const archetype of archetypes) {
-    const domainList = allDomains.map((d) => d.label).join(', ');
+    const domainList = allDomains.map((d) => `${d.id} (${d.label})`).join(', ');
+    const validIds = allDomains.map((d) => d.id);
 
     const prompt = `Tu génères des propositions politiques pour un citoyen français avec ce profil :
 sociétal=${archetype.societal.toFixed(1)} (${archetype.societal > 0 ? 'progressiste' : 'conservateur'}),
@@ -169,12 +170,14 @@ autorité=${archetype.authority.toFixed(1)} (${archetype.authority > 0 ? 'libert
 écologie=${archetype.ecology.toFixed(1)} (${archetype.ecology > 0 ? 'écologiste' : 'productiviste'}),
 souveraineté=${archetype.sovereignty.toFixed(1)} (${archetype.sovereignty > 0 ? 'mondialiste' : 'souverainiste'})
 
-Domaines : ${domainList}
+Domaines (utilise EXACTEMENT ces identifiants dans domainId) : ${domainList}
 
 Génère 2 propositions par domaine, adaptées à ce profil. Chaque proposition doit être concrète, actionable (pas de vœux pieux), et formulée de manière positive.
 
 Format JSON :
 [{"domainId": "travail", "text": "..."}, ...]
+
+IMPORTANT : domainId doit être EXACTEMENT un de : ${validIds.join(', ')}
 
 Réponds UNIQUEMENT avec le JSON.`;
 
@@ -189,6 +192,10 @@ Réponds UNIQUEMENT avec le JSON.`;
       const parsed = JSON.parse(extractJSON(rawSugg)) as Array<{ domainId: string; text: string }>;
 
       for (const s of parsed) {
+        if (!validIds.includes(s.domainId)) {
+          console.warn(`[batch] Skipping invalid domainId: "${s.domainId}"`);
+          continue;
+        }
         await db.insert(suggestions).values({
           domainId: s.domainId,
           text: s.text,
