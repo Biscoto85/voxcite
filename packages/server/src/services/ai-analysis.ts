@@ -254,7 +254,8 @@ export async function runAiAnalysis(input: AnalysisInput): Promise<AiAnalysisRes
   const text = response.content[0].type === 'text' ? response.content[0].text : '';
 
   try {
-    return JSON.parse(text) as AiAnalysisResult;
+    const cleaned = text.replace(/^```(?:json)?\s*\n?/i, '').replace(/\n?```\s*$/i, '').trim();
+    return JSON.parse(cleaned) as AiAnalysisResult;
   } catch {
     return {
       summary: text.slice(0, 500),

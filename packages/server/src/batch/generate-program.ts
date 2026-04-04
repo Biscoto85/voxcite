@@ -20,6 +20,11 @@ import { desc, eq, inArray, sql, isNotNull } from 'drizzle-orm';
 const MODEL = 'claude-haiku-4-5-20251001';
 const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY! });
 
+/** Strip markdown code fences from Claude responses */
+function extractJSON(raw: string): string {
+  return raw.replace(/^```(?:json)?\s*\n?/i, '').replace(/\n?```\s*$/i, '').trim();
+}
+
 // ── 1. Générer le programme citoyen ─────────────────────────────────
 
 async function generateProgram() {
@@ -112,10 +117,10 @@ Réponds UNIQUEMENT avec le JSON.`;
     messages: [{ role: 'user', content: prompt }],
   });
 
-  const text = response.content[0].type === 'text' ? response.content[0].text : '';
+  const rawText = response.content[0].type === 'text' ? response.content[0].text : '';
   let parsed: { domains: Record<string, any>; evolutionSummary: string };
   try {
-    parsed = JSON.parse(text);
+    parsed = JSON.parse(extractJSON(rawText));
   } catch {
     console.error('[batch] Failed to parse program JSON:', text.slice(0, 500));
     return;
@@ -180,8 +185,8 @@ Réponds UNIQUEMENT avec le JSON.`;
         messages: [{ role: 'user', content: prompt }],
       });
 
-      const text = response.content[0].type === 'text' ? response.content[0].text : '';
-      const parsed = JSON.parse(text) as Array<{ domainId: string; text: string }>;
+      const rawSugg = response.content[0].type === 'text' ? response.content[0].text : '';
+      const parsed = JSON.parse(extractJSON(rawSugg)) as Array<{ domainId: string; text: string }>;
 
       for (const s of parsed) {
         await db.insert(suggestions).values({
