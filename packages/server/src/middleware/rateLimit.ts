@@ -1,13 +1,17 @@
 import type { RequestHandler } from 'express';
 
 // ── General rate limiter (all endpoints) ────────────────────────────
+// Generous for reads (GET), tighter for writes (POST)
 
 const GENERAL_WINDOW_MS = 15 * 60 * 1000; // 15 min
-const GENERAL_MAX = 100;
+const GENERAL_MAX = 500; // ~2 req/sec sustained — plenty for normal browsing
 
 const generalHits = new Map<string, { count: number; resetAt: number }>();
 
 export const rateLimit: RequestHandler = (req, res, next) => {
+  // Skip rate limiting for GET requests (read-only, no cost)
+  if (req.method === 'GET') return next();
+
   const ip = req.ip ?? 'unknown';
   const now = Date.now();
   const entry = generalHits.get(ip);
@@ -28,7 +32,7 @@ export const rateLimit: RequestHandler = (req, res, next) => {
 
 // ── Strict rate limiter for AI/token-consuming endpoints ────────────
 // POST /api/analysis, POST /api/critique/links
-// Much tighter: 5 calls per hour per IP
+// 5 calls per hour per IP
 
 const AI_WINDOW_MS = 60 * 60 * 1000; // 1 hour
 const AI_MAX = 5;
@@ -36,6 +40,9 @@ const AI_MAX = 5;
 const aiHits = new Map<string, { count: number; resetAt: number }>();
 
 export const aiRateLimit: RequestHandler = (req, res, next) => {
+  // Only limit POST (the actual AI calls)
+  if (req.method !== 'POST') return next();
+
   const ip = req.ip ?? 'unknown';
   const now = Date.now();
   const entry = aiHits.get(ip);
@@ -55,15 +62,17 @@ export const aiRateLimit: RequestHandler = (req, res, next) => {
   next();
 };
 
-// ── Session creation rate limiter ───────────────────────────────────
-// 3 sessions per hour per IP (prevents mass bot session creation)
+// ── Snapshot creation rate limiter ──────────────────────────────────
+// 5 snapshots per hour per IP
 
 const SESSION_WINDOW_MS = 60 * 60 * 1000; // 1 hour
-const SESSION_MAX = 3;
+const SESSION_MAX = 5;
 
 const sessionHits = new Map<string, { count: number; resetAt: number }>();
 
 export const sessionRateLimit: RequestHandler = (req, res, next) => {
+  if (req.method !== 'POST') return next();
+
   const ip = req.ip ?? 'unknown';
   const now = Date.now();
   const entry = sessionHits.get(ip);
