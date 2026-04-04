@@ -49,6 +49,7 @@ interface RawMedia {
   id: string;
   label: string;
   type: string;
+  url?: string;
   position_1d: number;
   position: { societal: number; economic: number; authority: number; ecology: number; sovereignty: number };
   owner?: string;
@@ -203,6 +204,7 @@ async function main() {
       id: m.id,
       label: m.label,
       type: m.type,
+      url: m.url ?? null,
       position1d: m.position_1d,
       positionSocietal: m.position.societal,
       positionEconomic: m.position.economic,

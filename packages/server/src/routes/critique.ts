@@ -17,6 +17,7 @@ critiqueRouter.get('/medias', async (req, res) => {
     id: m.id,
     label: m.label,
     type: m.type,
+    url: m.url,
     editorialLabel: m.editorialLabel,
     owner: m.owner,
     position: {

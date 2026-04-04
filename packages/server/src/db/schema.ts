@@ -59,6 +59,7 @@ export const medias = pgTable('medias', {
   id: text('id').primaryKey(),
   label: text('label').notNull(),
   type: text('type').notNull(),            // 'tv' | 'radio' | 'presse' | 'web' | 'podcast'
+  url: text('url'),                        // lien vers le site/chaîne du média
   position1d: real('position_1d').notNull(),
   positionSocietal: real('position_societal').notNull(),
   positionEconomic: real('position_economic').notNull(),

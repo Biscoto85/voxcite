@@ -7,12 +7,13 @@ interface CritiqueScreenProps {
   onBack: () => void;
 }
 
-type Tab = 'sources' | 'infos' | 'partager';
+type Tab = 'sources' | 'infos' | 'partager' | 'signaler';
 
 interface MediaSource {
   id: string;
   label: string;
   type: string;
+  url: string | null;
   editorialLabel: string;
   owner: string;
   position: CompassPosition;
@@ -49,10 +50,23 @@ const DOMAIN_LABELS: Record<string, string> = {
   international: 'International et défense',
 };
 
+type AxisId = keyof CompassPosition;
+
+const AXIS_INFO: Record<AxisId, { label: string; negative: string; positive: string }> = {
+  societal: { label: 'Sociétal', negative: 'Conservateur', positive: 'Progressiste' },
+  economic: { label: 'Économique', negative: 'Interventionniste', positive: 'Libéral' },
+  authority: { label: 'Autorité', negative: 'Autoritaire', positive: 'Libertaire' },
+  ecology: { label: 'Écologie', negative: 'Productiviste', positive: 'Écologiste' },
+  sovereignty: { label: 'Souveraineté', negative: 'Souverainiste', positive: 'Mondialiste' },
+};
+
+const ALL_AXES: AxisId[] = ['societal', 'economic', 'authority', 'ecology', 'sovereignty'];
+
 const TABS: Array<{ id: Tab; label: string }> = [
-  { id: 'sources', label: 'Carte des sources' },
+  { id: 'sources', label: 'Tes médias' },
   { id: 'infos', label: 'Infos partagées' },
-  { id: 'partager', label: 'Partager un lien' },
+  { id: 'partager', label: 'Partager' },
+  { id: 'signaler', label: 'Média manquant' },
 ];
 
 export function CritiqueScreen({ sessionId, userPosition, onBack }: CritiqueScreenProps) {
@@ -66,7 +80,7 @@ export function CritiqueScreen({ sessionId, userPosition, onBack }: CritiqueScre
       </div>
 
       <p className="text-sm text-gray-400 mb-4">
-        Des infos et sources intéressantes pour élargir ton horizon.
+        Découvre les médias proches de tes positions — et ceux qui peuvent élargir ton horizon.
       </p>
 
       {/* Tabs — scrollable on mobile */}
@@ -81,7 +95,6 @@ export function CritiqueScreen({ sessionId, userPosition, onBack }: CritiqueScre
             onClick={() => setTab(t.id)}
             role="tab"
             aria-selected={tab === t.id}
-            aria-controls={`critique-panel-${t.id}`}
             className={`px-4 py-2.5 rounded-lg text-sm font-medium transition-colors whitespace-nowrap touch-target focus-ring ${
               tab === t.id
                 ? 'bg-purple-600 text-white'
@@ -93,23 +106,47 @@ export function CritiqueScreen({ sessionId, userPosition, onBack }: CritiqueScre
         ))}
       </div>
 
-      <div id={`critique-panel-${tab}`} role="tabpanel">
-        {tab === 'sources' && <SourcesTab sessionId={sessionId} userPosition={userPosition} />}
-        {tab === 'infos' && <InfosTab />}
-        {tab === 'partager' && <PartagerTab sessionId={sessionId} />}
-      </div>
+      {tab === 'sources' && <SourcesTab userPosition={userPosition} />}
+      {tab === 'infos' && <InfosTab />}
+      {tab === 'partager' && <PartagerTab sessionId={sessionId} />}
+      {tab === 'signaler' && <SignalerMediaTab sessionId={sessionId} />}
     </section>
   );
 }
 
-// ── Tab 1: Carte des sources ──────────────────────────────────────
+// ── Tab 1: Tes médias (par axe : le plus proche + à découvrir) ────
 
-function SourcesTab({ sessionId, userPosition }: { sessionId: string; userPosition: CompassPosition }) {
+function MediaCard({ media, badge, badgeColor }: { media: MediaSource; badge: string; badgeColor: string }) {
+  return (
+    <div className="flex items-center gap-3 p-3 rounded-lg bg-gray-900 border border-gray-800">
+      <div className="flex-1 min-w-0">
+        <div className="flex items-center gap-2 flex-wrap">
+          {media.url ? (
+            <a
+              href={media.url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="font-medium text-sm text-purple-300 hover:text-purple-200 underline underline-offset-2 truncate"
+            >
+              {media.label}
+            </a>
+          ) : (
+            <span className="font-medium text-sm truncate">{media.label}</span>
+          )}
+          <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-medium ${badgeColor}`}>
+            {badge}
+          </span>
+        </div>
+        <p className="text-xs text-gray-500 truncate mt-0.5">{media.editorialLabel}</p>
+        <p className="text-xs text-gray-600 truncate">{TYPE_LABELS[media.type] || media.type} · {media.owner}</p>
+      </div>
+    </div>
+  );
+}
+
+function SourcesTab({ userPosition }: { userPosition: CompassPosition }) {
   const [sources, setSources] = useState<MediaSource[]>([]);
   const [loading, setLoading] = useState(true);
-  const [ratingMedia, setRatingMedia] = useState<string | null>(null);
-  const [ratingSoc, setRatingSoc] = useState(0);
-  const [ratingEco, setRatingEco] = useState(0);
 
   useEffect(() => {
     fetch('/api/critique/medias')
@@ -118,148 +155,107 @@ function SourcesTab({ sessionId, userPosition }: { sessionId: string; userPositi
       .catch(() => setLoading(false));
   }, []);
 
-  const submitRating = async (mediaId: string) => {
-    await fetch(`/api/critique/medias/${mediaId}/rate`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ sessionId, societal: ratingSoc, economic: ratingEco }),
-    }).catch(() => {});
-    setRatingMedia(null);
-    setRatingSoc(0);
-    setRatingEco(0);
-  };
-
   if (loading) return <p className="text-gray-500 text-center" role="status">Chargement...</p>;
 
-  // Compute distance to user for sorting
-  const withDistance = sources.map((s) => {
-    const ds = s.position.societal - userPosition.societal;
-    const de = s.position.economic - userPosition.economic;
-    return { ...s, distance: Math.sqrt(ds * ds + de * de) };
+  // For each axis: find closest and most distant (for discovery)
+  const axisRecommendations = ALL_AXES.map((axis) => {
+    const info = AXIS_INFO[axis];
+    const userVal = userPosition[axis];
+
+    // Sort by distance on this specific axis
+    const sorted = [...sources]
+      .filter((s) => s.id !== 'reseaux_sociaux') // exclude generic "social media"
+      .map((s) => ({
+        ...s,
+        axisDist: Math.abs(s.position[axis] - userVal),
+        axisVal: s.position[axis],
+      }))
+      .sort((a, b) => a.axisDist - b.axisDist);
+
+    const closest = sorted[0] || null;
+
+    // For discovery: pick the most distant that's on the other side of the axis
+    // (if user is positive, suggest negative, and vice versa)
+    const otherSide = sorted
+      .filter((s) => {
+        if (userVal >= 0) return s.axisVal < -0.1;
+        return s.axisVal > 0.1;
+      })
+      .sort((a, b) => b.axisDist - a.axisDist);
+
+    const discovery = otherSide[0] || sorted[sorted.length - 1] || null;
+
+    // Where is the user on this axis?
+    const userLabel = userVal > 0.2
+      ? info.positive.toLowerCase()
+      : userVal < -0.2
+        ? info.negative.toLowerCase()
+        : 'au centre';
+
+    return { axis, info, userVal, userLabel, closest, discovery };
   });
-
-  // Group by type
-  const byType = new Map<string, typeof withDistance>();
-  for (const s of withDistance) {
-    const list = byType.get(s.type) || [];
-    list.push(s);
-    byType.set(s.type, list);
-  }
-
-  // Sort each group by distance
-  for (const list of byType.values()) {
-    list.sort((a, b) => a.distance - b.distance);
-  }
-
-  // Gauge color: societal axis → red (conservateur) to blue (progressiste)
-  const gaugeColor = (soc: number) => {
-    const t = (soc + 1) / 2; // 0 to 1
-    const r = Math.round(220 - t * 170);
-    const g = Math.round(80 + (0.5 - Math.abs(t - 0.5)) * 100);
-    const b = Math.round(50 + t * 170);
-    return `rgb(${r}, ${g}, ${b})`;
-  };
 
   return (
     <div className="flex flex-col gap-6">
-      {['podcast', 'presse', 'tv', 'radio', 'web'].map((type) => {
-        const list = byType.get(type);
-        if (!list || list.length === 0) return null;
-        return (
-          <div key={type}>
-            <h3 className="text-sm font-semibold text-gray-400 mb-2 uppercase tracking-wider">
-              {TYPE_LABELS[type] || type}
-            </h3>
-            <div className="flex flex-col gap-1.5">
-              {list.map((s) => {
-                const isClose = s.distance < 0.6;
-                const isFar = s.distance > 1.2;
-                return (
-                  <div key={s.id}>
-                    <button
-                      className="w-full flex items-center gap-3 p-2.5 sm:p-3 rounded-lg bg-gray-900 border border-gray-800 hover:border-gray-700 transition-colors text-left touch-target focus-ring"
-                      onClick={() => {
-                        if (ratingMedia === s.id) { setRatingMedia(null); }
-                        else { setRatingMedia(s.id); setRatingSoc(s.editorialPosition.societal); setRatingEco(s.editorialPosition.economic); }
-                      }}
-                      aria-expanded={ratingMedia === s.id}
-                      aria-label={`${s.label} — ${s.editorialLabel}${isClose ? ' (proche de toi)' : ''}${isFar ? ' (éloigné)' : ''}`}
-                    >
-                      {/* Color gauge bar */}
-                      <div
-                        className="w-1.5 h-10 rounded-full flex-shrink-0"
-                        style={{ backgroundColor: gaugeColor(s.position.societal) }}
-                        aria-hidden="true"
-                      />
+      <p className="text-xs text-gray-500">
+        Pour chaque axe politique, le média le plus proche de ta position et une suggestion pour élargir ta perspective.
+      </p>
 
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2">
-                          <span className="font-medium text-sm truncate">{s.label}</span>
-                          {isClose && <span className="text-xs text-green-400">proche de toi</span>}
-                          {isFar && <span className="text-xs text-orange-400">éloigné</span>}
-                        </div>
-                        <p className="text-xs text-gray-500 truncate">{s.editorialLabel}</p>
-                      </div>
-
-                      {s.citizenRatingCount > 0 && (
-                        <span className="text-xs text-gray-600 flex-shrink-0">
-                          {s.citizenRatingCount} avis
-                        </span>
-                      )}
-                    </button>
-
-                    {/* Rating panel */}
-                    {ratingMedia === s.id && (
-                      <div className="ml-5 mt-1 p-3 bg-gray-800 rounded-lg border border-gray-700" role="form" aria-label={`Évaluer ${s.label}`}>
-                        <p className="text-xs text-gray-400 mb-2">Selon toi, {s.label} est plutôt :</p>
-
-                        <div className="mb-3">
-                          <div className="flex justify-between text-xs text-gray-500 mb-0.5">
-                            <span>Conservateur</span>
-                            <span>Progressiste</span>
-                          </div>
-                          <input
-                            type="range"
-                            min={-100}
-                            max={100}
-                            value={ratingSoc * 100}
-                            onChange={(e) => setRatingSoc(Number(e.target.value) / 100)}
-                            className="w-full accent-purple-500"
-                            aria-label="Axe sociétal — de conservateur à progressiste"
-                          />
-                        </div>
-
-                        <div className="mb-3">
-                          <div className="flex justify-between text-xs text-gray-500 mb-0.5">
-                            <span>Interventionniste</span>
-                            <span>Libéral</span>
-                          </div>
-                          <input
-                            type="range"
-                            min={-100}
-                            max={100}
-                            value={ratingEco * 100}
-                            onChange={(e) => setRatingEco(Number(e.target.value) / 100)}
-                            className="w-full accent-purple-500"
-                            aria-label="Axe économique — d'interventionniste à libéral"
-                          />
-                        </div>
-
-                        <button
-                          onClick={() => submitRating(s.id)}
-                          className="w-full py-2 bg-purple-600 hover:bg-purple-500 rounded text-sm font-medium transition-colors touch-target focus-ring"
-                        >
-                          Envoyer mon évaluation
-                        </button>
-                      </div>
-                    )}
-                  </div>
-                );
-              })}
-            </div>
+      {axisRecommendations.map(({ axis, info, userLabel, closest, discovery }) => (
+        <div key={axis} className="space-y-2">
+          <div className="flex items-center gap-2">
+            <h3 className="text-sm font-semibold text-white">{info.label}</h3>
+            <span className="text-xs text-gray-500">
+              {info.negative} ↔ {info.positive}
+            </span>
           </div>
-        );
-      })}
+          <p className="text-xs text-gray-400">
+            Tu es plutôt <span className="text-purple-300 font-medium">{userLabel}</span> sur cet axe.
+          </p>
+
+          <div className="grid gap-2 sm:grid-cols-2">
+            {closest && (
+              <MediaCard
+                media={closest}
+                badge="Proche de toi"
+                badgeColor="bg-green-900/40 text-green-400"
+              />
+            )}
+            {discovery && discovery.id !== closest?.id && (
+              <MediaCard
+                media={discovery}
+                badge="À découvrir"
+                badgeColor="bg-amber-900/40 text-amber-400"
+              />
+            )}
+          </div>
+        </div>
+      ))}
+
+      {/* Full list toggle */}
+      <details className="mt-2">
+        <summary className="text-xs text-gray-500 cursor-pointer hover:text-gray-300 transition-colors">
+          Voir tous les {sources.length} médias référencés
+        </summary>
+        <div className="mt-3 flex flex-col gap-1.5">
+          {sources
+            .filter((s) => s.id !== 'reseaux_sociaux')
+            .sort((a, b) => a.label.localeCompare(b.label))
+            .map((s) => (
+              <div key={s.id} className="flex items-center gap-2 text-xs text-gray-400 py-1">
+                <span className="text-gray-600">{TYPE_LABELS[s.type]?.slice(0, 2) || '?'}</span>
+                {s.url ? (
+                  <a href={s.url} target="_blank" rel="noopener noreferrer" className="text-purple-400 hover:text-purple-300 underline">
+                    {s.label}
+                  </a>
+                ) : (
+                  <span>{s.label}</span>
+                )}
+                <span className="text-gray-600 truncate">{s.editorialLabel}</span>
+              </div>
+            ))}
+        </div>
+      </details>
     </div>
   );
 }
@@ -281,7 +277,6 @@ function InfosTab() {
 
   return (
     <div>
-      {/* Domain filter */}
       <div className="mb-4">
         <label htmlFor="infos-domain-filter" className="sr-only">Filtrer par thème</label>
         <select
@@ -425,6 +420,104 @@ function PartagerTab({ sessionId }: { sessionId: string }) {
             : 'Ce lien a été refusé (hors sujet ou contenu inapproprié).'
           }
         </div>
+      )}
+    </div>
+  );
+}
+
+// ── Tab 4: Signaler un média manquant ────────────────────────────────
+
+function SignalerMediaTab({ sessionId }: { sessionId: string }) {
+  const [mediaName, setMediaName] = useState('');
+  const [mediaUrl, setMediaUrl] = useState('');
+  const [mediaType, setMediaType] = useState('presse');
+  const [sending, setSending] = useState(false);
+  const [sent, setSent] = useState(false);
+
+  const handleSubmit = async () => {
+    if (!mediaName.trim()) return;
+    setSending(true);
+
+    try {
+      await fetch('/api/feedback', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          sessionId,
+          targetType: 'missing_media',
+          feedbackType: 'missing_topic',
+          description: `Média manquant: ${mediaName.trim()} (${TYPE_LABELS[mediaType] || mediaType})${mediaUrl.trim() ? ` — ${mediaUrl.trim()}` : ''}`,
+          screen: 'critique',
+        }),
+      });
+      setSent(true);
+      setMediaName('');
+      setMediaUrl('');
+      setTimeout(() => setSent(false), 3000);
+    } catch {} finally {
+      setSending(false);
+    }
+  };
+
+  return (
+    <div>
+      <p className="text-sm text-gray-400 mb-4">
+        Un média que tu suis régulièrement n'est pas dans la liste ?
+        Signale-le et on l'ajoutera.
+      </p>
+
+      <div className="mb-3">
+        <label htmlFor="media-name" className="text-xs text-gray-500 block mb-1">Nom du média</label>
+        <input
+          id="media-name"
+          type="text"
+          value={mediaName}
+          onChange={(e) => setMediaName(e.target.value)}
+          placeholder="Ex: Le Média, QG, Hugo Décrypte..."
+          className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2.5 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-purple-500"
+          aria-required="true"
+          maxLength={100}
+        />
+      </div>
+
+      <div className="mb-3">
+        <label htmlFor="media-url" className="text-xs text-gray-500 block mb-1">Lien (optionnel)</label>
+        <input
+          id="media-url"
+          type="url"
+          value={mediaUrl}
+          onChange={(e) => setMediaUrl(e.target.value)}
+          placeholder="https://..."
+          className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2.5 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-purple-500"
+        />
+      </div>
+
+      <div className="mb-4">
+        <label htmlFor="media-type" className="text-xs text-gray-500 block mb-1">Type</label>
+        <select
+          id="media-type"
+          value={mediaType}
+          onChange={(e) => setMediaType(e.target.value)}
+          className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2.5 text-sm text-white focus:outline-none focus:border-purple-500 touch-target"
+        >
+          {Object.entries(TYPE_LABELS).map(([id, label]) => (
+            <option key={id} value={id}>{label}</option>
+          ))}
+        </select>
+      </div>
+
+      <button
+        onClick={handleSubmit}
+        disabled={!mediaName.trim() || sending}
+        className="w-full py-3 bg-purple-600 hover:bg-purple-500 disabled:bg-gray-700 disabled:text-gray-500 rounded-lg font-medium text-sm transition-colors touch-target focus-ring"
+      >
+        {sending ? 'Envoi...' : 'Signaler ce média'}
+      </button>
+
+      {sent && (
+        <p className="text-green-400 text-sm text-center mt-3" role="status" aria-live="polite">
+          Merci ! On prendra en compte ta suggestion.
+        </p>
       )}
     </div>
   );

@@ -6,6 +6,7 @@
 #
 # independent: true si la source n'appartient pas à un groupe industriel/milliardaire
 # editorial_label: description courte de la ligne éditoriale
+# url: lien principal vers le site ou la chaîne
 #
 # IMPORTANT : Ces positions sont des estimations éditoriales initiales.
 # Elles sont progressivement corrigées par les évaluations des visiteurs.
@@ -17,6 +18,7 @@ sources:
   - id: tf1
     label: "TF1 / LCI"
     type: tv
+    url: "https://www.tf1info.fr"
     position_1d: 0.2
     position:
       societal: -0.1
@@ -31,6 +33,7 @@ sources:
   - id: france2
     label: "France 2 / France Info TV"
     type: tv
+    url: "https://www.francetvinfo.fr"
     position_1d: -0.1
     position:
       societal: 0.2
@@ -45,6 +48,7 @@ sources:
   - id: bfmtv
     label: "BFM TV"
     type: tv
+    url: "https://www.bfmtv.com"
     position_1d: 0.2
     position:
       societal: -0.1
@@ -59,6 +63,7 @@ sources:
   - id: cnews
     label: "CNews"
     type: tv
+    url: "https://www.cnews.fr"
     position_1d: 0.6
     position:
       societal: -0.6
@@ -75,6 +80,7 @@ sources:
   - id: lemonde
     label: "Le Monde"
     type: presse
+    url: "https://www.lemonde.fr"
     position_1d: -0.1
     position:
       societal: 0.3
@@ -89,6 +95,7 @@ sources:
   - id: lefigaro
     label: "Le Figaro"
     type: presse
+    url: "https://www.lefigaro.fr"
     position_1d: 0.4
     position:
       societal: -0.3
@@ -103,6 +110,7 @@ sources:
   - id: liberation
     label: "Libération"
     type: presse
+    url: "https://www.liberation.fr"
     position_1d: -0.4
     position:
       societal: 0.6
@@ -117,6 +125,7 @@ sources:
   - id: mediapart
     label: "Mediapart"
     type: presse
+    url: "https://www.mediapart.fr"
     position_1d: -0.5
     position:
       societal: 0.5
@@ -131,6 +140,7 @@ sources:
   - id: valeurs_actuelles
     label: "Valeurs Actuelles"
     type: presse
+    url: "https://www.valeursactuelles.com"
     position_1d: 0.7
     position:
       societal: -0.7
@@ -145,6 +155,7 @@ sources:
   - id: canard_enchaine
     label: "Le Canard Enchaîné"
     type: presse
+    url: "https://www.lecanardenchaine.fr"
     position_1d: -0.2
     position:
       societal: 0.1
@@ -159,6 +170,7 @@ sources:
   - id: asi
     label: "Arrêt sur images (ASI)"
     type: presse
+    url: "https://www.arretsurimages.net"
     position_1d: -0.3
     position:
       societal: 0.3
@@ -173,6 +185,7 @@ sources:
   - id: reporterre
     label: "Reporterre"
     type: presse
+    url: "https://reporterre.net"
     position_1d: -0.4
     position:
       societal: 0.3
@@ -187,6 +200,7 @@ sources:
   - id: bastamag
     label: "Basta!"
     type: presse
+    url: "https://basta.media"
     position_1d: -0.5
     position:
       societal: 0.4
@@ -201,6 +215,7 @@ sources:
   - id: contrepoints
     label: "Contrepoints"
     type: presse
+    url: "https://www.contrepoints.org"
     position_1d: 0.4
     position:
       societal: 0.2
@@ -215,6 +230,7 @@ sources:
   - id: le_point
     label: "Le Point"
     type: presse
+    url: "https://www.lepoint.fr"
     position_1d: 0.3
     position:
       societal: -0.1
@@ -229,6 +245,7 @@ sources:
   - id: lopinion
     label: "L'Opinion"
     type: presse
+    url: "https://www.lopinion.fr"
     position_1d: 0.3
     position:
       societal: 0.0
@@ -243,6 +260,7 @@ sources:
   - id: present
     label: "Présent"
     type: presse
+    url: "https://present.fr"
     position_1d: 0.8
     position:
       societal: -0.8
@@ -257,6 +275,7 @@ sources:
   - id: boulevard_voltaire
     label: "Boulevard Voltaire"
     type: presse
+    url: "https://www.bvoltaire.fr"
     position_1d: 0.6
     position:
       societal: -0.6
@@ -273,6 +292,7 @@ sources:
   - id: franceinter
     label: "France Inter"
     type: radio
+    url: "https://www.radiofrance.fr/franceinter"
     position_1d: -0.2
     position:
       societal: 0.3
@@ -287,6 +307,7 @@ sources:
   - id: europe1
     label: "Europe 1"
     type: radio
+    url: "https://www.europe1.fr"
     position_1d: 0.3
     position:
       societal: -0.2
@@ -301,6 +322,7 @@ sources:
   - id: rtl
     label: "RTL"
     type: radio
+    url: "https://www.rtl.fr"
     position_1d: 0.1
     position:
       societal: 0.0
@@ -315,6 +337,7 @@ sources:
   - id: franceculture
     label: "France Culture"
     type: radio
+    url: "https://www.radiofrance.fr/franceculture"
     position_1d: -0.3
     position:
       societal: 0.4
@@ -329,6 +352,7 @@ sources:
   - id: sudradio
     label: "Sud Radio"
     type: radio
+    url: "https://www.sudradio.fr"
     position_1d: 0.4
     position:
       societal: -0.3
@@ -345,6 +369,7 @@ sources:
   - id: thinkerview
     label: "Thinkerview"
     type: podcast
+    url: "https://www.youtube.com/@Thinkerview"
     position_1d: 0.0
     position:
       societal: 0.0
@@ -359,6 +384,7 @@ sources:
   - id: blast
     label: "Blast"
     type: podcast
+    url: "https://www.youtube.com/@Aborresciences"
     position_1d: -0.5
     position:
       societal: 0.4
@@ -373,6 +399,7 @@ sources:
   - id: lemedia
     label: "Le Média"
     type: podcast
+    url: "https://www.youtube.com/@LeMediaTV"
     position_1d: -0.6
     position:
       societal: 0.4
@@ -387,6 +414,7 @@ sources:
   - id: osons_causer
     label: "Osons Causer"
     type: podcast
+    url: "https://www.youtube.com/@OsonsCauser"
     position_1d: -0.3
     position:
       societal: 0.2
@@ -401,6 +429,7 @@ sources:
   - id: idriss_aberkane
     label: "Idriss Aberkane"
     type: podcast
+    url: "https://www.youtube.com/@IdrissAberkane"
     position_1d: 0.2
     position:
       societal: -0.1
@@ -415,6 +444,7 @@ sources:
   - id: trouble_fait
     label: "Trouble Fait"
     type: podcast
+    url: "https://www.youtube.com/@TroubleFait"
     position_1d: 0.0
     position:
       societal: -0.1
@@ -429,6 +459,7 @@ sources:
   - id: livre_noir
     label: "Le Livre Noir"
     type: podcast
+    url: "https://www.youtube.com/@LeLivreNoir"
     position_1d: 0.4
     position:
       societal: -0.4
@@ -443,6 +474,7 @@ sources:
   - id: jean_marc_jancovici
     label: "Jancovici (podcasts/conférences)"
     type: podcast
+    url: "https://www.youtube.com/@JeanMarcJancovici"
     position_1d: 0.0
     position:
       societal: 0.0
@@ -457,6 +489,7 @@ sources:
   - id: heureka
     label: "Heu?reka"
     type: podcast
+    url: "https://www.youtube.com/@Heurekaa"
     position_1d: -0.1
     position:
       societal: 0.1
@@ -471,6 +504,7 @@ sources:
   - id: samuel_fitoussi
     label: "Samuel Fitoussi"
     type: podcast
+    url: "https://www.youtube.com/@SamuelFitoussi"
     position_1d: 0.3
     position:
       societal: -0.3
@@ -487,6 +521,7 @@ sources:
   - id: reseaux_sociaux
     label: "Réseaux sociaux (X, TikTok, Facebook)"
     type: web
+    url: "https://x.com"
     position_1d: 0.0
     position:
       societal: 0.0
