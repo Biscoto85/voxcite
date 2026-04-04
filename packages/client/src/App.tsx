@@ -9,8 +9,10 @@ import { AnalysisScreen } from './components/analysis/AnalysisScreen';
 import { ExprimerScreen } from './components/exprimer/ExprimerScreen';
 import { CritiqueScreen } from './components/critique/CritiqueScreen';
 import { FeedbackButton } from './components/feedback/FeedbackButton';
+import { MentionsLegales } from './components/legal/MentionsLegales';
+import { CGU } from './components/legal/CGU';
 
-export type AppScreen = 'loading' | 'onboarding' | 'reveal' | 'menu' | 'prisme' | 'affiner' | 'comparaison' | 'critique' | 'exprimer';
+export type AppScreen = 'loading' | 'onboarding' | 'reveal' | 'menu' | 'prisme' | 'affiner' | 'comparaison' | 'critique' | 'exprimer' | 'mentions' | 'cgu';
 
 const SESSION_KEY = 'partiprism_session_id';
 
@@ -24,15 +26,31 @@ const SCREEN_TITLES: Record<AppScreen, string> = {
   comparaison: 'Comparaison',
   critique: 'Esprit critique',
   exprimer: 'M\'exprimer',
+  mentions: 'Mentions légales',
+  cgu: 'Conditions Générales d\'Utilisation',
 };
 
 export function App() {
   const [screen, setScreen] = useState<AppScreen>('loading');
+  const [previousScreen, setPreviousScreen] = useState<AppScreen>('menu');
   const [parties, setParties] = useState<Party[]>([]);
   const [onboardingQuestions, setOnboardingQuestions] = useState<Question[]>([]);
   const [userPosition, setUserPosition] = useState<CompassPosition | undefined>();
   const [sessionId, setSessionId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+
+  // Navigate to legal pages, remembering where we came from
+  const navigateToLegal = useCallback((target: 'mentions' | 'cgu') => {
+    if (screen !== 'mentions' && screen !== 'cgu') {
+      setPreviousScreen(screen);
+    }
+    setScreen(target);
+    window.scrollTo(0, 0);
+  }, [screen]);
+
+  const navigateBackFromLegal = useCallback(() => {
+    setScreen(previousScreen);
+  }, [previousScreen]);
 
   // Load data + try to restore session
   useEffect(() => {
@@ -50,12 +68,10 @@ export function App() {
         setOnboardingQuestions(q);
 
         if (existingSession && existingSession.position) {
-          // Restore session
           setSessionId(existingSession.id);
           setUserPosition(existingSession.position);
           setScreen('menu');
         } else {
-          // Clear stale session
           if (savedSessionId) localStorage.removeItem(SESSION_KEY);
           setScreen('onboarding');
         }
@@ -74,12 +90,12 @@ export function App() {
     setUserPosition(position);
   }, []);
 
-  // Show feedback button on all screens except loading/onboarding
-  const showFeedback = screen !== 'loading' && screen !== 'onboarding';
-  const canGoHome = screen !== 'loading' && screen !== 'onboarding' && screen !== 'reveal';
+  const showFeedback = screen !== 'loading' && screen !== 'onboarding' && screen !== 'mentions' && screen !== 'cgu';
+  const canGoHome = screen !== 'loading' && screen !== 'onboarding' && screen !== 'reveal' && screen !== 'mentions' && screen !== 'cgu';
+  const showFooter = screen !== 'loading';
 
   return (
-    <div className="min-h-screen bg-gray-950 text-white safe-bottom">
+    <div className="min-h-screen bg-gray-950 text-white safe-bottom flex flex-col">
       {/* Skip to content link for keyboard navigation */}
       <a
         href="#main-content"
@@ -103,7 +119,7 @@ export function App() {
 
       <main
         id="main-content"
-        className="px-4 pb-16 sm:pb-12"
+        className="px-4 pb-8 flex-1"
         role="main"
         aria-label={SCREEN_TITLES[screen]}
       >
@@ -180,7 +196,49 @@ export function App() {
             onBack={() => setScreen('menu')}
           />
         )}
+
+        {screen === 'mentions' && (
+          <MentionsLegales
+            onBack={navigateBackFromLegal}
+            onNavigateCGU={() => navigateToLegal('cgu')}
+          />
+        )}
+
+        {screen === 'cgu' && (
+          <CGU
+            onBack={navigateBackFromLegal}
+            onNavigateMentions={() => navigateToLegal('mentions')}
+          />
+        )}
       </main>
+
+      {/* Footer with legal links */}
+      {showFooter && (
+        <footer className="py-4 px-4 border-t border-gray-900 text-center" role="contentinfo">
+          <div className="flex items-center justify-center gap-3 text-xs text-gray-600">
+            <button
+              onClick={() => navigateToLegal('mentions')}
+              className={`hover:text-gray-400 transition-colors focus-ring rounded px-1 ${screen === 'mentions' ? 'text-purple-400' : ''}`}
+            >
+              Mentions légales
+            </button>
+            <span aria-hidden="true">·</span>
+            <button
+              onClick={() => navigateToLegal('cgu')}
+              className={`hover:text-gray-400 transition-colors focus-ring rounded px-1 ${screen === 'cgu' ? 'text-purple-400' : ''}`}
+            >
+              CGU
+            </button>
+            <span aria-hidden="true">·</span>
+            <a
+              href="mailto:contact@partiprism.fr"
+              className="hover:text-gray-400 transition-colors"
+            >
+              Contact
+            </a>
+          </div>
+        </footer>
+      )}
 
       {/* Global feedback button */}
       {showFeedback && (
