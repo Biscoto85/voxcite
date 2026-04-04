@@ -138,6 +138,28 @@ Ces 10 questions produisent la première image du positionnement. Elles sont pos
 - **weight** : 1.0
 - **calibration** : D'accord → progressiste + interventionniste / Pas d'accord → conservateur + libéral.
 
+### Q11
+- **id** : `onb-11`
+- **text** : "La justice est trop laxiste en France aujourd'hui."
+- **type** : affirmation
+- **axis** : authority
+- **polarity** : -1
+- **domain** : securite
+- **phase** : onboarding
+- **weight** : 1.0
+- **calibration** : D'accord → autoritaire / Pas d'accord → libertaire. Formulation volontairement directe et populaire. Complémentaire de Q6 (surveillance) pour mieux cerner l'axe autorité.
+
+### Q12
+- **id** : `onb-12`
+- **text** : "Il faudrait interdire la vente de viande issue de l'élevage intensif, même si ça fait monter les prix."
+- **type** : affirmation
+- **axis** : ecology
+- **polarity** : +1
+- **domain** : environnement
+- **phase** : onboarding
+- **weight** : 1.0
+- **calibration** : D'accord → écologiste / Pas d'accord → productiviste. Le "même si" force le trade-off concret. Complémentaire de Q10 (interdictions transports/pesticides).
+
 ---
 
 ## Questions d'approfondissement (40)

@@ -81,6 +81,9 @@ export const sessions = pgTable('sessions', {
   positionEcology: real('position_ecology'),
   positionSovereignty: real('position_sovereignty'),
   onboardingCompleted: boolean('onboarding_completed').notNull().default(false),
+  postalCode: text('postal_code'),                         // code postal du répondant
+  ipCountry: text('ip_country'),                           // pays déduit de l'IP
+  ipRegion: text('ip_region'),                             // région déduite de l'IP
   deviceFingerprint: text('device_fingerprint'),
   shareCount: integer('share_count').notNull().default(0),
 });

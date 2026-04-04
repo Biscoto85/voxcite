@@ -82,7 +82,7 @@ export const OCTANT_LABELS: Record<Octant, string> = {
 
 export const ONBOARDING_PHASE1_COUNT = 5;
 export const ONBOARDING_PHASE3_COUNT = 5;
-export const ONBOARDING_TOTAL = 10;
+export const ONBOARDING_TOTAL = 12;
 
 // ── Réponses ───────────────────────────────────────────────────────
 

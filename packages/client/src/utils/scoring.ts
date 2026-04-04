@@ -17,9 +17,12 @@ export function getClosestParty(position: CompassPosition, parties: Party[]): Pa
 
   for (const party of parties) {
     if (!party.visibleOnCompass) continue;
-    const dx = party.position.societal - position.societal;
-    const dy = party.position.economic - position.economic;
-    const dist = Math.sqrt(dx * dx + dy * dy);
+    const ds = party.position.societal - position.societal;
+    const de = party.position.economic - position.economic;
+    const da = party.position.authority - position.authority;
+    const dc = party.position.ecology - position.ecology;
+    const dv = party.position.sovereignty - position.sovereignty;
+    const dist = Math.sqrt(ds*ds + de*de + da*da + dc*dc + dv*dv);
     if (dist < minDist) {
       minDist = dist;
       closest = party;

@@ -3,13 +3,32 @@ import { db } from '../db/index.js';
 import { sessions, responses, questions } from '../db/schema.js';
 import { eq } from 'drizzle-orm';
 import { calculatePosition } from '../services/scoring.js';
+import { geolocateIP, isPostalCodePlausible } from '../services/geolocation.js';
 
 export const sessionsRouter = Router();
 
-// POST / — créer une session anonyme
-sessionsRouter.post('/', async (_req, res) => {
-  const [session] = await db.insert(sessions).values({}).returning();
-  res.status(201).json({ id: session.id, createdAt: session.createdAt });
+// POST / — créer une session anonyme avec code postal optionnel
+sessionsRouter.post('/', async (req, res) => {
+  const { postalCode } = req.body as { postalCode?: string };
+  const ip = req.ip ?? req.socket.remoteAddress ?? '';
+
+  // Géolocaliser l'IP
+  const geo = await geolocateIP(ip);
+
+  // Vérifier la cohérence code postal / IP
+  const plausible = postalCode ? isPostalCodePlausible(postalCode, geo) : true;
+
+  const [session] = await db.insert(sessions).values({
+    postalCode: postalCode ?? null,
+    ipCountry: geo?.country ?? null,
+    ipRegion: geo?.region ?? null,
+  }).returning();
+
+  res.status(201).json({
+    id: session.id,
+    createdAt: session.createdAt,
+    postalCodePlausible: plausible,
+  });
 });
 
 // POST /:id/responses — enregistrer des réponses et recalculer la position
