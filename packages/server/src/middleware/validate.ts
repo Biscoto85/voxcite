@@ -20,7 +20,7 @@ export function requireFields(...fields: string[]): RequestHandler {
  * Validate :id param is a valid UUID.
  */
 export const validateUUIDParam: RequestHandler = (req, res, next) => {
-  const id = req.params.id;
+  const id = req.params.id as string;
   if (id && !isValidUUID(id)) {
     res.status(400).json({ error: 'Invalid ID format' });
     return;
