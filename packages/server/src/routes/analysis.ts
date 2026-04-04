@@ -1,6 +1,10 @@
 import { Router } from 'express';
 import type { CompassPosition, AxisId } from '@voxcite/shared';
 import { AXES } from '@voxcite/shared';
+import { runAiAnalysis } from '../services/ai-analysis.js';
+import { getPopulationStats, getUserPercentiles } from '../services/population.js';
+import { db } from '../db/index.js';
+import { biases } from '../db/schema.js';
 
 export const analysisRouter = Router();
 
@@ -13,15 +17,12 @@ interface PartyInput {
   position: CompassPosition;
 }
 
-/**
- * Generate analysis using Claude API.
- * Falls back to rule-based analysis if API not configured.
- */
-function generateAnalysis(
+// ── Fallback rule-based analysis ────────────────────────────────────
+
+function generateFallbackAnalysis(
   position: CompassPosition,
   parties: PartyInput[],
 ) {
-  // Compute distances
   const ranked = parties.map((p) => {
     const diffs = ALL_AXES.map((axis) => ({
       axis,
@@ -35,60 +36,33 @@ function generateAnalysis(
 
   const closest = ranked[0];
   const furthest = ranked[ranked.length - 1];
-  const second = ranked[1];
 
-  // Find user's most extreme axis
   const extremeAxis = ALL_AXES.reduce((best, axis) =>
     Math.abs(position[axis]) > Math.abs(position[best]) ? axis : best,
   );
   const extremeInfo = AXES[extremeAxis];
   const extremeLabel = position[extremeAxis] > 0 ? extremeInfo.positive : extremeInfo.negative;
 
-  // Build summary
-  const parts: string[] = [];
-
-  parts.push(
-    `Tu es le plus proche de ${closest.party.label} (${closest.party.abbreviation}, distance ${closest.distance.toFixed(2)}) et le plus éloigné de ${furthest.party.label} (${furthest.party.abbreviation}).`,
-  );
-
-  parts.push(
-    `Ton trait le plus marqué est "${extremeLabel}" sur l'axe ${extremeInfo.negative}↔${extremeInfo.positive} (${position[extremeAxis] > 0 ? '+' : ''}${position[extremeAxis].toFixed(2)}).`,
-  );
-
-  // Surprises
-  const surprises: string[] = [];
-
-  // Surprise 1: closest party disagrees on one axis
-  if (closest.furthest.absDiff > 0.5) {
-    const axisInfo = AXES[closest.furthest.axis];
-    surprises.push(
-      `Malgré ta proximité avec ${closest.party.abbreviation}, vous divergez fortement sur l'axe ${axisInfo.negative}↔${axisInfo.positive} (écart de ${closest.furthest.absDiff.toFixed(2)}).`,
-    );
-  }
-
-  // Surprise 2: a distant party agrees on one axis
-  if (furthest.closest.absDiff < 0.2) {
-    const axisInfo = AXES[furthest.closest.axis];
-    surprises.push(
-      `Surprise : tu partages presque la même position que ${furthest.party.abbreviation} sur l'axe ${axisInfo.negative}↔${axisInfo.positive}, alors que c'est le parti le plus éloigné de toi globalement.`,
-    );
-  }
-
-  // Surprise 3: between two close parties
-  if (second && Math.abs(closest.distance - second.distance) < 0.15) {
-    surprises.push(
-      `Tu es presque à égale distance entre ${closest.party.abbreviation} et ${second.party.abbreviation}. Le choix entre les deux se joue sur des nuances.`,
-    );
-  }
-
-  return { summary: parts.join(' '), surprises };
+  return {
+    summary: `Tu es le plus proche de ${closest.party.label} (${closest.party.abbreviation}) et le plus éloigné de ${furthest.party.label}. Ton trait le plus marqué : "${extremeLabel}" sur l'axe ${extremeInfo.negative}↔${extremeInfo.positive}.`,
+    vsCitoyens: 'Analyse comparative avec les autres citoyens disponible quand la clé API Claude est configurée.',
+    vsPartis: closest.furthest.absDiff > 0.5
+      ? `Malgré ta proximité avec ${closest.party.abbreviation}, vous divergez fortement sur l'axe ${AXES[closest.furthest.axis as AxisId].negative}↔${AXES[closest.furthest.axis as AxisId].positive}.`
+      : `Tu es globalement aligné avec ${closest.party.abbreviation} sur tous les axes.`,
+    biases: [],
+    espritCritiquePistes: [
+      `Explorer les arguments en faveur de "${position[extremeAxis] > 0 ? extremeInfo.negative : extremeInfo.positive}" sur l'axe ${extremeInfo.negative}↔${extremeInfo.positive}.`,
+    ],
+  };
 }
 
-// POST / — analyse du positionnement
+// ── Route ───────────────────────────────────────────────────────────
+
 analysisRouter.post('/', async (req, res) => {
-  const { position, parties } = req.body as {
+  const { position, parties, sessionId } = req.body as {
     position: CompassPosition;
     parties: PartyInput[];
+    sessionId?: string;
   };
 
   if (!position || !parties) {
@@ -96,8 +70,42 @@ analysisRouter.post('/', async (req, res) => {
     return;
   }
 
-  // TODO: If ANTHROPIC_API_KEY is set, use Claude for richer analysis
-  // For now, use rule-based analysis
-  const analysis = generateAnalysis(position, parties);
-  res.json(analysis);
+  // Try AI analysis first
+  if (process.env.ANTHROPIC_API_KEY) {
+    try {
+      const [populationStats, percentiles] = await Promise.all([
+        getPopulationStats(),
+        getUserPercentiles(position),
+      ]);
+
+      const result = await runAiAnalysis({
+        position,
+        parties,
+        populationStats,
+        percentiles,
+      });
+
+      // Store biases in DB if sessionId provided
+      if (sessionId && result.biases.length > 0) {
+        for (const bias of result.biases) {
+          await db.insert(biases).values({
+            sessionId,
+            biasType: bias.biasType,
+            axis: bias.axis,
+            description: bias.description,
+            strength: bias.strength,
+            suggestedContent: bias.suggestedContent,
+          });
+        }
+      }
+
+      res.json(result);
+      return;
+    } catch (err) {
+      console.error('[analysis] AI analysis failed, using fallback:', err);
+    }
+  }
+
+  // Fallback
+  res.json(generateFallbackAnalysis(position, parties));
 });

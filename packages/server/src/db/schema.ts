@@ -98,6 +98,19 @@ export const responses = pgTable('responses', {
   createdAt: timestamp('created_at').notNull().defaultNow(),
 });
 
+// ── Biais idéologiques identifiés par l'IA ──
+
+export const biases = pgTable('biases', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  sessionId: uuid('session_id').references(() => sessions.id).notNull(),
+  biasType: text('bias_type').notNull(),          // ex: "confirmation", "ancrage", "cadrage"
+  axis: text('axis').notNull(),                    // axe concerné
+  description: text('description').notNull(),      // description du biais
+  strength: real('strength').notNull(),            // 0-1, force du biais
+  suggestedContent: text('suggested_content'),     // contenu à proposer pour l'esprit critique
+  createdAt: timestamp('created_at').notNull().defaultNow(),
+});
+
 // ── Sujets d'actualité ──
 
 export const subjects = pgTable('subjects', {

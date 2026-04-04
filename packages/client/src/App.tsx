@@ -102,6 +102,7 @@ export function App() {
           <AnalysisScreen
             position={userPosition}
             parties={parties}
+            sessionId={sessionId}
             onBack={() => setScreen('menu')}
           />
         )}
