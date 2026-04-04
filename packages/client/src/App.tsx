@@ -1,12 +1,13 @@
 import { useEffect, useState, useCallback } from 'react';
 import type { Party, Question, CompassPosition } from '@voxcite/shared';
 import { CompassContainer } from './components/compass';
+import { CompassReveal } from './components/compass/CompassReveal';
 import { OnboardingFlow } from './components/onboarding';
 import { MainMenu } from './components/navigation/MainMenu';
 import { DeepQuestionsFlow } from './components/deep/DeepQuestionsFlow';
 import { AnalysisScreen } from './components/analysis/AnalysisScreen';
 
-export type AppScreen = 'loading' | 'onboarding' | 'menu' | 'prisme' | 'affiner' | 'analyse' | 'critique' | 'programme';
+export type AppScreen = 'loading' | 'onboarding' | 'reveal' | 'menu' | 'prisme' | 'affiner' | 'comparaison' | 'critique' | 'exprimer';
 
 export function App() {
   const [screen, setScreen] = useState<AppScreen>('loading');
@@ -33,13 +34,7 @@ export function App() {
   const handleOnboardingComplete = useCallback((position: CompassPosition, sid: string) => {
     setUserPosition(position);
     setSessionId(sid);
-  }, []);
-
-  // Listen for "see compass" from ResultScreen
-  useEffect(() => {
-    const handler = () => setScreen('menu');
-    window.addEventListener('onboarding-complete', handler);
-    return () => window.removeEventListener('onboarding-complete', handler);
+    setScreen('reveal');
   }, []);
 
   const handlePositionUpdate = useCallback((position: CompassPosition) => {
@@ -51,7 +46,7 @@ export function App() {
       <header className="py-6 px-4 text-center">
         <h1 className="text-3xl font-bold">
           <button
-            onClick={() => screen !== 'loading' && screen !== 'onboarding' && setScreen('menu')}
+            onClick={() => screen !== 'loading' && screen !== 'onboarding' && screen !== 'reveal' && setScreen('menu')}
             className="hover:text-purple-400 transition-colors"
           >
             VoxCité
@@ -78,6 +73,14 @@ export function App() {
           />
         )}
 
+        {screen === 'reveal' && userPosition && (
+          <CompassReveal
+            parties={parties}
+            userPosition={userPosition}
+            onContinue={() => setScreen('menu')}
+          />
+        )}
+
         {screen === 'menu' && (
           <MainMenu
             userPosition={userPosition}
@@ -98,7 +101,7 @@ export function App() {
           />
         )}
 
-        {screen === 'analyse' && userPosition && (
+        {screen === 'comparaison' && userPosition && (
           <AnalysisScreen
             position={userPosition}
             parties={parties}
@@ -115,9 +118,9 @@ export function App() {
           </div>
         )}
 
-        {screen === 'programme' && (
+        {screen === 'exprimer' && (
           <div className="max-w-lg mx-auto text-center py-12">
-            <h2 className="text-xl font-bold mb-2">Mon programme citoyen</h2>
+            <h2 className="text-xl font-bold mb-2">M'exprimer</h2>
             <p className="text-gray-400">Bientôt disponible.</p>
             <button onClick={() => setScreen('menu')} className="mt-4 text-purple-400 hover:text-purple-300">← Retour</button>
           </div>

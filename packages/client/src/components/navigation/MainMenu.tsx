@@ -15,21 +15,21 @@ const MENU_ITEMS: Array<{
 }> = [
   {
     screen: 'affiner',
-    title: 'Affiner mon positionnement',
+    title: 'Affiner',
     description: 'Réponds à plus de questions pour préciser ton profil sur les 5 axes.',
     icon: '🎯',
     ready: true,
   },
   {
     screen: 'prisme',
-    title: 'Le Prisme',
+    title: 'Prisme',
     description: 'Visualise ta position et celle des partis en 1D, 2D ou 3D.',
     icon: '🔮',
     ready: true,
   },
   {
-    screen: 'analyse',
-    title: 'Mon analyse',
+    screen: 'comparaison',
+    title: 'Comparaison',
     description: 'Découvre tes points communs et différences avec les partis et les autres citoyens.',
     icon: '📊',
     ready: true,
@@ -37,15 +37,15 @@ const MENU_ITEMS: Array<{
   {
     screen: 'critique',
     title: 'Esprit critique',
-    description: 'Confronte-toi à des faits vérifiés qui challengent tes convictions.',
+    description: 'Des sources d\'information recommandées, indépendantes des oligarques.',
     icon: '🧠',
     ready: false,
   },
   {
-    screen: 'programme',
-    title: 'Mon programme citoyen',
-    description: 'Donne ton avis sur les grands thèmes pour construire le programme des Français.',
-    icon: '📜',
+    screen: 'exprimer',
+    title: 'M\'exprimer',
+    description: 'Donne ton avis sur les grands thèmes et contribue au programme des citoyens.',
+    icon: '📢',
     ready: false,
   },
 ];
@@ -57,10 +57,10 @@ export function MainMenu({ userPosition, onNavigate }: MainMenuProps) {
         <div className="mb-6 p-4 bg-gray-900 rounded-xl border border-gray-800 text-center">
           <p className="text-sm text-gray-400 mb-1">Ton profil est enregistré</p>
           <div className="flex justify-center gap-4 text-xs text-gray-500">
-            <span>Éco: {userPosition.economic > 0 ? '+' : ''}{userPosition.economic.toFixed(2)}</span>
             <span>Soc: {userPosition.societal > 0 ? '+' : ''}{userPosition.societal.toFixed(2)}</span>
+            <span>Éco: {userPosition.economic > 0 ? '+' : ''}{userPosition.economic.toFixed(2)}</span>
             <span>Aut: {userPosition.authority > 0 ? '+' : ''}{userPosition.authority.toFixed(2)}</span>
-            <span>Éco: {userPosition.ecology > 0 ? '+' : ''}{userPosition.ecology.toFixed(2)}</span>
+            <span>Écol: {userPosition.ecology > 0 ? '+' : ''}{userPosition.ecology.toFixed(2)}</span>
             <span>Souv: {userPosition.sovereignty > 0 ? '+' : ''}{userPosition.sovereignty.toFixed(2)}</span>
           </div>
         </div>

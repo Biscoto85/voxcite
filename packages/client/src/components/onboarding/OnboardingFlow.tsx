@@ -1,12 +1,10 @@
 import { useState, useCallback } from 'react';
 import type { Question, QuestionResponse, CompassPosition, Party } from '@voxcite/shared';
-import { RESPONSE_LABELS_AFFIRMATION } from '@voxcite/shared';
 import { calculatePosition } from '@/hooks/useCompassPosition';
 import { QuestionCard } from './QuestionCard';
 import { PostalCodeInput } from './PostalCodeInput';
-import { ResultScreen } from './ResultScreen';
 
-type OnboardingStep = 'postal' | 'questions' | 'result';
+type OnboardingStep = 'postal' | 'questions';
 
 interface OnboardingFlowProps {
   questions: Question[];
@@ -16,17 +14,14 @@ interface OnboardingFlowProps {
 
 export function OnboardingFlow({ questions, parties, onComplete }: OnboardingFlowProps) {
   const [step, setStep] = useState<OnboardingStep>('postal');
-  const [postalCode, setPostalCode] = useState('');
   const [sessionId, setSessionId] = useState<string | null>(null);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [responses, setResponses] = useState<QuestionResponse[]>([]);
-  const [position, setPosition] = useState<CompassPosition | null>(null);
 
   const currentQuestion = questions[currentIndex];
   const progress = currentIndex / questions.length;
 
   const handleProfileSubmit = useCallback(async (data: { postalCode: string; infoSource: string; perceivedBias: string }) => {
-    setPostalCode(data.postalCode);
     try {
       const res = await fetch('/api/sessions', {
         method: 'POST',
@@ -61,20 +56,14 @@ export function OnboardingFlow({ questions, parties, onComplete }: OnboardingFlo
     if (currentIndex < questions.length - 1) {
       setCurrentIndex(currentIndex + 1);
     } else {
-      // Calculate final position
+      // Calculate final position → go directly to reveal
       const pos = calculatePosition(newResponses, questions);
-      setPosition(pos);
-      setStep('result');
       if (sessionId) onComplete(pos, sessionId);
     }
   }, [currentQuestion, responses, currentIndex, questions, sessionId, onComplete]);
 
   if (step === 'postal') {
     return <PostalCodeInput onSubmit={handleProfileSubmit} />;
-  }
-
-  if (step === 'result' && position) {
-    return <ResultScreen position={position} parties={parties} />;
   }
 
   if (!currentQuestion) return null;

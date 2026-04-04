@@ -1,13 +1,6 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import type { Question, CompassPosition } from '@voxcite/shared';
 import { QuestionCard } from '../onboarding/QuestionCard';
-
-interface DomainGroup {
-  domain: string;
-  label: string;
-  questions: Question[];
-  answered: number;
-}
 
 interface DeepQuestionsFlowProps {
   sessionId: string;
@@ -16,60 +9,39 @@ interface DeepQuestionsFlowProps {
   onBack: () => void;
 }
 
-const DOMAIN_LABELS: Record<string, string> = {
-  travail: 'Travail et emploi',
-  sante: 'Santé et protection sociale',
-  education: 'Éducation et jeunesse',
-  securite: 'Sécurité et justice',
-  immigration: 'Immigration et identité',
-  environnement: 'Environnement et énergie',
-  economie: 'Économie et fiscalité',
-  numerique: 'Numérique et libertés',
-  democratie: 'Démocratie et institutions',
-  international: 'International et défense',
-};
+/** Fisher-Yates shuffle */
+function shuffle<T>(arr: T[]): T[] {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
 
 export function DeepQuestionsFlow({
   sessionId, currentPosition, onPositionUpdate, onBack,
 }: DeepQuestionsFlowProps) {
-  const [domains, setDomains] = useState<DomainGroup[]>([]);
-  const [selectedDomain, setSelectedDomain] = useState<string | null>(null);
+  const [questions, setQuestions] = useState<Question[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [loading, setLoading] = useState(true);
+  const [done, setDone] = useState(false);
 
-  // Fetch deep questions
+  // Shuffle once on mount
   useEffect(() => {
     fetch('/api/questions?phase=deep')
       .then((r) => r.json())
-      .then((questions: Question[]) => {
-        const grouped = new Map<string, Question[]>();
-        for (const q of questions) {
-          const list = grouped.get(q.domain) || [];
-          list.push(q);
-          grouped.set(q.domain, list);
-        }
-
-        const groups: DomainGroup[] = [];
-        for (const [domain, qs] of grouped) {
-          groups.push({
-            domain,
-            label: DOMAIN_LABELS[domain] || domain,
-            questions: qs,
-            answered: 0,
-          });
-        }
-        groups.sort((a, b) => a.label.localeCompare(b.label));
-        setDomains(groups);
+      .then((qs: Question[]) => {
+        setQuestions(shuffle(qs));
         setLoading(false);
       })
       .catch(() => setLoading(false));
   }, []);
 
-  const activeDomain = domains.find((d) => d.domain === selectedDomain);
-  const activeQuestion = activeDomain?.questions[currentIndex];
+  const activeQuestion = questions[currentIndex];
 
   const handleAnswer = useCallback(async (value: -2 | -1 | 0 | 1 | 2) => {
-    if (!activeQuestion || !activeDomain) return;
+    if (!activeQuestion) return;
 
     // Send answer
     try {
@@ -82,91 +54,51 @@ export function DeepQuestionsFlow({
       if (data.position) onPositionUpdate(data.position);
     } catch {}
 
-    // Mark answered
-    setDomains((prev) =>
-      prev.map((d) =>
-        d.domain === selectedDomain ? { ...d, answered: d.answered + 1 } : d,
-      ),
-    );
-
-    if (currentIndex < activeDomain.questions.length - 1) {
+    if (currentIndex < questions.length - 1) {
       setCurrentIndex(currentIndex + 1);
     } else {
-      // Domain complete
-      setSelectedDomain(null);
-      setCurrentIndex(0);
+      setDone(true);
     }
-  }, [activeQuestion, activeDomain, currentIndex, selectedDomain, sessionId, onPositionUpdate]);
+  }, [activeQuestion, currentIndex, questions.length, sessionId, onPositionUpdate]);
 
   if (loading) {
     return <p className="text-center text-gray-500">Chargement...</p>;
   }
 
-  // Domain selection
-  if (!selectedDomain) {
-    const totalAnswered = domains.reduce((acc, d) => acc + d.answered, 0);
-    const totalQuestions = domains.reduce((acc, d) => acc + d.questions.length, 0);
-
+  if (done || questions.length === 0) {
     return (
-      <div className="max-w-lg mx-auto">
-        <div className="flex items-center justify-between mb-6">
-          <div>
-            <h2 className="text-xl font-bold">Affiner mon profil</h2>
-            <p className="text-sm text-gray-400 mt-1">
-              {totalAnswered} / {totalQuestions} questions répondues
-            </p>
-          </div>
-          <button onClick={onBack} className="text-sm text-purple-400 hover:text-purple-300">
-            ← Menu
-          </button>
-        </div>
-
+      <div className="max-w-lg mx-auto text-center py-12">
+        <h2 className="text-xl font-bold mb-2">
+          {questions.length === 0 ? 'Aucune question disponible' : 'Bravo, tu as répondu à toutes les questions !'}
+        </h2>
         <p className="text-gray-400 text-sm mb-4">
-          Choisis un domaine pour préciser ton positionnement :
+          Ton profil est maintenant beaucoup plus précis.
         </p>
-
-        <div className="flex flex-col gap-2">
-          {domains.map((d) => {
-            const complete = d.answered >= d.questions.length;
-            return (
-              <button
-                key={d.domain}
-                onClick={() => { setSelectedDomain(d.domain); setCurrentIndex(d.answered); }}
-                disabled={complete}
-                className={`text-left p-3 rounded-lg border transition-all ${
-                  complete
-                    ? 'bg-gray-900/50 border-gray-800/50 text-gray-600'
-                    : 'bg-gray-900 border-gray-800 hover:border-purple-600'
-                }`}
-              >
-                <div className="flex justify-between items-center">
-                  <span className="font-medium">{d.label}</span>
-                  <span className="text-xs text-gray-500">
-                    {complete ? '✓' : `${d.answered}/${d.questions.length}`}
-                  </span>
-                </div>
-              </button>
-            );
-          })}
-        </div>
+        <button
+          onClick={onBack}
+          className="px-6 py-3 bg-purple-600 hover:bg-purple-500 rounded-lg font-medium transition-colors"
+        >
+          Retour au menu
+        </button>
       </div>
     );
   }
 
-  // Question view
-  if (!activeQuestion || !activeDomain) return null;
+  if (!activeQuestion) return null;
+
+  const progress = currentIndex / questions.length;
 
   return (
     <div className="max-w-lg mx-auto">
       <div className="flex items-center justify-between mb-4">
         <button
-          onClick={() => { setSelectedDomain(null); setCurrentIndex(0); }}
+          onClick={onBack}
           className="text-sm text-purple-400 hover:text-purple-300"
         >
-          ← {activeDomain.label}
+          ← Menu
         </button>
         <span className="text-xs text-gray-500">
-          {currentIndex + 1} / {activeDomain.questions.length}
+          {currentIndex + 1} / {questions.length}
         </span>
       </div>
 
@@ -174,7 +106,7 @@ export function DeepQuestionsFlow({
         <div className="h-1.5 bg-gray-800 rounded-full overflow-hidden">
           <div
             className="h-full bg-purple-600 rounded-full transition-all duration-300"
-            style={{ width: `${((currentIndex) / activeDomain.questions.length) * 100}%` }}
+            style={{ width: `${progress * 100}%` }}
           />
         </div>
       </div>
