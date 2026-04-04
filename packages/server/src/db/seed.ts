@@ -3,7 +3,7 @@ import fs from 'fs';
 import path from 'path';
 import yaml from 'js-yaml';
 import { db } from './index.js';
-import { domains, themes, partis, questions, medias } from './schema.js';
+import { domains, themes, partis, questions, medias, responses, biases, sharedLinks, mediaRatings, proposals, feedback } from './schema.js';
 
 const DATA_DIR = path.resolve(import.meta.dirname, '../../../../data');
 
@@ -133,8 +133,14 @@ function parseQuestions(): ParsedQuestion[] {
 async function main() {
   console.log('[seed] Starting seed...');
 
-  // Clear existing data (in reverse dependency order)
+  // Clear existing data (in reverse dependency order — children first)
   console.log('[seed] Clearing existing data...');
+  await db.delete(feedback);
+  await db.delete(proposals);
+  await db.delete(mediaRatings);
+  await db.delete(sharedLinks);
+  await db.delete(biases);
+  await db.delete(responses);
   await db.delete(questions);
   await db.delete(themes);
   await db.delete(medias);
