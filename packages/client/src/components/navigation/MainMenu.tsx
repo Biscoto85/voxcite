@@ -1,5 +1,6 @@
 import type { CompassPosition } from '@voxcite/shared';
 import type { AppScreen } from '@/App';
+import { getProfileLabel } from '@/utils/scoring';
 
 interface MainMenuProps {
   userPosition?: CompassPosition;
@@ -16,14 +17,14 @@ const MENU_ITEMS: Array<{
   {
     screen: 'affiner',
     title: 'Affiner',
-    description: 'Réponds à plus de questions pour préciser ton profil sur les 5 axes.',
+    description: 'Réponds à plus de questions pour préciser ton profil.',
     icon: '🎯',
     ready: true,
   },
   {
     screen: 'prisme',
     title: 'Prisme',
-    description: 'Visualise ta position et celle des partis en 1D, 2D ou 3D.',
+    description: 'Visualise ta position et celle des partis.',
     icon: '🔮',
     ready: true,
   },
@@ -37,7 +38,7 @@ const MENU_ITEMS: Array<{
   {
     screen: 'critique',
     title: 'Esprit critique',
-    description: 'Des sources d\'information recommandées, indépendantes des oligarques.',
+    description: 'Des infos et sources intéressantes pour élargir ton horizon.',
     icon: '🧠',
     ready: false,
   },
@@ -55,14 +56,10 @@ export function MainMenu({ userPosition, onNavigate }: MainMenuProps) {
     <div className="max-w-lg mx-auto">
       {userPosition && (
         <div className="mb-6 p-4 bg-gray-900 rounded-xl border border-gray-800 text-center">
-          <p className="text-sm text-gray-400 mb-1">Ton profil est enregistré</p>
-          <div className="flex justify-center gap-4 text-xs text-gray-500">
-            <span>Soc: {userPosition.societal > 0 ? '+' : ''}{userPosition.societal.toFixed(2)}</span>
-            <span>Éco: {userPosition.economic > 0 ? '+' : ''}{userPosition.economic.toFixed(2)}</span>
-            <span>Aut: {userPosition.authority > 0 ? '+' : ''}{userPosition.authority.toFixed(2)}</span>
-            <span>Écol: {userPosition.ecology > 0 ? '+' : ''}{userPosition.ecology.toFixed(2)}</span>
-            <span>Souv: {userPosition.sovereignty > 0 ? '+' : ''}{userPosition.sovereignty.toFixed(2)}</span>
-          </div>
+          <p className="text-sm text-gray-400 mb-1">Ton parti pris'm :</p>
+          <p className="text-lg font-semibold text-purple-300">
+            {getProfileLabel(userPosition)}
+          </p>
         </div>
       )}
 

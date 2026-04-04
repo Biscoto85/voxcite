@@ -13,9 +13,10 @@ interface CompassContainerProps {
   parties: Party[];
   userPosition?: CompassPosition;
   initialView?: CompassView;
+  onBack?: () => void;
 }
 
-export function CompassContainer({ parties, userPosition, initialView = '2d' }: CompassContainerProps) {
+export function CompassContainer({ parties, userPosition, initialView = '2d', onBack }: CompassContainerProps) {
   const [view, setView] = useState<CompassView>(initialView);
   const [xAxis, setXAxis] = useState<AxisId>('societal');
   const [yAxis, setYAxis] = useState<AxisId>('economic');
@@ -46,6 +47,14 @@ export function CompassContainer({ parties, userPosition, initialView = '2d' }: 
 
   return (
     <div className="flex flex-col gap-4 w-full max-w-4xl mx-auto">
+      {/* Header with back button */}
+      {onBack && (
+        <div className="flex items-center justify-between">
+          <h2 className="text-xl font-bold">Prisme</h2>
+          <button onClick={onBack} className="text-sm text-purple-400 hover:text-purple-300">← Menu</button>
+        </div>
+      )}
+
       {/* View tabs */}
       <div className="flex items-center gap-2">
         {(['1d', '2d', '3d'] as const).map((v) => (

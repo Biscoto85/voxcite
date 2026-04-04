@@ -112,7 +112,7 @@ export function App() {
         )}
 
         {screen === 'prisme' && parties.length > 0 && (
-          <CompassContainer parties={parties} userPosition={userPosition} />
+          <CompassContainer parties={parties} userPosition={userPosition} onBack={() => setScreen('menu')} />
         )}
 
         {screen === 'affiner' && sessionId && (
