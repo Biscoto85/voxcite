@@ -58,7 +58,7 @@ export function ExprimerScreen({ userPosition, onBack }: ExprimerScreenProps) {
     <section className="max-w-2xl mx-auto" aria-label="M'exprimer">
       <div className="flex items-center justify-between mb-4">
         <h2 className="text-xl font-bold">M'exprimer</h2>
-        <button onClick={onBack} className="text-sm text-purple-400 hover:text-purple-300 focus-ring rounded py-1 px-2">← Menu</button>
+        <button onClick={onBack} className="text-sm text-amber-400 hover:text-amber-300 focus-ring rounded py-1 px-2">← Menu</button>
       </div>
 
       {/* Tabs — scrollable on mobile */}
@@ -76,7 +76,7 @@ export function ExprimerScreen({ userPosition, onBack }: ExprimerScreenProps) {
             aria-controls={`exprimer-panel-${t.id}`}
             className={`px-4 py-2.5 rounded-lg text-sm font-medium transition-colors whitespace-nowrap touch-target focus-ring ${
               tab === t.id
-                ? 'bg-purple-600 text-white'
+                ? 'bg-amber-500 text-white'
                 : 'bg-gray-800 text-gray-400 hover:bg-gray-700'
             }`}
           >
@@ -123,8 +123,8 @@ function ProgramTab() {
     <div>
       {/* Evolution summary */}
       {program.evolutionSummary && (
-        <div className="mb-6 p-4 bg-purple-900/20 border border-purple-800/40 rounded-xl">
-          <p className="text-sm text-purple-300 font-medium mb-1">
+        <div className="mb-6 p-4 bg-amber-900/20 border border-amber-800/40 rounded-xl">
+          <p className="text-sm text-amber-300 font-medium mb-1">
             {program.isInitial ? 'Version initiale' : 'Évolution du programme'}
           </p>
           <p className="text-sm text-gray-300">{program.evolutionSummary}</p>
@@ -158,7 +158,7 @@ function ProgramTab() {
               <div className="px-4 pb-4 border-t border-gray-800" id={`domain-${d.domainId}`}>
                 <ul className="mt-3 flex flex-col gap-2">
                   {d.proposals.map((p, i) => (
-                    <li key={i} className="text-sm text-gray-300 pl-4 border-l-2 border-purple-600/50">
+                    <li key={i} className="text-sm text-gray-300 pl-4 border-l-2 border-amber-500/50">
                       {p}
                     </li>
                   ))}
@@ -217,7 +217,7 @@ function ProposerTab({ userPosition }: { userPosition: CompassPosition }) {
           id="proposer-theme"
           value={domain}
           onChange={(e) => setDomain(e.target.value)}
-          className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2.5 text-sm text-white focus:outline-none focus:border-purple-500 touch-target"
+          className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2.5 text-sm text-white focus:outline-none focus:border-amber-400 touch-target"
         >
           {DOMAIN_IDS.map((id) => (
             <option key={id} value={id}>{DOMAIN_LABELS[id]}</option>
@@ -232,7 +232,7 @@ function ProposerTab({ userPosition }: { userPosition: CompassPosition }) {
         value={text}
         onChange={(e) => setText(e.target.value)}
         placeholder="Ex: Plafonner les loyers dans les zones tendues à un pourcentage du revenu médian local..."
-        className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2.5 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-purple-500 resize-none"
+        className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2.5 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-amber-400 resize-none"
         rows={4}
         aria-required="true"
       />
@@ -240,7 +240,7 @@ function ProposerTab({ userPosition }: { userPosition: CompassPosition }) {
       <button
         onClick={handleSubmit}
         disabled={!text.trim() || sending}
-        className="mt-3 w-full py-3 bg-purple-600 hover:bg-purple-500 disabled:bg-gray-700 disabled:text-gray-500 rounded-lg font-medium text-sm transition-colors touch-target focus-ring"
+        className="mt-3 w-full py-3 bg-amber-500 hover:bg-amber-400 disabled:bg-gray-700 disabled:text-gray-500 rounded-lg font-medium text-sm transition-colors touch-target focus-ring"
       >
         {sending ? 'Envoi...' : sent ? 'Proposition envoyée !' : 'Soumettre ma proposition'}
       </button>
@@ -329,7 +329,7 @@ function ReagirTab({ userPosition }: { userPosition: CompassPosition }) {
               id="reagir-edit"
               value={editText}
               onChange={(e) => setEditText(e.target.value)}
-              className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2.5 text-sm text-white focus:outline-none focus:border-purple-500 resize-none"
+              className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2.5 text-sm text-white focus:outline-none focus:border-amber-400 resize-none"
               rows={4}
             />
           </>

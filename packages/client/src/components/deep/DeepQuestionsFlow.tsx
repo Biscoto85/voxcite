@@ -94,7 +94,7 @@ export function DeepQuestionsFlow({
           {questions.length === 0 ? 'Tu as répondu à toutes les questions disponibles !' : 'Bravo, tu as répondu à toutes les questions !'}
         </h2>
         <p className="text-gray-400 text-sm mb-4">Ton profil est maintenant beaucoup plus précis.</p>
-        <button onClick={onBack} className="px-6 py-3 bg-purple-600 hover:bg-purple-500 rounded-lg font-medium transition-colors touch-target focus-ring">
+        <button onClick={onBack} className="px-6 py-3 bg-amber-500 hover:bg-amber-400 rounded-lg font-medium transition-colors touch-target focus-ring">
           Retour au menu
         </button>
       </div>
@@ -108,13 +108,13 @@ export function DeepQuestionsFlow({
   return (
     <section className="max-w-lg mx-auto" aria-label="Questions approfondies">
       <div className="flex items-center justify-between mb-4">
-        <button onClick={onBack} className="text-sm text-purple-400 hover:text-purple-300 focus-ring rounded py-1 px-2">← Menu</button>
+        <button onClick={onBack} className="text-sm text-amber-400 hover:text-amber-300 focus-ring rounded py-1 px-2">← Menu</button>
         <span className="text-xs text-gray-500">{currentIndex + 1} / {questions.length}</span>
       </div>
 
       <div className="mb-4" role="progressbar" aria-valuenow={currentIndex + 1} aria-valuemin={1} aria-valuemax={questions.length}>
         <div className="h-1.5 bg-gray-800 rounded-full overflow-hidden">
-          <div className="h-full bg-purple-600 rounded-full transition-all duration-300" style={{ width: `${progress * 100}%` }} />
+          <div className="h-full bg-amber-500 rounded-full transition-all duration-300" style={{ width: `${progress * 100}%` }} />
         </div>
       </div>
 

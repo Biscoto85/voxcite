@@ -34,7 +34,7 @@ function AxisDropdown({
         id={id}
         value={value}
         onChange={(e) => onChange(e.target.value as AxisId)}
-        className="bg-gray-800 border border-gray-700 rounded px-2 py-1.5 text-gray-200 text-xs focus:outline-none focus:border-purple-500"
+        className="bg-gray-800 border border-gray-700 rounded px-2 py-1.5 text-gray-200 text-xs focus:outline-none focus:border-amber-400"
       >
         {ALL_AXES.filter((a) => a === value || !exclude.includes(a)).map((a) => (
           <option key={a} value={a}>

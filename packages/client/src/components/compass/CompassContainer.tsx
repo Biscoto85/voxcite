@@ -51,7 +51,7 @@ export function CompassContainer({ parties, userPosition, initialView = '2d', on
       {onBack && (
         <div className="flex items-center justify-between">
           <h2 className="text-xl font-bold">Prisme</h2>
-          <button onClick={onBack} className="text-sm text-purple-400 hover:text-purple-300 focus-ring rounded py-1 px-2">← Menu</button>
+          <button onClick={onBack} className="text-sm text-amber-400 hover:text-amber-300 focus-ring rounded py-1 px-2">← Menu</button>
         </div>
       )}
 
@@ -67,7 +67,7 @@ export function CompassContainer({ parties, userPosition, initialView = '2d', on
               aria-controls={`compass-panel-${v}`}
               className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors touch-target focus-ring ${
                 view === v
-                  ? 'bg-purple-600 text-white'
+                  ? 'bg-amber-500 text-white'
                   : 'bg-gray-800 text-gray-400 hover:bg-gray-700'
               }`}
             >
@@ -100,7 +100,7 @@ export function CompassContainer({ parties, userPosition, initialView = '2d', on
               onClick={() => { setXAxis(sv.x); setYAxis(sv.y); }}
               className={`px-3 py-1.5 rounded text-xs transition-colors focus-ring ${
                 xAxis === sv.x && yAxis === sv.y
-                  ? 'bg-purple-600/30 text-purple-300 border border-purple-500'
+                  ? 'bg-amber-500/30 text-amber-300 border border-amber-400'
                   : 'bg-gray-800 text-gray-500 hover:text-gray-300'
               }`}
             >

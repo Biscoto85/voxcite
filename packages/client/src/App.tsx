@@ -131,22 +131,21 @@ export function App() {
     <div className="min-h-screen bg-gray-950 text-white safe-bottom flex flex-col">
       <a
         href="#main-content"
-        className="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-50 focus:bg-purple-600 focus:px-4 focus:py-2 focus:rounded-lg focus:text-white"
+        className="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-50 focus:bg-amber-500 focus:px-4 focus:py-2 focus:rounded-lg focus:text-white"
       >
         Aller au contenu principal
       </a>
 
       <header className="py-4 px-4 text-center sm:py-6" role="banner">
-        <h1 className="text-2xl font-bold sm:text-3xl">
-          <button
-            onClick={() => canGoHome && setScreen('menu')}
-            className="hover:text-purple-400 transition-colors focus-ring rounded-lg px-2"
-            aria-label="Retour au menu principal PartiPrism"
-          >
-            PartiPrism
-          </button>
-        </h1>
-        <p className="text-gray-400 mt-1 text-sm sm:text-base">Voir plus clair, voir plus large.</p>
+        <button
+          onClick={() => canGoHome && setScreen('menu')}
+          className="inline-flex flex-col items-center gap-1 hover:opacity-80 transition-opacity focus-ring rounded-lg px-4 py-1"
+          aria-label="Retour au menu principal PartiPrism"
+        >
+          <img src="/logo.svg" alt="" className="h-10 sm:h-12 w-auto" aria-hidden="true" />
+          <h1 className="text-2xl font-bold sm:text-3xl text-amber-400 tracking-wide">PartiPrism</h1>
+        </button>
+        <p className="text-gray-500 mt-1 text-xs sm:text-sm tracking-widest uppercase">Déplie ton spectre politique</p>
       </header>
 
       <main id="main-content" className="px-4 pb-8 flex-1" role="main" aria-label={SCREEN_TITLES[screen]}>
@@ -224,11 +223,11 @@ export function App() {
       {showFooter && (
         <footer className="py-4 px-4 border-t border-gray-900 text-center" role="contentinfo">
           <div className="flex items-center justify-center gap-3 text-xs text-gray-600">
-            <button onClick={() => navigateToLegal('mentions')} className={`hover:text-gray-400 transition-colors focus-ring rounded px-1 ${screen === 'mentions' ? 'text-purple-400' : ''}`}>
+            <button onClick={() => navigateToLegal('mentions')} className={`hover:text-gray-400 transition-colors focus-ring rounded px-1 ${screen === 'mentions' ? 'text-amber-400' : ''}`}>
               Mentions légales
             </button>
             <span aria-hidden="true">·</span>
-            <button onClick={() => navigateToLegal('cgu')} className={`hover:text-gray-400 transition-colors focus-ring rounded px-1 ${screen === 'cgu' ? 'text-purple-400' : ''}`}>
+            <button onClick={() => navigateToLegal('cgu')} className={`hover:text-gray-400 transition-colors focus-ring rounded px-1 ${screen === 'cgu' ? 'text-amber-400' : ''}`}>
               CGU
             </button>
             <span aria-hidden="true">·</span>

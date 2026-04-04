@@ -116,7 +116,7 @@ export function CompassReveal({ parties, userPosition, onContinue }: CompassReve
         )}
         <button
           onClick={onContinue}
-          className="px-6 py-3 bg-purple-600 hover:bg-purple-500 rounded-lg font-medium transition-colors touch-target focus-ring"
+          className="px-6 py-3 bg-amber-500 hover:bg-amber-400 rounded-lg font-medium transition-colors touch-target focus-ring"
         >
           Continuer
         </button>

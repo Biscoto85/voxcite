@@ -51,7 +51,7 @@ function AxisBar({ axis, userVal, partyVal, partyColor }: {
           aria-hidden="true"
         />
         <div
-          className="absolute top-[-3px] w-2.5 h-[calc(100%+6px)] rounded-sm bg-purple-500"
+          className="absolute top-[-3px] w-2.5 h-[calc(100%+6px)] rounded-sm bg-amber-400"
           style={{ left: `${userPct}%`, transform: 'translateX(-50%)' }}
           aria-hidden="true"
         />
@@ -150,7 +150,7 @@ export function AnalysisScreen({ position, parties, profile, onBack }: AnalysisS
     <section className="max-w-2xl mx-auto" aria-label="Mon analyse">
       <div className="flex items-center justify-between mb-6">
         <h2 className="text-xl font-bold">Mon analyse</h2>
-        <button onClick={onBack} className="text-sm text-purple-400 hover:text-purple-300 focus-ring rounded py-1 px-2">
+        <button onClick={onBack} className="text-sm text-amber-400 hover:text-amber-300 focus-ring rounded py-1 px-2">
           ← Menu
         </button>
       </div>
@@ -170,13 +170,13 @@ export function AnalysisScreen({ position, parties, profile, onBack }: AnalysisS
             aria-controls={`panel-${t.id}`}
             className={`flex-1 min-w-0 py-2.5 px-2 sm:px-3 rounded-md text-xs sm:text-sm font-medium transition-colors whitespace-nowrap touch-target focus-ring ${
               tab === t.id
-                ? 'bg-purple-600 text-white'
+                ? 'bg-amber-500 text-white'
                 : 'text-gray-400 hover:text-gray-200'
             }`}
           >
             {t.label}
             {t.id === 'biais' && analysis.biases.length > 0 && (
-              <span className="ml-1 text-xs bg-purple-500/30 rounded-full px-1.5" aria-label={`${analysis.biases.length} biais détectés`}>
+              <span className="ml-1 text-xs bg-amber-400/30 rounded-full px-1.5" aria-label={`${analysis.biases.length} biais détectés`}>
                 {analysis.biases.length}
               </span>
             )}
@@ -191,7 +191,7 @@ export function AnalysisScreen({ position, parties, profile, onBack }: AnalysisS
             const responses: Array<{ questionId: string }> = JSON.parse(localStorage.getItem(LS_RESPONSES) || '[]');
             fetchAnalysis(responses.length);
           }}
-          className="mb-4 w-full py-2 bg-purple-900/30 border border-purple-800/40 text-purple-300 rounded-lg text-sm hover:bg-purple-900/50 transition-colors focus-ring"
+          className="mb-4 w-full py-2 bg-amber-900/30 border border-amber-800/40 text-amber-300 rounded-lg text-sm hover:bg-amber-900/50 transition-colors focus-ring"
         >
           Relancer l'analyse (tu as répondu à 40+ nouvelles questions)
         </button>
@@ -211,13 +211,13 @@ export function AnalysisScreen({ position, parties, profile, onBack }: AnalysisS
           </div>
           {analysis.espritCritiquePistes.length > 0 && (
             <div className="bg-gray-900 rounded-xl p-4 sm:p-5 border border-gray-800">
-              <h3 className="text-sm text-purple-400 uppercase tracking-wider mb-2">
+              <h3 className="text-sm text-amber-400 uppercase tracking-wider mb-2">
                 Pour aller plus loin
               </h3>
               <ul className="space-y-1.5">
                 {analysis.espritCritiquePistes.map((p, i) => (
                   <li key={i} className="text-sm text-gray-300 flex gap-2">
-                    <span className="text-purple-500 shrink-0" aria-hidden="true">→</span>{p}
+                    <span className="text-amber-400 shrink-0" aria-hidden="true">→</span>{p}
                   </li>
                 ))}
               </ul>
@@ -250,7 +250,7 @@ export function AnalysisScreen({ position, parties, profile, onBack }: AnalysisS
                 aria-selected={(selectedParty || rankings[0].party.id) === r.party.id}
                 className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-full text-xs transition-all focus-ring ${
                   (selectedParty || rankings[0].party.id) === r.party.id
-                    ? 'ring-2 ring-purple-500 bg-gray-800'
+                    ? 'ring-2 ring-amber-400 bg-gray-800'
                     : 'bg-gray-900 border border-gray-800 hover:bg-gray-800'
                 }`}
               >
@@ -280,7 +280,7 @@ export function AnalysisScreen({ position, parties, profile, onBack }: AnalysisS
               ))}
               <div className="mt-3 text-xs text-gray-500 flex gap-4">
                 <span className="flex items-center gap-1">
-                  <span className="w-2.5 h-3 bg-purple-500 rounded-sm" aria-hidden="true" /> Toi
+                  <span className="w-2.5 h-3 bg-amber-400 rounded-sm" aria-hidden="true" /> Toi
                 </span>
                 <span className="flex items-center gap-1">
                   <span className="w-1.5 h-3 rounded-sm opacity-60" style={{ backgroundColor: activeParty.party.color }} aria-hidden="true" />
@@ -330,7 +330,7 @@ export function AnalysisScreen({ position, parties, profile, onBack }: AnalysisS
                           </div>
                         </div>
                         <p className="text-sm text-gray-300 mb-2">{bias.description}</p>
-                        <p className="text-xs text-purple-400">
+                        <p className="text-xs text-amber-400">
                           {bias.suggestedContent}
                         </p>
                         {bias.suggestedSource && (

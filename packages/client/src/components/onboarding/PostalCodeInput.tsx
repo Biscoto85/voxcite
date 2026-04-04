@@ -62,7 +62,7 @@ export function PostalCodeInput({ onSubmit, serverError }: PostalCodeInputProps)
         {/* Step indicator */}
         <div className="flex justify-center gap-2 mb-6" role="progressbar" aria-valuenow={1} aria-valuemin={1} aria-valuemax={3} aria-label="Étape 1 sur 3">
           {[0, 1, 2].map((i) => (
-            <div key={i} className={`h-1 rounded-full transition-all ${i <= stepIndex ? 'bg-purple-600 w-8' : 'bg-gray-800 w-6'}`} />
+            <div key={i} className={`h-1 rounded-full transition-all ${i <= stepIndex ? 'bg-amber-500 w-8' : 'bg-gray-800 w-6'}`} />
           ))}
         </div>
 
@@ -86,7 +86,7 @@ export function PostalCodeInput({ onSubmit, serverError }: PostalCodeInputProps)
               setError('');
             }}
             onKeyDown={(e) => e.key === 'Enter' && handlePostalNext()}
-            className="w-40 text-center text-2xl tracking-widest bg-gray-900 border border-gray-700 rounded-lg px-4 py-3 focus:border-purple-500 focus:outline-none"
+            className="w-40 text-center text-2xl tracking-widest bg-gray-900 border border-gray-700 rounded-lg px-4 py-3 focus:border-amber-400 focus:outline-none"
             aria-describedby={error ? 'postal-error' : undefined}
             aria-invalid={error ? 'true' : undefined}
             autoComplete="postal-code"
@@ -96,13 +96,13 @@ export function PostalCodeInput({ onSubmit, serverError }: PostalCodeInputProps)
           <button
             onClick={handlePostalNext}
             disabled={postalCode.length < 5}
-            className="mt-2 px-6 py-3 bg-purple-600 hover:bg-purple-500 disabled:bg-gray-700 disabled:text-gray-500 rounded-lg font-medium transition-colors touch-target focus-ring"
+            className="mt-2 px-6 py-3 bg-amber-500 hover:bg-amber-400 disabled:bg-gray-700 disabled:text-gray-500 rounded-lg font-medium transition-colors touch-target focus-ring"
           >
             Continuer
           </button>
 
           <p className="text-xs text-gray-600 mt-2">
-            Si tu es à l'étranger, entre <button onClick={() => setPostalCode('99999')} className="text-purple-400 hover:text-purple-300 underline focus-ring rounded">99999</button>.
+            Si tu es à l'étranger, entre <button onClick={() => setPostalCode('99999')} className="text-amber-400 hover:text-amber-300 underline focus-ring rounded">99999</button>.
           </p>
         </div>
       </section>
@@ -115,7 +115,7 @@ export function PostalCodeInput({ onSubmit, serverError }: PostalCodeInputProps)
         {/* Step indicator */}
         <div className="flex justify-center gap-2 mb-6" role="progressbar" aria-valuenow={2} aria-valuemin={1} aria-valuemax={3} aria-label="Étape 2 sur 3">
           {[0, 1, 2].map((i) => (
-            <div key={i} className={`h-1 rounded-full transition-all ${i <= stepIndex ? 'bg-purple-600 w-8' : 'bg-gray-800 w-6'}`} />
+            <div key={i} className={`h-1 rounded-full transition-all ${i <= stepIndex ? 'bg-amber-500 w-8' : 'bg-gray-800 w-6'}`} />
           ))}
         </div>
 
@@ -129,7 +129,7 @@ export function PostalCodeInput({ onSubmit, serverError }: PostalCodeInputProps)
             <li key={s.value}>
               <button
                 onClick={() => { setInfoSource(s.value); setStep('bias'); }}
-                className="w-full text-left p-3 sm:p-4 rounded-lg border border-gray-800 bg-gray-900 hover:border-purple-600 transition-colors touch-target focus-ring"
+                className="w-full text-left p-3 sm:p-4 rounded-lg border border-gray-800 bg-gray-900 hover:border-amber-500 transition-colors touch-target focus-ring"
               >
                 <span className="font-medium">{s.label}</span>
                 {s.desc && <span className="text-sm text-gray-500 block sm:inline sm:ml-2">{s.desc}</span>}
@@ -147,7 +147,7 @@ export function PostalCodeInput({ onSubmit, serverError }: PostalCodeInputProps)
       {/* Step indicator */}
       <div className="flex justify-center gap-2 mb-6" role="progressbar" aria-valuenow={3} aria-valuemin={1} aria-valuemax={3} aria-label="Étape 3 sur 3">
         {[0, 1, 2].map((i) => (
-          <div key={i} className={`h-1 rounded-full transition-all ${i <= stepIndex ? 'bg-purple-600 w-8' : 'bg-gray-800 w-6'}`} />
+          <div key={i} className={`h-1 rounded-full transition-all ${i <= stepIndex ? 'bg-amber-500 w-8' : 'bg-gray-800 w-6'}`} />
         ))}
       </div>
 
@@ -166,7 +166,7 @@ export function PostalCodeInput({ onSubmit, serverError }: PostalCodeInputProps)
                 setSubmitting(true);
                 onSubmit({ postalCode, infoSource, perceivedBias: b.value });
               }}
-              className="w-full text-left p-3 sm:p-4 rounded-lg border border-gray-800 bg-gray-900 hover:border-purple-600 disabled:opacity-50 transition-colors font-medium touch-target focus-ring"
+              className="w-full text-left p-3 sm:p-4 rounded-lg border border-gray-800 bg-gray-900 hover:border-amber-500 disabled:opacity-50 transition-colors font-medium touch-target focus-ring"
             >
               {b.label}
             </button>

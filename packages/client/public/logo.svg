@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 200">
+  <!-- Prism logo PartiPrism — Light enters, spectrum unfolds -->
+
+  <!-- Incoming beam (amber/gold) -->
+  <line x1="40" y1="110" x2="145" y2="110" stroke="#F5B731" stroke-width="3.5" stroke-linecap="round"/>
+
+  <!-- Prism triangle -->
+  <polygon points="150,40 150,180 280,180" fill="none" stroke="#D4D4D8" stroke-width="2.5" stroke-linejoin="round"/>
+  <!-- Subtle glass fill -->
+  <polygon points="150,40 150,180 280,180" fill="#F5B731" fill-opacity="0.04"/>
+
+  <!-- 5 spectral rays (the 5 axes) -->
+  <!-- Sociétal (red) -->
+  <line x1="245" y1="135" x2="370" y2="55" stroke="#EF4444" stroke-width="2.5" stroke-linecap="round"/>
+  <!-- Économique (orange) -->
+  <line x1="260" y1="150" x2="370" y2="95" stroke="#F59E0B" stroke-width="2.5" stroke-linecap="round"/>
+  <!-- Autorité (green) -->
+  <line x1="270" y1="162" x2="370" y2="130" stroke="#22C55E" stroke-width="2.5" stroke-linecap="round"/>
+  <!-- Écologie (blue) -->
+  <line x1="275" y1="170" x2="370" y2="158" stroke="#3B82F6" stroke-width="2.5" stroke-linecap="round"/>
+  <!-- Souveraineté (violet) -->
+  <line x1="278" y1="176" x2="370" y2="188" stroke="#8B5CF6" stroke-width="2.5" stroke-linecap="round"/>
+</svg>

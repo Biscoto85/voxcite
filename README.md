@@ -1,6 +1,6 @@
 # PartiPrism
 
-**Voir plus clair, voir plus large.**
+**Déplie ton spectre politique.**
 
 > Application citoyenne qui donne les clés de compréhension du paysage politique en remplaçant l'axe unique droite-gauche par un compas à 2 axes, et permet à chaque citoyen d'exprimer son avis sur les sujets qui comptent.
 
@@ -92,7 +92,7 @@ TypeScript monorepo :
 ## Liens
 
 - **Site** : [partiprism.fr](https://partiprism.fr)
-- **Slogan** : *Voir plus clair, voir plus large.*
+- **Slogan** : *Déplie ton spectre politique.*
 
 ---
 

@@ -75,7 +75,7 @@ export function CritiqueScreen({ userPosition, onBack }: CritiqueScreenProps) {
     <section className="max-w-2xl mx-auto" aria-label="Esprit critique">
       <div className="flex items-center justify-between mb-4">
         <h2 className="text-xl font-bold">Esprit critique</h2>
-        <button onClick={onBack} className="text-sm text-purple-400 hover:text-purple-300 focus-ring rounded py-1 px-2">← Menu</button>
+        <button onClick={onBack} className="text-sm text-amber-400 hover:text-amber-300 focus-ring rounded py-1 px-2">← Menu</button>
       </div>
 
       <p className="text-sm text-gray-400 mb-4">
@@ -96,7 +96,7 @@ export function CritiqueScreen({ userPosition, onBack }: CritiqueScreenProps) {
             aria-selected={tab === t.id}
             className={`px-4 py-2.5 rounded-lg text-sm font-medium transition-colors whitespace-nowrap touch-target focus-ring ${
               tab === t.id
-                ? 'bg-purple-600 text-white'
+                ? 'bg-amber-500 text-white'
                 : 'bg-gray-800 text-gray-400 hover:bg-gray-700'
             }`}
           >
@@ -125,7 +125,7 @@ function MediaCard({ media, badge, badgeColor }: { media: MediaSource; badge: st
               href={media.url}
               target="_blank"
               rel="noopener noreferrer"
-              className="font-medium text-sm text-purple-300 hover:text-purple-200 underline underline-offset-2 truncate"
+              className="font-medium text-sm text-amber-300 hover:text-amber-200 underline underline-offset-2 truncate"
             >
               {media.label}
             </a>
@@ -209,7 +209,7 @@ function SourcesTab({ userPosition }: { userPosition: CompassPosition }) {
             </span>
           </div>
           <p className="text-xs text-gray-400">
-            Tu es plutôt <span className="text-purple-300 font-medium">{userLabel}</span> sur cet axe.
+            Tu es plutôt <span className="text-amber-300 font-medium">{userLabel}</span> sur cet axe.
           </p>
 
           <div className="grid gap-2 sm:grid-cols-2">
@@ -244,7 +244,7 @@ function SourcesTab({ userPosition }: { userPosition: CompassPosition }) {
               <div key={s.id} className="flex items-center gap-2 text-xs text-gray-400 py-1">
                 <span className="text-gray-600">{TYPE_LABELS[s.type]?.slice(0, 2) || '?'}</span>
                 {s.url ? (
-                  <a href={s.url} target="_blank" rel="noopener noreferrer" className="text-purple-400 hover:text-purple-300 underline">
+                  <a href={s.url} target="_blank" rel="noopener noreferrer" className="text-amber-400 hover:text-amber-300 underline">
                     {s.label}
                   </a>
                 ) : (
@@ -282,7 +282,7 @@ function InfosTab() {
           id="infos-domain-filter"
           value={domain}
           onChange={(e) => { setDomain(e.target.value); setLoading(true); }}
-          className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2.5 text-sm text-white focus:outline-none focus:border-purple-500 touch-target"
+          className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2.5 text-sm text-white focus:outline-none focus:border-amber-400 touch-target"
         >
           <option value="">Tous les thèmes</option>
           {Object.entries(DOMAIN_LABELS).map(([id, label]) => (
@@ -306,12 +306,12 @@ function InfosTab() {
             href={l.url}
             target="_blank"
             rel="noopener noreferrer"
-            className="block p-3 sm:p-4 bg-gray-900 border border-gray-800 rounded-lg hover:border-purple-600 transition-colors touch-target focus-ring"
+            className="block p-3 sm:p-4 bg-gray-900 border border-gray-800 rounded-lg hover:border-amber-500 transition-colors touch-target focus-ring"
           >
             <p className="text-sm text-gray-200">{l.description}</p>
             <div className="flex justify-between mt-1 flex-wrap gap-1">
               <span className="text-xs text-gray-500">{DOMAIN_LABELS[l.domainId] || l.domainId}</span>
-              <span className="text-xs text-purple-400 truncate max-w-[200px]">{new URL(l.url).hostname}</span>
+              <span className="text-xs text-amber-400 truncate max-w-[200px]">{new URL(l.url).hostname}</span>
             </div>
           </a>
         ))}
@@ -363,7 +363,7 @@ function PartagerTab() {
           id="partager-theme"
           value={domain}
           onChange={(e) => setDomain(e.target.value)}
-          className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2.5 text-sm text-white focus:outline-none focus:border-purple-500 touch-target"
+          className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2.5 text-sm text-white focus:outline-none focus:border-amber-400 touch-target"
         >
           {Object.entries(DOMAIN_LABELS).map(([id, label]) => (
             <option key={id} value={id}>{label}</option>
@@ -379,7 +379,7 @@ function PartagerTab() {
           value={url}
           onChange={(e) => setUrl(e.target.value)}
           placeholder="https://..."
-          className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2.5 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-purple-500"
+          className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2.5 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-amber-400"
           aria-required="true"
         />
       </div>
@@ -392,7 +392,7 @@ function PartagerTab() {
           value={description}
           onChange={(e) => setDescription(e.target.value)}
           placeholder="Ex: Enquête sur le coût réel de l'énergie nucléaire en France"
-          className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2.5 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-purple-500"
+          className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2.5 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-amber-400"
           maxLength={200}
           aria-required="true"
         />
@@ -401,7 +401,7 @@ function PartagerTab() {
       <button
         onClick={handleSubmit}
         disabled={!url.trim() || !description.trim() || sending}
-        className="w-full py-3 bg-purple-600 hover:bg-purple-500 disabled:bg-gray-700 disabled:text-gray-500 rounded-lg font-medium text-sm transition-colors touch-target focus-ring"
+        className="w-full py-3 bg-amber-500 hover:bg-amber-400 disabled:bg-gray-700 disabled:text-gray-500 rounded-lg font-medium text-sm transition-colors touch-target focus-ring"
       >
         {sending ? 'Vérification en cours...' : 'Partager'}
       </button>
@@ -472,7 +472,7 @@ function SignalerMediaTab() {
           value={mediaName}
           onChange={(e) => setMediaName(e.target.value)}
           placeholder="Ex: Le Média, QG, Hugo Décrypte..."
-          className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2.5 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-purple-500"
+          className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2.5 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-amber-400"
           aria-required="true"
           maxLength={100}
         />
@@ -486,7 +486,7 @@ function SignalerMediaTab() {
           value={mediaUrl}
           onChange={(e) => setMediaUrl(e.target.value)}
           placeholder="https://..."
-          className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2.5 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-purple-500"
+          className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2.5 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-amber-400"
         />
       </div>
 
@@ -496,7 +496,7 @@ function SignalerMediaTab() {
           id="media-type"
           value={mediaType}
           onChange={(e) => setMediaType(e.target.value)}
-          className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2.5 text-sm text-white focus:outline-none focus:border-purple-500 touch-target"
+          className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2.5 text-sm text-white focus:outline-none focus:border-amber-400 touch-target"
         >
           {Object.entries(TYPE_LABELS).map(([id, label]) => (
             <option key={id} value={id}>{label}</option>
@@ -507,7 +507,7 @@ function SignalerMediaTab() {
       <button
         onClick={handleSubmit}
         disabled={!mediaName.trim() || sending}
-        className="w-full py-3 bg-purple-600 hover:bg-purple-500 disabled:bg-gray-700 disabled:text-gray-500 rounded-lg font-medium text-sm transition-colors touch-target focus-ring"
+        className="w-full py-3 bg-amber-500 hover:bg-amber-400 disabled:bg-gray-700 disabled:text-gray-500 rounded-lg font-medium text-sm transition-colors touch-target focus-ring"
       >
         {sending ? 'Envoi...' : 'Signaler ce média'}
       </button>

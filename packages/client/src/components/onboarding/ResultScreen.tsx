@@ -22,7 +22,7 @@ export function ResultScreen({ position, parties }: ResultScreenProps) {
   return (
     <section className="max-w-md mx-auto text-center" aria-label="Ton profil politique">
       <h2 className="text-xl sm:text-2xl font-bold mb-2">Ton profil politique</h2>
-      <p className="text-purple-400 text-lg mb-6">{quadrantLabel}</p>
+      <p className="text-amber-400 text-lg mb-6">{quadrantLabel}</p>
 
       {/* Axis bars */}
       <div className="flex flex-col gap-3 mb-8">
@@ -38,7 +38,7 @@ export function ResultScreen({ position, parties }: ResultScreenProps) {
               <div className="h-2 bg-gray-800 rounded-full relative" role="img" aria-label={`${label}: ${val.toFixed(2)}`}>
                 <div className="absolute left-1/2 top-0 w-px h-full bg-gray-600" aria-hidden="true" />
                 <div
-                  className="absolute top-0 h-full bg-purple-600 rounded-full transition-all"
+                  className="absolute top-0 h-full bg-amber-500 rounded-full transition-all"
                   style={{
                     left: `${Math.min(pct, 50)}%`,
                     width: `${Math.abs(pct - 50)}%`,
@@ -65,7 +65,7 @@ export function ResultScreen({ position, parties }: ResultScreenProps) {
           // Dispatch event for App to pick up
           window.dispatchEvent(new CustomEvent('onboarding-complete'));
         }}
-        className="px-6 py-3 bg-purple-600 hover:bg-purple-500 rounded-lg font-medium transition-colors touch-target focus-ring"
+        className="px-6 py-3 bg-amber-500 hover:bg-amber-400 rounded-lg font-medium transition-colors touch-target focus-ring"
       >
         Voir le compas
       </button>

@@ -60,7 +60,7 @@ export function MainMenu({ userPosition, onNavigate }: MainMenuProps) {
           aria-label="Ton profil"
         >
           <p className="text-sm text-gray-400 mb-1">Ton parti pris'm :</p>
-          <p className="text-lg font-semibold text-purple-300">
+          <p className="text-lg font-semibold text-amber-300">
             {getProfileLabel(userPosition)}
           </p>
         </section>
@@ -76,7 +76,7 @@ export function MainMenu({ userPosition, onNavigate }: MainMenuProps) {
                 aria-label={`${item.title} — ${item.description}`}
                 className={`w-full text-left p-4 rounded-xl border transition-all touch-target focus-ring ${
                   item.ready
-                    ? 'bg-gray-900 border-gray-800 hover:border-purple-600 hover:bg-gray-900/80'
+                    ? 'bg-gray-900 border-gray-800 hover:border-amber-500 hover:bg-gray-900/80'
                     : 'bg-gray-900/50 border-gray-800/50 opacity-50 cursor-not-allowed'
                 }`}
               >

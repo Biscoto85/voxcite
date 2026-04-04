@@ -123,7 +123,7 @@ export function FeedbackButton({ screen }: FeedbackButtonProps) {
                         aria-checked={feedbackType === ft.value}
                         className={`px-3 py-2 rounded-lg text-sm transition-colors touch-target focus-ring ${
                           feedbackType === ft.value
-                            ? 'bg-purple-600 text-white'
+                            ? 'bg-amber-500 text-white'
                             : 'bg-gray-800 text-gray-400 hover:bg-gray-700'
                         }`}
                       >
@@ -141,7 +141,7 @@ export function FeedbackButton({ screen }: FeedbackButtonProps) {
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
                   placeholder="Décris ce que tu as remarqué..."
-                  className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-purple-500 resize-none"
+                  className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-amber-400 resize-none"
                   rows={3}
                   aria-required="true"
                 />
@@ -149,7 +149,7 @@ export function FeedbackButton({ screen }: FeedbackButtonProps) {
                 <button
                   onClick={handleSubmit}
                   disabled={!description.trim() || sending}
-                  className="mt-3 w-full py-3 bg-purple-600 hover:bg-purple-500 disabled:bg-gray-700 disabled:text-gray-500 rounded-lg font-medium text-sm transition-colors touch-target focus-ring"
+                  className="mt-3 w-full py-3 bg-amber-500 hover:bg-amber-400 disabled:bg-gray-700 disabled:text-gray-500 rounded-lg font-medium text-sm transition-colors touch-target focus-ring"
                 >
                   {sending ? 'Envoi...' : 'Envoyer'}
                 </button>

@@ -8,7 +8,7 @@ export function MentionsLegales({ onBack, onNavigateCGU }: MentionsLegalesProps)
     <section className="max-w-2xl mx-auto" aria-label="Mentions légales">
       <div className="flex items-center justify-between mb-6">
         <h2 className="text-xl font-bold">Mentions légales</h2>
-        <button onClick={onBack} className="text-sm text-purple-400 hover:text-purple-300 focus-ring rounded py-1 px-2">
+        <button onClick={onBack} className="text-sm text-amber-400 hover:text-amber-300 focus-ring rounded py-1 px-2">
           ← Retour
         </button>
       </div>
@@ -25,7 +25,7 @@ export function MentionsLegales({ onBack, onNavigateCGU }: MentionsLegalesProps)
             <li><span className="text-gray-500">Président :</span> Parti Prism</li>
             <li><span className="text-gray-500">Siège social :</span> France</li>
             <li><span className="text-gray-500">Contact :</span>{' '}
-              <a href="mailto:contact@partiprism.fr" className="text-purple-400 hover:text-purple-300 underline">
+              <a href="mailto:contact@partiprism.fr" className="text-amber-400 hover:text-amber-300 underline">
                 contact@partiprism.fr
               </a>
             </li>
@@ -82,7 +82,7 @@ export function MentionsLegales({ onBack, onNavigateCGU }: MentionsLegalesProps)
           </p>
           <p className="mt-2">
             Contact :{' '}
-            <a href="mailto:contact@partiprism.fr" className="text-purple-400 hover:text-purple-300 underline">
+            <a href="mailto:contact@partiprism.fr" className="text-amber-400 hover:text-amber-300 underline">
               contact@partiprism.fr
             </a>
           </p>
@@ -95,7 +95,7 @@ export function MentionsLegales({ onBack, onNavigateCGU }: MentionsLegalesProps)
             L'utilisation du site est soumise aux{' '}
             <button
               onClick={onNavigateCGU}
-              className="text-purple-400 hover:text-purple-300 underline focus-ring rounded"
+              className="text-amber-400 hover:text-amber-300 underline focus-ring rounded"
             >
               Conditions Générales d'Utilisation
             </button>.

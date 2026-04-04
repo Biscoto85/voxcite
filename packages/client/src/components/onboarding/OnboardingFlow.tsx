@@ -104,7 +104,7 @@ export function OnboardingFlow({ questions, parties, onComplete }: OnboardingFlo
         </div>
         <div className="h-1.5 bg-gray-800 rounded-full overflow-hidden">
           <div
-            className="h-full bg-purple-600 rounded-full transition-all duration-300"
+            className="h-full bg-amber-500 rounded-full transition-all duration-300"
             style={{ width: `${progress * 100}%` }}
           />
         </div>

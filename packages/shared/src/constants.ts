@@ -97,9 +97,9 @@ export const RESPONSE_LABELS_AFFIRMATION = [
 // ── Compas : rendu visuel ──────────────────────────────────────────
 
 export const COMPASS_COLORS = {
-  userDot: '#7F77DD',
+  userDot: '#F5B731',
   userDotBorder: '#FFFFFF',
-  nebula: '#7F77DD',
+  nebula: '#F5B731',
 } as const;
 
 export const COMPASS_SIZES = {
