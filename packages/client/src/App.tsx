@@ -7,6 +7,7 @@ import { MainMenu } from './components/navigation/MainMenu';
 import { DeepQuestionsFlow } from './components/deep/DeepQuestionsFlow';
 import { AnalysisScreen } from './components/analysis/AnalysisScreen';
 import { ExprimerScreen } from './components/exprimer/ExprimerScreen';
+import { CritiqueScreen } from './components/critique/CritiqueScreen';
 import { FeedbackButton } from './components/feedback/FeedbackButton';
 
 export type AppScreen = 'loading' | 'onboarding' | 'reveal' | 'menu' | 'prisme' | 'affiner' | 'comparaison' | 'critique' | 'exprimer';
@@ -133,12 +134,12 @@ export function App() {
           />
         )}
 
-        {screen === 'critique' && (
-          <div className="max-w-lg mx-auto text-center py-12">
-            <h2 className="text-xl font-bold mb-2">Esprit critique</h2>
-            <p className="text-gray-400">Bientôt disponible.</p>
-            <button onClick={() => setScreen('menu')} className="mt-4 text-purple-400 hover:text-purple-300">← Retour</button>
-          </div>
+        {screen === 'critique' && sessionId && userPosition && (
+          <CritiqueScreen
+            sessionId={sessionId}
+            userPosition={userPosition}
+            onBack={() => setScreen('menu')}
+          />
         )}
 
         {screen === 'exprimer' && sessionId && userPosition && (

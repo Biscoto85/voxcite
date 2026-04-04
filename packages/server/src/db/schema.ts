@@ -58,7 +58,7 @@ export const partis = pgTable('partis', {
 export const medias = pgTable('medias', {
   id: text('id').primaryKey(),
   label: text('label').notNull(),
-  type: text('type').notNull(),
+  type: text('type').notNull(),            // 'tv' | 'radio' | 'presse' | 'web' | 'podcast'
   position1d: real('position_1d').notNull(),
   positionSocietal: real('position_societal').notNull(),
   positionEconomic: real('position_economic').notNull(),
@@ -66,7 +66,13 @@ export const medias = pgTable('medias', {
   positionEcology: real('position_ecology').notNull(),
   positionSovereignty: real('position_sovereignty').notNull(),
   owner: text('owner'),
+  independent: boolean('independent').notNull().default(false),
+  editorialLabel: text('editorial_label'),
   visibleOnCompass: boolean('visible_on_compass').notNull().default(true),
+  // Perception citoyenne (ajustée par les évaluations des visiteurs)
+  citizenSocietal: real('citizen_societal'),
+  citizenEconomic: real('citizen_economic'),
+  citizenRatingCount: integer('citizen_rating_count').notNull().default(0),
 });
 
 // ── Sessions anonymes ──
@@ -200,6 +206,30 @@ export const suggestions = pgTable('suggestions', {
   targetSovereignty: real('target_sovereignty'),
   generatedAt: timestamp('generated_at').notNull().defaultNow(),
   isActive: boolean('is_active').notNull().default(true),
+});
+
+// ── Liens partagés (Esprit critique) ──
+
+export const sharedLinks = pgTable('shared_links', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  sessionId: uuid('session_id').references(() => sessions.id),
+  domainId: text('domain_id').references(() => domains.id).notNull(),
+  url: text('url').notNull(),
+  description: text('description').notNull(),           // description originale de l'utilisateur
+  validatedDescription: text('validated_description'),   // description corrigée par Haiku
+  status: text('status').notNull().default('pending'),   // 'pending' | 'approved' | 'rejected'
+  createdAt: timestamp('created_at').notNull().defaultNow(),
+});
+
+// ── Évaluations médias par les visiteurs (2 axes) ──
+
+export const mediaRatings = pgTable('media_ratings', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  sessionId: uuid('session_id').references(() => sessions.id).notNull(),
+  mediaId: text('media_id').references(() => medias.id).notNull(),
+  ratedSocietal: real('rated_societal').notNull(),     // -1 (conservateur) → +1 (progressiste)
+  ratedEconomic: real('rated_economic').notNull(),     // -1 (interventionniste) → +1 (libéral)
+  createdAt: timestamp('created_at').notNull().defaultNow(),
 });
 
 // ── Feedback utilisateur (biais, formulation, thématiques manquantes) ──

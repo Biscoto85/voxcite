@@ -3,7 +3,7 @@ import fs from 'fs';
 import path from 'path';
 import yaml from 'js-yaml';
 import { db } from './index.js';
-import { domains, themes, partis, questions } from './schema.js';
+import { domains, themes, partis, questions, medias } from './schema.js';
 
 const DATA_DIR = path.resolve(import.meta.dirname, '../../../../data');
 
@@ -41,6 +41,25 @@ function parsePartis() {
   const raw = fs.readFileSync(path.join(DATA_DIR, 'parties/parties.yaml'), 'utf-8');
   const data = yaml.load(raw) as { partis: RawParti[] };
   return data.partis;
+}
+
+// ── Parse sources.yaml (medias) ────────────────────────────────────
+
+interface RawMedia {
+  id: string;
+  label: string;
+  type: string;
+  position_1d: number;
+  position: { societal: number; economic: number; authority: number; ecology: number; sovereignty: number };
+  owner?: string;
+  independent?: boolean;
+  editorial_label?: string;
+}
+
+function parseMedias(): RawMedia[] {
+  const raw = fs.readFileSync(path.join(DATA_DIR, 'medias/sources.yaml'), 'utf-8');
+  const data = yaml.load(raw) as { sources: RawMedia[] };
+  return data.sources;
 }
 
 // ── Parse questions.md ─────────────────────────────────────────────
@@ -118,6 +137,7 @@ async function main() {
   console.log('[seed] Clearing existing data...');
   await db.delete(questions);
   await db.delete(themes);
+  await db.delete(medias);
   await db.delete(partis);
   await db.delete(domains);
 
@@ -164,6 +184,27 @@ async function main() {
     });
   }
 
+  // Seed medias
+  const rawMedias = parseMedias();
+  console.log(`[seed] Inserting ${rawMedias.length} medias...`);
+
+  for (const m of rawMedias) {
+    await db.insert(medias).values({
+      id: m.id,
+      label: m.label,
+      type: m.type,
+      position1d: m.position_1d,
+      positionSocietal: m.position.societal,
+      positionEconomic: m.position.economic,
+      positionAuthority: m.position.authority,
+      positionEcology: m.position.ecology,
+      positionSovereignty: m.position.sovereignty,
+      owner: m.owner ?? null,
+      independent: m.independent ?? false,
+      editorialLabel: m.editorial_label ?? null,
+    });
+  }
+
   // Seed questions
   const rawQuestions = parseQuestions();
   console.log(`[seed] Inserting ${rawQuestions.length} questions...`);
@@ -187,6 +228,7 @@ async function main() {
   console.log(`  - ${rawDomains.length} domains`);
   console.log(`  - ${rawDomains.reduce((acc, d) => acc + d.themes_permanents.length, 0)} themes`);
   console.log(`  - ${rawPartis.length} partis`);
+  console.log(`  - ${rawMedias.length} medias`);
   console.log(`  - ${rawQuestions.length} questions`);
 
   process.exit(0);

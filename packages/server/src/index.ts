@@ -15,6 +15,7 @@ import { analysisRouter } from './routes/analysis.js';
 import { feedbackRouter } from './routes/feedback.js';
 import { proposalsRouter } from './routes/proposals.js';
 import { programRouter } from './routes/program.js';
+import { critiqueRouter } from './routes/critique.js';
 import { rateLimit } from './middleware/rateLimit.js';
 
 const app = express();
@@ -48,6 +49,9 @@ app.use(`${API_PREFIX}/share`, shareRouter);
 app.use(`${API_PREFIX}/proposals`, proposalsRouter);
 app.use(`${API_PREFIX}/program`, programRouter);
 app.use(`${API_PREFIX}/feedback`, feedbackRouter);
+
+// Esprit critique
+app.use(`${API_PREFIX}/critique`, critiqueRouter);
 
 // Health check
 app.get(`${API_PREFIX}/health`, (_req, res) => {

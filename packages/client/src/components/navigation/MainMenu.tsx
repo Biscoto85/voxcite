@@ -40,7 +40,7 @@ const MENU_ITEMS: Array<{
     title: 'Esprit critique',
     description: 'Des infos et sources intéressantes pour élargir ton horizon.',
     icon: '🧠',
-    ready: false,
+    ready: true,
   },
   {
     screen: 'exprimer',
