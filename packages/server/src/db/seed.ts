@@ -1,7 +1,10 @@
-import 'dotenv/config';
+import dotenv from 'dotenv';
 import fs from 'fs';
 import path from 'path';
 import yaml from 'js-yaml';
+
+// Load .env from project root
+dotenv.config({ path: path.resolve(import.meta.dirname, '../../../../.env') });
 import { db } from './index.js';
 import { domains, themes, partis, questions, medias, responses, biases, sharedLinks, mediaRatings, proposals, feedback, suggestions, programVersions, opinions, subjects } from './schema.js';
 

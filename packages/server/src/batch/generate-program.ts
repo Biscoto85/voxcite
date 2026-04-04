@@ -11,10 +11,13 @@
  * 5. Traite les feedbacks pour améliorer les prompts
  */
 
-import 'dotenv/config';
+import dotenv from 'dotenv';
+import path from 'path';
+dotenv.config({ path: path.resolve(import.meta.dirname, '../../../../.env') });
+
 import Anthropic from '@anthropic-ai/sdk';
 import { db } from '../db/index.js';
-import { proposals, programVersions, suggestions, feedback, domains, sessions } from '../db/schema.js';
+import { proposals, programVersions, suggestions, feedback, domains } from '../db/schema.js';
 import { desc, eq, inArray, sql, isNotNull } from 'drizzle-orm';
 
 import { extractJSON, extractClaudeText } from '../utils/helpers.js';

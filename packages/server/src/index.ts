@@ -1,4 +1,10 @@
-import 'dotenv/config';
+import dotenv from 'dotenv';
+import path from 'path';
+
+// Load .env from project root (works from packages/server/ and from root)
+dotenv.config({ path: path.resolve(import.meta.dirname, '../../../.env') });
+dotenv.config(); // fallback: current working directory
+
 import express from 'express';
 import cors from 'cors';
 import { API_PREFIX } from '@partiprism/shared';
