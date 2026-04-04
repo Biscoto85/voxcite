@@ -12,41 +12,47 @@ const MENU_ITEMS: Array<{
   title: string;
   description: string;
   icon: string;
+  iconColor: string;
   ready: boolean;
 }> = [
   {
     screen: 'affiner',
     title: 'Affiner',
     description: 'Réponds à plus de questions pour préciser ton profil.',
-    icon: '🎯',
+    icon: '◎',
+    iconColor: 'text-amber-400',
     ready: true,
   },
   {
     screen: 'prisme',
     title: 'Prisme',
     description: 'Visualise ta position et celle des partis.',
-    icon: '🔮',
+    icon: '△',
+    iconColor: 'text-cyan-400',
     ready: true,
   },
   {
     screen: 'comparaison',
     title: 'Comparaison',
     description: 'Découvre tes points communs et différences avec les partis et les autres citoyens.',
-    icon: '📊',
+    icon: '⬡',
+    iconColor: 'text-amber-300',
     ready: true,
   },
   {
     screen: 'critique',
     title: 'Esprit critique',
     description: 'Des infos et sources intéressantes pour élargir ton horizon.',
-    icon: '🧠',
+    icon: '◇',
+    iconColor: 'text-cyan-300',
     ready: true,
   },
   {
     screen: 'exprimer',
     title: 'M\'exprimer',
     description: 'Donne ton avis sur les grands thèmes et contribue au programme des citoyens.',
-    icon: '📢',
+    icon: '▷',
+    iconColor: 'text-amber-400',
     ready: true,
   },
 ];
@@ -81,7 +87,7 @@ export function MainMenu({ userPosition, onNavigate }: MainMenuProps) {
                 }`}
               >
                 <div className="flex items-start gap-3">
-                  <span className="text-2xl" aria-hidden="true">{item.icon}</span>
+                  <span className={`text-2xl ${item.iconColor}`} aria-hidden="true">{item.icon}</span>
                   <div>
                     <h3 className="font-medium">
                       {item.title}
