@@ -152,23 +152,35 @@ export function CompassCanvas2D({
       ctx.globalAlpha = 1;
     }
 
-    // User dot
+    // User dot (drawn last, with glow for visibility)
     if (userPosition) {
       const ux = toX(userPosition);
       const uy = toY(userPosition);
+      const r = COMPASS_SIZES.userDotRadius + 2;
 
+      // Glow halo
+      const glow = ctx.createRadialGradient(ux, uy, r, ux, uy, r * 3);
+      glow.addColorStop(0, 'rgba(245, 183, 49, 0.4)');
+      glow.addColorStop(1, 'rgba(245, 183, 49, 0)');
+      ctx.fillStyle = glow;
+      ctx.beginPath();
+      ctx.arc(ux, uy, r * 3, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Dot
       ctx.fillStyle = COMPASS_COLORS.userDot;
       ctx.beginPath();
-      ctx.arc(ux, uy, COMPASS_SIZES.userDotRadius, 0, Math.PI * 2);
+      ctx.arc(ux, uy, r, 0, Math.PI * 2);
       ctx.fill();
       ctx.strokeStyle = COMPASS_COLORS.userDotBorder;
       ctx.lineWidth = COMPASS_SIZES.userDotBorderWidth;
       ctx.stroke();
 
+      // Label
       ctx.fillStyle = '#FFFFFF';
-      ctx.font = `bold ${COMPASS_SIZES.userLabelFontSize}px system-ui`;
+      ctx.font = `bold ${COMPASS_SIZES.userLabelFontSize + 1}px system-ui`;
       ctx.textAlign = 'center';
-      ctx.fillText('Toi', ux, uy - COMPASS_SIZES.userDotRadius - 8);
+      ctx.fillText('Toi', ux, uy - r - 8);
     }
   }, [parties, userPosition, xAxis, yAxis, highlightedPartyId, nebula]);
 

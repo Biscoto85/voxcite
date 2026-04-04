@@ -60,8 +60,8 @@ export function CompassReveal({ parties, userPosition, onContinue }: CompassReve
 
       {/* Canvas area with crossfade */}
       <div
-        className="relative bg-gray-900 rounded-xl overflow-hidden"
-        style={{ minHeight: 'min(60vh, 500px)' }}
+        className="relative bg-gray-900 rounded-xl"
+        style={{ minHeight: 300 }}
         role="img"
         aria-label={`Ton positionnement politique — vue ${phase === '2d' ? '2D' : '1D'}`}
       >

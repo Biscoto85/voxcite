@@ -171,24 +171,34 @@ export function CompassCanvas3D({
       ctx.globalAlpha = 1;
     }
 
-    // User dot
+    // User dot (with glow)
     if (userPosition) {
       const raw = posTo3D(userPosition);
       const rotated = rotateX(rotateY(raw, rotY), rotX);
       const screen = project(rotated, size, perspective);
+      const r = COMPASS_SIZES.userDotRadius + 2;
+
+      // Glow halo
+      const glow = ctx.createRadialGradient(screen.x, screen.y, r, screen.x, screen.y, r * 3);
+      glow.addColorStop(0, 'rgba(245, 183, 49, 0.4)');
+      glow.addColorStop(1, 'rgba(245, 183, 49, 0)');
+      ctx.fillStyle = glow;
+      ctx.beginPath();
+      ctx.arc(screen.x, screen.y, r * 3, 0, Math.PI * 2);
+      ctx.fill();
 
       ctx.fillStyle = COMPASS_COLORS.userDot;
       ctx.beginPath();
-      ctx.arc(screen.x, screen.y, COMPASS_SIZES.userDotRadius, 0, Math.PI * 2);
+      ctx.arc(screen.x, screen.y, r, 0, Math.PI * 2);
       ctx.fill();
       ctx.strokeStyle = COMPASS_COLORS.userDotBorder;
       ctx.lineWidth = COMPASS_SIZES.userDotBorderWidth;
       ctx.stroke();
 
       ctx.fillStyle = '#FFFFFF';
-      ctx.font = `bold ${COMPASS_SIZES.userLabelFontSize}px system-ui`;
+      ctx.font = `bold ${COMPASS_SIZES.userLabelFontSize + 1}px system-ui`;
       ctx.textAlign = 'center';
-      ctx.fillText('Toi', screen.x, screen.y - COMPASS_SIZES.userDotRadius - 8);
+      ctx.fillText('Toi', screen.x, screen.y - r - 8);
     }
   }, [parties, userPosition, xAxis, yAxis, zAxis, highlightedPartyId, rotX, rotY, posTo3D]);
 

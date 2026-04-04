@@ -112,8 +112,8 @@ export function CompassContainer({ parties, userPosition, initialView = '2d', on
 
       {/* Canvas */}
       <div
-        className="relative bg-gray-900 rounded-xl overflow-hidden"
-        style={{ minHeight: 'min(60vh, 500px)' }}
+        className="relative bg-gray-900 rounded-xl"
+        style={{ minHeight: 300 }}
         role="img"
         aria-label={`Compas politique ${view.toUpperCase()} — ${visibleParties.length} partis affichés`}
         id={`compass-panel-${view}`}

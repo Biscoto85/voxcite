@@ -145,7 +145,7 @@ export function App() {
           <img src="/logo.svg" alt="" className="h-10 sm:h-12 w-auto" aria-hidden="true" />
           <h1 className="text-2xl font-bold sm:text-3xl text-amber-400 tracking-wide">PartiPrism</h1>
         </button>
-        <p className="text-gray-500 mt-1 text-xs sm:text-sm tracking-widest uppercase">Déplie ton spectre politique</p>
+        <p className="text-gray-500 mt-1 text-xs sm:text-sm tracking-widest uppercase">Voir plus clair, penser plus large</p>
       </header>
 
       <main id="main-content" className="px-4 pb-8 flex-1" role="main" aria-label={SCREEN_TITLES[screen]}>
