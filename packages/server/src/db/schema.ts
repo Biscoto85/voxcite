@@ -43,6 +43,7 @@ export const partis = pgTable('partis', {
   position1d: real('position_1d').notNull(),              // -1 (gauche) → +1 (droite) — éditorial
   positionSocietal: real('position_societal').notNull(),   // -1 (conservateur) → +1 (progressiste)
   positionEconomic: real('position_economic').notNull(),   // -1 (interventionniste) → +1 (libéral)
+  positionAuthority: real('position_authority').notNull(), // -1 (autoritaire) → +1 (libertaire)
   color: text('color').notNull(),
   leader: text('leader'),
   visibleOnCompass: boolean('visible_on_compass').notNull().default(true),
@@ -57,6 +58,7 @@ export const medias = pgTable('medias', {
   position1d: real('position_1d').notNull(),
   positionSocietal: real('position_societal').notNull(),
   positionEconomic: real('position_economic').notNull(),
+  positionAuthority: real('position_authority').notNull(),
   owner: text('owner'),
   visibleOnCompass: boolean('visible_on_compass').notNull().default(true),
 });
@@ -69,6 +71,7 @@ export const sessions = pgTable('sessions', {
   position1d: real('position_1d'),                         // calculé depuis les réponses
   positionSocietal: real('position_societal'),
   positionEconomic: real('position_economic'),
+  positionAuthority: real('position_authority'),
   onboardingCompleted: boolean('onboarding_completed').notNull().default(false),
   deviceFingerprint: text('device_fingerprint'),
   shareCount: integer('share_count').notNull().default(0),
@@ -105,5 +108,6 @@ export const opinions = pgTable('opinions', {
   subjectId: text('subject_id').references(() => subjects.id).notNull(),
   positionSocietal: real('position_societal').notNull(),
   positionEconomic: real('position_economic').notNull(),
+  positionAuthority: real('position_authority').notNull(),
   createdAt: timestamp('created_at').notNull().defaultNow(),
 });

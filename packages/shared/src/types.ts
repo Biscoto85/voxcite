@@ -1,11 +1,26 @@
-// ── Position sur le compas 2D ──────────────────────────────────────────────
+// ── Les 3 axes du compas VoxCité ───────────────────────────────────
+//
+// Vue 1D : gauche ↔ droite (éditorial, défini manuellement)
+// Vue 2D : sociétal × économique (calculé depuis les réponses/programmes)
+// Vue 3D : sociétal × économique × autorité (idem, plus fin)
+//
+// Axes possibles pour évolutions futures :
+//   - Écologiste ↔ Productiviste (rapport à la croissance et aux limites)
+//   - Souverainiste ↔ Mondialiste (rapport aux frontières et institutions internationales)
+//   - Pragmatique ↔ Idéologique (rapport au compromis et à la pureté doctrinale)
+
+// ── Positions sur le compas ────────────────────────────────────────
 
 export interface CompassPosition {
-  societal: number; // -1 (conservateur) → +1 (progressiste)
-  economic: number; // -1 (interventionniste) → +1 (libéral)
+  societal: number;  // -1 (conservateur) → +1 (progressiste)
+  economic: number;  // -1 (interventionniste) → +1 (libéral)
+  authority: number; // -1 (autoritaire) → +1 (libertaire)
 }
 
-// ── Domaines thématiques ─────────────────────────────────────────────
+/** Vue 2D (sans l'axe autorité) — pour l'affichage compas classique */
+export type CompassPosition2D = Pick<CompassPosition, 'societal' | 'economic'>;
+
+// ── Domaines thématiques ───────────────────────────────────────────
 
 export interface DomainDimension {
   tension: string;
@@ -13,6 +28,8 @@ export interface DomainDimension {
   exemples_conservateur?: string;
   exemples_interventionniste?: string;
   exemples_liberal?: string;
+  exemples_autoritaire?: string;
+  exemples_libertaire?: string;
 }
 
 export interface ThemeRef {
@@ -27,13 +44,14 @@ export interface Domain {
   description: string;
   dimension_societale: DomainDimension;
   dimension_economique: DomainDimension;
+  dimension_autorite?: DomainDimension;
   themes_permanents: ThemeRef[];
 }
 
-// ── Questions de positionnement ──────────────────────────────────────
+// ── Questions de positionnement ────────────────────────────────────
 
 export type QuestionType = 'affirmation' | 'dilemme';
-export type QuestionAxis = 'societal' | 'economic' | 'both';
+export type QuestionAxis = 'societal' | 'economic' | 'authority' | 'both' | 'all';
 export type QuestionPhase = 'onboarding' | 'deep';
 
 export interface Question {
@@ -61,8 +79,8 @@ export interface Party {
   id: string;
   label: string;
   abbreviation: string;
-  position1d: number;        // -1 (gauche) → +1 (droite) — classement éditorial
-  position: CompassPosition; // compas 2D
+  position1d: number;         // -1 (gauche) → +1 (droite) — éditorial
+  position: CompassPosition;  // compas 3D complet
   color: string;
   leader?: string;
   visibleOnCompass: boolean;
@@ -76,6 +94,7 @@ export interface Media {
   id: string;
   label: string;
   type: MediaType;
+  position1d: number;
   position: CompassPosition;
   owner?: string;
   visibleOnCompass: boolean;
@@ -131,18 +150,33 @@ export interface Opinion {
   createdAt: string;
 }
 
-// ── Synthèse collective ────────────────────────────────────────────
+// ── Octants (8 zones en 3D) ────────────────────────────────────────
+//
+// En 2D on avait 4 quadrants. En 3D on a 8 octants.
 
+export type Octant =
+  | 'progressiste_liberal_libertaire'
+  | 'progressiste_liberal_autoritaire'
+  | 'progressiste_interventionniste_libertaire'
+  | 'progressiste_interventionniste_autoritaire'
+  | 'conservateur_liberal_libertaire'
+  | 'conservateur_liberal_autoritaire'
+  | 'conservateur_interventionniste_libertaire'
+  | 'conservateur_interventionniste_autoritaire';
+
+/** Rétrocompatibilité : quadrant = projection 2D d'un octant */
 export type Quadrant =
   | 'progressiste_liberal'
   | 'progressiste_interventionniste'
   | 'conservateur_liberal'
   | 'conservateur_interventionniste';
 
-export interface QuadrantDistribution {
+export interface ZoneDistribution {
   count: number;
   percent: number;
 }
+
+// ── Synthèse collective ────────────────────────────────────────────
 
 export interface CollectiveSynthesis {
   subjectId: string;
@@ -152,7 +186,8 @@ export interface CollectiveSynthesis {
     median: CompassPosition;
     stdDev: CompassPosition;
   };
-  quadrants: Record<Quadrant, QuadrantDistribution>;
+  quadrants: Record<Quadrant, ZoneDistribution>;
+  octants?: Record<Octant, ZoneDistribution>;
   aiSynthesis?: {
     consensus: string;
     clivagePrincipal: string;
@@ -166,6 +201,7 @@ export interface ShareContent {
   sessionId: string;
   position: CompassPosition;
   quadrant: Quadrant;
+  octant?: Octant;
   statChoc: string;
   imageUrl?: string;
 }

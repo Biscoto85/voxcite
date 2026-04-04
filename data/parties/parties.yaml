@@ -1,5 +1,4 @@
 # VoxCité — Données de référence : Partis politiques français
-# Positionnement sur le compas
 #
 # IMPORTANT : Ces positions sont des estimations éditoriales basées sur
 # les programmes, votes parlementaires et discours publics.
@@ -7,9 +6,10 @@
 # transparentes pour les utilisateurs (méthodologie publiée).
 #
 # Échelle : -1.0 à +1.0
-#   position_1d : -1 = gauche, +1 = droite (classement éditorial traditionnel)
-#   Sociétal :    -1 = conservateur, +1 = progressiste
-#   Économique :  -1 = interventionniste, +1 = libéral
+#   position_1d :  -1 = gauche, +1 = droite (classement éditorial traditionnel)
+#   Sociétal :     -1 = conservateur, +1 = progressiste
+#   Économique :   -1 = interventionniste, +1 = libéral
+#   Autorité :     -1 = autoritaire, +1 = libertaire
 
 partis:
 
@@ -17,7 +17,10 @@ partis:
     label: "Nouveau Parti Anticapitaliste"
     abbreviation: "NPA"
     position_1d: -0.95
-    position: { societal: 0.9, economic: -0.95 }
+    position:
+      societal: 0.9
+      economic: -0.95
+      authority: 0.7       # Autogestion, démocratie directe, anti-répression
     color: "#B80000"
     leader: "Philippe Poutou"
 
@@ -25,7 +28,10 @@ partis:
     label: "La France Insoumise"
     abbreviation: "LFI"
     position_1d: -0.80
-    position: { societal: 0.7, economic: -0.8 }
+    position:
+      societal: 0.7
+      economic: -0.8
+      authority: 0.3       # Libertaire sur les libertés civiles, mais verticale dans son fonctionnement
     color: "#CC2443"
     leader: "Jean-Luc Mélenchon"
 
@@ -33,7 +39,10 @@ partis:
     label: "Parti Communiste Français"
     abbreviation: "PCF"
     position_1d: -0.75
-    position: { societal: 0.4, economic: -0.9 }
+    position:
+      societal: 0.4
+      economic: -0.9
+      authority: -0.2      # Tradition centraliste, État fort, mais attaché aux libertés syndicales
     color: "#DD0000"
     leader: "Fabien Roussel"
 
@@ -41,7 +50,10 @@ partis:
     label: "Les Écologistes"
     abbreviation: "EELV"
     position_1d: -0.50
-    position: { societal: 0.8, economic: -0.4 }
+    position:
+      societal: 0.8
+      economic: -0.4
+      authority: 0.6       # Désobéissance civile, démocratie participative, décentralisation
     color: "#00A650"
     leader: "Marine Tondelier"
 
@@ -49,7 +61,10 @@ partis:
     label: "Parti Socialiste"
     abbreviation: "PS"
     position_1d: -0.35
-    position: { societal: 0.5, economic: -0.3 }
+    position:
+      societal: 0.5
+      economic: -0.3
+      authority: 0.2       # Modérément libertaire, attaché aux libertés mais institutionnel
     color: "#FF6084"
     leader: "Olivier Faure"
 
@@ -57,7 +72,10 @@ partis:
     label: "MoDem"
     abbreviation: "MoDem"
     position_1d: 0.10
-    position: { societal: 0.2, economic: 0.3 }
+    position:
+      societal: 0.2
+      economic: 0.3
+      authority: 0.1       # Centriste, équilibre institutions/libertés
     color: "#FF8C00"
     leader: "François Bayrou"
 
@@ -65,15 +83,25 @@ partis:
     label: "Renaissance"
     abbreviation: "RE"
     position_1d: 0.25
-    position: { societal: 0.3, economic: 0.6 }
+    position:
+      societal: 0.3
+      economic: 0.6
+      authority: -0.5      # 49.3, état d'urgence prolongé, surveillance, verticalité du pouvoir
     color: "#FFEB00"
     leader: "Emmanuel Macron"
+    # NOTE: Renaissance révèle la puissance du 3ème axe —
+    # "progressiste-libéral" en 2D mais AUTORITAIRE en 3D.
+    # C'est le "libéralisme autoritaire" que beaucoup ressentent
+    # sans pouvoir le nommer sur l'axe gauche-droite.
 
   - id: lr
     label: "Les Républicains"
     abbreviation: "LR"
     position_1d: 0.55
-    position: { societal: -0.4, economic: 0.5 }
+    position:
+      societal: -0.4
+      economic: 0.5
+      authority: -0.5      # Ordre, autorité de l'État, sécurité, peines plus lourdes
     color: "#0066CC"
     leader: "Laurent Wauquiez"
 
@@ -81,7 +109,10 @@ partis:
     label: "Rassemblement National"
     abbreviation: "RN"
     position_1d: 0.80
-    position: { societal: -0.8, economic: -0.2 }
+    position:
+      societal: -0.8
+      economic: -0.2
+      authority: -0.7      # Police renforcée, anti-immigration, ordre, contrôle
     color: "#0D378A"
     leader: "Jordan Bardella"
 
@@ -89,22 +120,28 @@ partis:
     label: "Reconquête"
     abbreviation: "R!"
     position_1d: 0.90
-    position: { societal: -0.9, economic: 0.4 }
+    position:
+      societal: -0.9
+      economic: 0.4
+      authority: -0.8      # Le plus autoritaire — civilisationnel, identitaire, répressif
     color: "#1A1A2E"
     leader: "Éric Zemmour"
 
-# Note sur la thèse fondatrice de VoxCité :
+# ── Ce que le 3ème axe révèle ──────────────────────────────────────
 #
-# Le score 1D (gauche-droite) est le classement éditorial traditionnel,
-# tel qu'utilisé par les médias et les sondeurs. Il est VOLONTAIREMENT
-# réducteur — c'est précisément ce que VoxCité démonte.
+# Renaissance (-0.5 autorité) : "libéralisme autoritaire"
+#   → Libéral économiquement, progressiste sociétalement,
+#     mais gouverne par 49.3 et prolonge l'état d'urgence.
+#   → En 2D il semble proche du MoDem. En 3D on voit l'écart.
 #
-# Exemples de ce que l'axe unique cache :
-# - Le RN est classé "extrême droite" mais est interventionniste économiquement
-#   → plus proche de LFI que de LR sur l'axe économique
-# - Renaissance est classé "centre" mais est libéral économiquement
-#   → plus proche de LR que du MoDem sur l'axe économique
-# - LFI et RN partagent un électorat populaire (anti-libéral)
-#   mais sont fracturés par les sujets sociétaux
+# LFI (+0.3 libertaire) vs PCF (-0.2 autoritaire) :
+#   → Proches sur sociétal et économique, mais divergent sur l'autorité.
+#   → LFI = VIème République, RIC. PCF = État fort centralisé.
 #
-# C'est exactement la fracturation que VoxCité rend visible.
+# RN (-0.7) vs LFI (+0.3) :
+#   → Tous deux interventionnistes, mais aux antipodes sur l'autorité.
+#   → C'est le clivage le plus profond du "bloc populaire".
+#
+# EELV (+0.6) vs Renaissance (-0.5) :
+#   → Tous deux "progressistes", mais 1.1 point d'écart sur l'autorité.
+#   → Explique pourquoi ils ne gouvernent jamais ensemble.

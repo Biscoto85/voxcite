@@ -50,7 +50,7 @@ sessionsRouter.post('/:id/responses', async (req, res) => {
     id: q.id,
     text: q.text,
     type: q.type as 'affirmation' | 'dilemme',
-    axis: q.axis as 'societal' | 'economic' | 'both',
+    axis: q.axis as 'societal' | 'economic' | 'authority' | 'both' | 'all',
     polarity: q.polarity as -1 | 1,
     domain: q.domainId,
     phase: q.phase as 'onboarding' | 'deep',
@@ -65,6 +65,7 @@ sessionsRouter.post('/:id/responses', async (req, res) => {
     .set({
       positionSocietal: position.societal,
       positionEconomic: position.economic,
+      positionAuthority: position.authority,
       onboardingCompleted: allResponses.length >= 10,
     })
     .where(eq(sessions.id, sessionId));
@@ -88,7 +89,11 @@ sessionsRouter.get('/:id', async (req, res) => {
     id: session.id,
     createdAt: session.createdAt,
     position: session.positionSocietal != null
-      ? { societal: session.positionSocietal, economic: session.positionEconomic }
+      ? {
+          societal: session.positionSocietal,
+          economic: session.positionEconomic,
+          authority: session.positionAuthority,
+        }
       : null,
     onboardingCompleted: session.onboardingCompleted,
   });

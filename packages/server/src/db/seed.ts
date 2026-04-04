@@ -32,7 +32,7 @@ interface RawParti {
   label: string;
   abbreviation: string;
   position_1d: number;
-  position: { societal: number; economic: number };
+  position: { societal: number; economic: number; authority: number };
   color: string;
   leader?: string;
 }
@@ -146,6 +146,7 @@ async function main() {
       position1d: p.position_1d,
       positionSocietal: p.position.societal,
       positionEconomic: p.position.economic,
+      positionAuthority: p.position.authority,
       color: p.color,
       leader: p.leader ?? null,
     });
