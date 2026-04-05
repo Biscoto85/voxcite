@@ -102,6 +102,11 @@ export function AnalysisScreen({ position, parties, profile, onBack }: AnalysisS
   const fetchAnalysis = (questionCount: number) => {
     setAnalysis((prev) => ({ ...prev, loading: true }));
 
+    // Send responses from localStorage for contradiction detection (ephemeral)
+    const savedResponses: Array<{ questionId: string; value: number }> = JSON.parse(
+      localStorage.getItem(LS_RESPONSES) || '[]',
+    );
+
     fetch('/api/analysis', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -109,6 +114,7 @@ export function AnalysisScreen({ position, parties, profile, onBack }: AnalysisS
         position,
         infoSource: profile?.infoSource,
         perceivedBias: profile?.perceivedBias,
+        responses: savedResponses,
         parties: parties.map((p) => ({
           id: p.id, label: p.label, abbreviation: p.abbreviation, position: p.position,
         })),

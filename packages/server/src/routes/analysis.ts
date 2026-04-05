@@ -3,6 +3,9 @@ import type { CompassPosition, AxisId } from '@partiprism/shared';
 import { AXES } from '@partiprism/shared';
 import { runAiAnalysis } from '../services/ai-analysis.js';
 import { getPopulationStats, getUserPercentiles } from '../services/population.js';
+import { extractResponseSignals } from '../services/response-signals.js';
+import { db } from '../db/index.js';
+import { questions } from '../db/schema.js';
 import { ALL_AXES } from '../utils/helpers.js';
 import fs from 'fs';
 import path from 'path';
@@ -76,15 +79,17 @@ function generateFallbackAnalysis(
 }
 
 // ── Route ───────────────────────────────────────────────────────────
-// Analyse one-shot: le client envoie tout le contexte, le serveur traite
-// sans rien stocker. Résultat mis en cache côté client.
+// Analyse one-shot éphémère.
+// Le client envoie position + réponses individuelles (pour les contradictions).
+// Le serveur traite sans rien stocker. Résultat caché côté client.
 
 analysisRouter.post('/', async (req, res) => {
-  const { position, parties, infoSource, perceivedBias } = req.body as {
+  const { position, parties, infoSource, perceivedBias, responses: clientResponses } = req.body as {
     position: CompassPosition;
     parties: PartyInput[];
     infoSource?: string;
     perceivedBias?: string;
+    responses?: Array<{ questionId: string; value: number }>;
   };
 
   if (!position || !parties) {
@@ -97,6 +102,27 @@ analysisRouter.post('/', async (req, res) => {
   if (infoSource) {
     const aggKey = SOURCE_TO_AGGREGATE[infoSource] || infoSource;
     mediaPosition = mediaAggregates[aggKey];
+  }
+
+  // Extract response-level signals for contradiction detection (ephemeral)
+  let responseSignals = undefined;
+  if (clientResponses && clientResponses.length > 0) {
+    try {
+      const allQuestions = await db.select().from(questions);
+      const mappedQuestions = allQuestions.map((q) => ({
+        id: q.id,
+        text: q.text,
+        axis: q.axis,
+        axes: (q.axes as string[] | null),
+        polarity: q.polarity,
+        domainId: q.domainId,
+        phase: q.phase,
+        weight: q.weight,
+      }));
+      responseSignals = extractResponseSignals(clientResponses, mappedQuestions);
+    } catch (err) {
+      console.error('[analysis] Failed to extract response signals:', err);
+    }
   }
 
   // Try AI analysis (ephemeral — nothing stored server-side)
@@ -115,6 +141,7 @@ analysisRouter.post('/', async (req, res) => {
         infoSource,
         perceivedBias,
         mediaPosition,
+        responseSignals,
       });
 
       res.json(result);
