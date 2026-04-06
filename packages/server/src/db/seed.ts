@@ -219,7 +219,7 @@ async function main() {
       positionSovereignty: m.position.sovereignty,
       owner: m.owner ?? null,
       independent: m.independent ?? false,
-      editorialLabel: m.editorial_label ?? null,
+      editorialLabel: m.description ?? m.editorial_label ?? null,
     });
   }
 
