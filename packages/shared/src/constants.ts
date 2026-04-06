@@ -2,31 +2,107 @@ import type { Quadrant, Octant, AxisId } from './types.js';
 
 // ── Les 5 axes ─────────────────────────────────────────────────────
 
-export const AXES: Record<AxisId, { negative: string; positive: string; description: string }> = {
+interface AxisPole {
+  label: string;
+  definition: string;
+  source: string;
+}
+
+interface AxisInfo {
+  negative: string;
+  positive: string;
+  description: string;
+  poles: {
+    negative: AxisPole;
+    positive: AxisPole;
+  };
+}
+
+export const AXES: Record<AxisId, AxisInfo> = {
   societal: {
     negative: 'Conservateur',
     positive: 'Progressiste',
-    description: 'Rapport aux valeurs, aux moeurs et aux évolutions de société',
+    description: 'Rapport aux valeurs, aux mœurs et aux évolutions de société',
+    poles: {
+      negative: {
+        label: 'Conservateur',
+        definition: 'Tendance à préserver les structures sociales, les traditions et les valeurs établies. Privilégie la continuité, la prudence face au changement et le respect des institutions héritées.',
+        source: 'Norberto Bobbio, Droite et Gauche (1994) ; Edmund Burke, Réflexions sur la Révolution de France (1790)',
+      },
+      positive: {
+        label: 'Progressiste',
+        definition: 'Tendance à promouvoir les réformes sociales, l\'extension des droits individuels et l\'évolution des normes. Privilégie l\'émancipation, l\'égalité et l\'adaptation aux transformations de la société.',
+        source: 'Norberto Bobbio, Droite et Gauche (1994) ; John Stuart Mill, De la liberté (1859)',
+      },
+    },
   },
   economic: {
     negative: 'Interventionniste',
     positive: 'Libéral',
     description: 'Rapport à l\'État dans l\'économie, au marché et à la redistribution',
+    poles: {
+      negative: {
+        label: 'Interventionniste',
+        definition: 'Tendance à confier à l\'État un rôle actif dans l\'économie : régulation des marchés, services publics, redistribution des richesses. Considère que le marché seul ne peut garantir la justice sociale.',
+        source: 'John Maynard Keynes, Théorie générale (1936) ; Karl Polanyi, La Grande Transformation (1944)',
+      },
+      positive: {
+        label: 'Libéral',
+        definition: 'Tendance à limiter l\'intervention de l\'État dans l\'économie : libre marché, concurrence, propriété privée, initiative individuelle. Considère que la liberté économique est le meilleur moteur de prospérité.',
+        source: 'Adam Smith, La Richesse des nations (1776) ; Friedrich Hayek, La Route de la servitude (1944)',
+      },
+    },
   },
   authority: {
     negative: 'Autoritaire',
     positive: 'Libertaire',
     description: 'Rapport au pouvoir, au contrôle, à la hiérarchie et aux libertés individuelles',
+    poles: {
+      negative: {
+        label: 'Autoritaire',
+        definition: 'Tendance à privilégier l\'ordre, la discipline, la sécurité collective et la centralisation du pouvoir. Accepte des restrictions des libertés individuelles au nom de la stabilité ou de l\'intérêt général.',
+        source: 'Thomas Hobbes, Le Léviathan (1651) ; Hannah Arendt, Les Origines du totalitarisme (1951)',
+      },
+      positive: {
+        label: 'Libertaire',
+        definition: 'Tendance à privilégier l\'autonomie individuelle, la décentralisation du pouvoir et la méfiance envers l\'autorité. Refuse la coercition et défend les libertés civiles comme valeur première.',
+        source: 'Pierre-Joseph Proudhon, Qu\'est-ce que la propriété ? (1840) ; Murray Rothbard, L\'Éthique de la liberté (1982)',
+      },
+    },
   },
   ecology: {
     negative: 'Productiviste',
     positive: 'Écologiste',
     description: 'Rapport à la croissance, aux limites planétaires et à la sobriété',
+    poles: {
+      negative: {
+        label: 'Productiviste',
+        definition: 'Tendance à considérer la croissance économique et le progrès technique comme prioritaires. La préservation de l\'environnement ne doit pas entraver le développement.',
+        source: 'Simon Kuznets, courbe environnementale (1955) ; Leigh Phillips, Austerity Ecology (2015)',
+      },
+      positive: {
+        label: 'Écologiste',
+        definition: 'Tendance à considérer les limites planétaires comme contrainte première. Prône la sobriété, la transformation des modes de production et la protection des écosystèmes.',
+        source: 'Club de Rome, Les Limites à la croissance (1972) ; GIEC, rapports d\'évaluation (1990-2023)',
+      },
+    },
   },
   sovereignty: {
     negative: 'Souverainiste',
     positive: 'Mondialiste',
     description: 'Rapport aux frontières, à la nation et aux institutions internationales',
+    poles: {
+      negative: {
+        label: 'Souverainiste',
+        definition: 'Tendance à défendre la souveraineté nationale, le contrôle des frontières et la primauté des décisions nationales sur les organisations internationales.',
+        source: 'Jean Bodin, Les Six Livres de la République (1576) ; Charles de Gaulle, Mémoires de guerre (1954)',
+      },
+      positive: {
+        label: 'Mondialiste',
+        definition: 'Tendance à favoriser la coopération internationale, l\'intégration supranationale et la libre circulation. Considère que les défis contemporains nécessitent des réponses au-delà des frontières.',
+        source: 'Immanuel Kant, Projet de paix perpétuelle (1795) ; Déclaration de Schuman (1950)',
+      },
+    },
   },
 };
 

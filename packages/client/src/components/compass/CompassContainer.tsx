@@ -157,6 +157,41 @@ export function CompassContainer({ parties, userPosition, initialView = '2d', on
         onToggleAll={toggleAll}
         onHighlight={setHighlightedPartyId}
       />
+
+      {/* Axis definitions */}
+      {view !== '1d' && (
+        <AxisDefinitions axes={view === '3d' ? [xAxis, yAxis, zAxis] : [xAxis, yAxis]} />
+      )}
     </section>
+  );
+}
+
+/** Displays definitions for the selected axes' poles */
+function AxisDefinitions({ axes }: { axes: AxisId[] }) {
+  return (
+    <div className="flex flex-col gap-3">
+      {axes.map((axisId) => {
+        const axis = AXES[axisId];
+        return (
+          <div key={axisId} className="bg-gray-900 rounded-xl p-4 border border-gray-800">
+            <h4 className="text-xs uppercase tracking-wider text-gray-500 mb-2">
+              {axis.description}
+            </h4>
+            <div className="grid gap-3 sm:grid-cols-2">
+              {(['negative', 'positive'] as const).map((side) => {
+                const pole = axis.poles[side];
+                return (
+                  <div key={side}>
+                    <p className="text-sm font-medium text-amber-400 mb-0.5">{pole.label}</p>
+                    <p className="text-xs text-gray-400 leading-relaxed">{pole.definition}</p>
+                    <p className="text-[10px] text-gray-600 mt-1 italic">{pole.source}</p>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        );
+      })}
+    </div>
   );
 }
