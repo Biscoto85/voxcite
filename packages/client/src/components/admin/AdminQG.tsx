@@ -203,6 +203,7 @@ function PromptsTab() {
   const [editLabel, setEditLabel] = useState('');
   const [testOutput, setTestOutput] = useState('');
   const [testing, setTesting] = useState(false);
+  const [testModel, setTestModel] = useState('claude-sonnet-4-20250514');
 
   const load = () => adminFetch('/prompts').then((r) => r.json()).then(setAllPrompts).catch(() => {});
   useEffect(() => { load(); }, []);
@@ -230,7 +231,7 @@ function PromptsTab() {
     try {
       const res = await adminFetch('/prompts/test', {
         method: 'POST',
-        body: JSON.stringify({ content: editContent }),
+        body: JSON.stringify({ content: editContent, model: testModel }),
       });
       const data = await res.json();
       setTestOutput(data.output || data.error || 'No output');
@@ -290,8 +291,16 @@ function PromptsTab() {
             <button onClick={handleSave} className="px-4 py-2 bg-amber-500 hover:bg-amber-400 rounded text-sm font-medium text-black">
               Sauvegarder (nouvelle version)
             </button>
+            <select
+              value={testModel}
+              onChange={(e) => setTestModel(e.target.value)}
+              className="bg-gray-800 border border-gray-700 rounded px-2 py-2 text-xs text-white"
+            >
+              <option value="claude-sonnet-4-20250514">Sonnet (~2¢)</option>
+              <option value="claude-haiku-4-5-20251001">Haiku (~0.5¢)</option>
+            </select>
             <button onClick={handleTest} disabled={testing} className="px-4 py-2 bg-gray-700 hover:bg-gray-600 rounded text-sm">
-              {testing ? 'Test en cours...' : 'Tester (Haiku)'}
+              {testing ? 'Test en cours...' : 'Tester'}
             </button>
           </div>
           {testOutput && (

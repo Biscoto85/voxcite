@@ -175,7 +175,7 @@ adminRouter.post('/prompts/test', async (req, res) => {
   try {
     const response = await trackedAiCall({
       promptKey: 'test',
-      model: model || 'claude-haiku-4-5-20251001', // default to Haiku for tests (cheaper)
+      model: model || 'claude-sonnet-4-20250514',
       messages: [{ role: 'user', content }],
       maxTokens: 2000,
     });
