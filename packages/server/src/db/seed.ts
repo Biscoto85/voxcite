@@ -7,7 +7,7 @@ import yaml from 'js-yaml';
 dotenv.config({ path: path.resolve(import.meta.dirname, '../../../../.env') });
 import { db } from './index.js';
 import { domains, themes, partis, questions, medias, prompts, snapshots, votes, responses, biases, sharedLinks, mediaRatings, proposals, feedback, suggestions, programVersions, opinions, subjects } from './schema.js';
-import { and as dbAnd, eq as dbEq } from 'drizzle-orm';
+import { and as dbAnd, eq as dbEq, sql } from 'drizzle-orm';
 
 const DATA_DIR = path.resolve(import.meta.dirname, '../../../../data');
 
@@ -138,6 +138,24 @@ function parseQuestions(): ParsedQuestion[] {
 
 async function main() {
   console.log('[seed] Starting seed...');
+
+  // ── PROTECTION: refuse to wipe user data in production ──
+  const [snapshotCount] = await db.select({ count: sql<number>`count(*)` }).from(snapshots);
+  const [voteCount] = await db.select({ count: sql<number>`count(*)` }).from(votes);
+  const hasUserData = Number(snapshotCount.count) > 0 || Number(voteCount.count) > 0;
+
+  if (hasUserData) {
+    console.error('[seed] ⛔ REFUSÉ: il y a des snapshots/votes en base.');
+    console.error('[seed] Le seed complet détruirait les données utilisateurs.');
+    console.error('[seed] Utilisez les scripts ciblés à la place :');
+    console.error('[seed]   npx tsx src/scripts/reseed-parties.ts');
+    console.error('[seed]   npx tsx src/scripts/reseed-medias.ts');
+    console.error('[seed] Pour forcer (DANGER): npx tsx src/db/seed.ts --force');
+    if (!process.argv.includes('--force')) {
+      process.exit(1);
+    }
+    console.warn('[seed] ⚠️  --force détecté, suppression de toutes les données...');
+  }
 
   // Clear ALL tables (leaf tables first, then parents)
   console.log('[seed] Clearing existing data...');
