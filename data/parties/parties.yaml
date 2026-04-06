@@ -2,83 +2,130 @@
 #
 # IMPORTANT : Ces positions sont des estimations éditoriales basées sur
 # les programmes, votes parlementaires et discours publics.
-# Elles doivent être affinées par un comité éditorial et seront
-# transparentes pour les utilisateurs (méthodologie publiée).
+# Elles sont affinées via le QG admin et transparentes pour les utilisateurs.
 #
 # Échelle : -1.0 à +1.0 pour chaque axe
-#   position_1d :    -1 = gauche, +1 = droite (classement éditorial traditionnel)
+#   position_1d :    -1 = gauche, +1 = droite (projection classique)
 #   Sociétal :       -1 = conservateur, +1 = progressiste
 #   Économique :     -1 = interventionniste, +1 = libéral
 #   Autorité :       -1 = autoritaire, +1 = libertaire
 #   Écologie :       -1 = productiviste, +1 = écologiste
 #   Souveraineté :   -1 = souverainiste, +1 = mondialiste
+#
+# position_1d est calculé comme projection pondérée :
+#   societal * 0.4 + economic * -0.6 (inversé car gauche = interventionniste)
 
 partis:
+
+  # ── Extrême gauche ───────────────────────────────────────────────────
 
   - id: npa
     label: "Nouveau Parti Anticapitaliste"
     abbreviation: "NPA"
-    position_1d: -0.95
+    position_1d: -0.93
     position:
       societal: 0.9
       economic: -0.95
-      authority: 0.7       # Autogestion, démocratie directe, anti-répression
-      ecology: 0.7         # Écosocialisme, décroissance, anti-capitalisme vert
-      sovereignty: -0.3    # Internationaliste mais anti-UE libérale
+      authority: 0.7
+      ecology: 0.5
+      sovereignty: -0.3
     color: "#B80000"
     leader: "Philippe Poutou"
+    # Anticapitaliste radical, progressiste sociétal, libertaire, internationaliste mais anti-mondialisation libérale.
+
+  - id: lo
+    label: "Lutte Ouvrière"
+    abbreviation: "LO"
+    position_1d: -0.84
+    position:
+      societal: 0.6
+      economic: -1.0
+      authority: 0.3
+      ecology: -0.1
+      sovereignty: -0.4
+    color: "#CC0000"
+    leader: "Nathalie Arthaud"
+    # Communiste révolutionnaire, économie planifiée totale. Moins progressiste que le NPA sur le sociétal. Écologie secondaire.
+
+  # ── Gauche radicale ──────────────────────────────────────────────────
 
   - id: lfi
     label: "La France Insoumise"
     abbreviation: "LFI"
-    position_1d: -0.80
+    position_1d: -0.76
     position:
       societal: 0.7
       economic: -0.8
-      authority: 0.3       # Libertaire sur les libertés civiles, verticale en interne
-      ecology: 0.6         # Planification écologique, règle verte, bifurcation
-      sovereignty: -0.4    # Souverainisme de gauche, désobéissance aux traités UE
+      authority: 0.3
+      ecology: 0.6
+      sovereignty: -0.4
     color: "#CC2443"
     leader: "Jean-Luc Mélenchon"
+    # Progressiste, interventionniste fort, planification écologique. Souverainiste populaire mais internationaliste de tradition. Structure interne très verticale d'où autorité modérée.
+
+  # ── Gauche communiste ────────────────────────────────────────────────
 
   - id: pcf
     label: "Parti Communiste Français"
     abbreviation: "PCF"
-    position_1d: -0.75
+    position_1d: -0.70
     position:
       societal: 0.4
       economic: -0.9
-      authority: -0.2      # Tradition centraliste, État fort, libertés syndicales
-      ecology: 0.2         # Écologie industrielle, pro-nucléaire, emploi d'abord
-      sovereignty: -0.3    # Souveraineté populaire, critique de l'UE libérale
+      authority: -0.1
+      ecology: 0.1
+      sovereignty: -0.3
     color: "#DD0000"
     leader: "Fabien Roussel"
+    # Communiste classique, moins progressiste que LFI sur le sociétal. Historiquement productiviste (nucléaire, industrie). Ambivalent sur l'autorité.
 
-  - id: eelv
-    label: "Les Écologistes"
-    abbreviation: "EELV"
-    position_1d: -0.50
-    position:
-      societal: 0.8
-      economic: -0.4
-      authority: 0.6       # Désobéissance civile, démocratie participative
-      ecology: 0.95        # Le plus écologiste — raison d'être du parti
-      sovereignty: 0.4     # Pro-Europe, coopération internationale, climat mondial
-    color: "#00A650"
-    leader: "Marine Tondelier"
+  # ── Gauche socialiste ────────────────────────────────────────────────
 
   - id: ps
     label: "Parti Socialiste"
     abbreviation: "PS"
-    position_1d: -0.35
+    position_1d: -0.02
     position:
       societal: 0.5
       economic: -0.3
-      authority: 0.2       # Modérément libertaire, institutionnel
-      ecology: 0.3         # Écologie de compromis, transition sans rupture
-      sovereignty: 0.5     # Pro-européen, multilatéralisme, institutions internationales
+      authority: 0.2
+      ecology: 0.3
+      sovereignty: 0.3
     color: "#FF6084"
     leader: "Olivier Faure"
+    # Social-démocrate, pro-européen, modérément interventionniste. Écologie modérée. Progressiste sans radicalité.
+
+  # ── Écologistes ──────────────────────────────────────────────────────
+
+  - id: eelv
+    label: "Les Écologistes"
+    abbreviation: "EELV"
+    position_1d: -0.08
+    position:
+      societal: 0.8
+      economic: -0.4
+      authority: 0.5
+      ecology: 0.9
+      sovereignty: 0.2
+    color: "#00A650"
+    leader: "Marine Tondelier"
+    # Très progressiste, écologiste radical, libertaire sur les libertés civiles. Pro-européen. Interventionniste modéré mais anti-productiviste.
+
+  # ── Centre / Macronisme ──────────────────────────────────────────────
+
+  - id: renaissance
+    label: "Renaissance"
+    abbreviation: "RE"
+    position_1d: 0.24
+    position:
+      societal: 0.3
+      economic: 0.6
+      authority: -0.3
+      ecology: 0.1
+      sovereignty: 0.5
+    color: "#FFEB00"
+    leader: "Emmanuel Macron"
+    # Libéral économique assumé, socialement modérément progressiste. Pro-UE et mondialiste. Tendance autoritaire sur la sécurité.
 
   - id: modem
     label: "MoDem"
@@ -87,80 +134,119 @@ partis:
     position:
       societal: 0.2
       economic: 0.3
-      authority: 0.1       # Centriste, équilibre
-      ecology: 0.2         # Écologie modérée, pragmatique
-      sovereignty: 0.6     # Très pro-européen (Bayrou historiquement)
+      authority: 0.0
+      ecology: 0.2
+      sovereignty: 0.3
     color: "#FF8C00"
     leader: "François Bayrou"
+    # Centriste classique, ni autoritaire ni libertaire. Pro-européen modéré. Libéral tempéré.
 
-  - id: renaissance
-    label: "Renaissance"
-    abbreviation: "RE"
-    position_1d: 0.25
+  # ── Centre-droit / Philippisme ───────────────────────────────────────
+
+  - id: horizons
+    label: "Horizons"
+    abbreviation: "HOR"
+    position_1d: 0.26
     position:
-      societal: 0.3
-      economic: 0.6
-      authority: -0.5      # 49.3, état d'urgence, surveillance, verticalité
-      ecology: 0.1         # Discours vert mais relance nucléaire, croissance verte
-      sovereignty: 0.5     # Pro-UE, souveraineté européenne, OTAN
-    color: "#FFEB00"
-    leader: "Emmanuel Macron"
+      societal: -0.1
+      economic: 0.5
+      authority: -0.2
+      ecology: 0.2
+      sovereignty: 0.4
+    color: "#00B7EB"
+    leader: "Édouard Philippe"
+    # Droite libérale réformiste, ordre républicain, assainissement des comptes publics. Candidat présidentielle 2027. Pro-européen, sécuritaire modéré. Écologie pragmatique (pro-nucléaire).
+
+  # ── Droite républicaine ──────────────────────────────────────────────
 
   - id: lr
     label: "Les Républicains"
     abbreviation: "LR"
-    position_1d: 0.55
+    position_1d: 0.14
     position:
       societal: -0.4
       economic: 0.5
-      authority: -0.5      # Ordre, autorité, sécurité, peines plus lourdes
-      ecology: -0.4        # Productiviste, anti-écologie punitive, pro-nucléaire
-      sovereignty: 0.2     # Pro-européen modéré mais souveraineté régalienne
+      authority: -0.4
+      ecology: -0.1
+      sovereignty: -0.1
     color: "#0066CC"
     leader: "Laurent Wauquiez"
+    # Droite classique, sécuritaire, libéral économique. Ligne qui a dérivé vers la droite sur l'immigration. Position ambiguë sur la souveraineté.
+
+  # ── Droite libérale / Lisnard ────────────────────────────────────────
+
+  - id: ne
+    label: "Nouvelle Énergie"
+    abbreviation: "NE"
+    position_1d: 0.42
+    position:
+      societal: -0.3
+      economic: 0.9
+      authority: -0.1
+      ecology: -0.3
+      sovereignty: 0.1
+    color: "#1B3A5C"
+    leader: "David Lisnard"
+    # Ultra-libéral assumé, déréglementation massive, réduction drastique de l'État. Conservateur modéré sur le sociétal. Productiviste. A quitté LR en mars 2026. Candidat présidentielle 2027.
+
+  # ── Droite gaulliste / Villepin ──────────────────────────────────────
+
+  - id: lfh
+    label: "La France Humaniste"
+    abbreviation: "LFH"
+    position_1d: 0.02
+    position:
+      societal: 0.1
+      economic: 0.1
+      authority: -0.1
+      ecology: 0.2
+      sovereignty: -0.1
+    color: "#5B7DB1"
+    leader: "Dominique de Villepin"
+    # Gaulliste social, ni droite ni gauche revendiqué. Justice sociale + ordre républicain. Politique étrangère indépendante. Candidat présidentielle 2027.
+
+  # ── Extrême droite ───────────────────────────────────────────────────
 
   - id: rn
     label: "Rassemblement National"
     abbreviation: "RN"
-    position_1d: 0.80
+    position_1d: -0.20
     position:
       societal: -0.8
       economic: -0.2
-      authority: -0.7      # Police renforcée, anti-immigration, contrôle
-      ecology: -0.5        # Anti-éolien, pro-voiture, climato-sceptique soft
-      sovereignty: -0.8    # Très souverainiste — Frexit soft, anti-UE, anti-OTAN
+      authority: -0.7
+      ecology: -0.4
+      sovereignty: -0.8
     color: "#0D378A"
     leader: "Jordan Bardella"
+    # Très conservateur, autoritaire, souverainiste fort. Économiquement plus proche de l'interventionnisme (protectionnisme, État social national). Productiviste.
 
   - id: reconquete
     label: "Reconquête"
     abbreviation: "R!"
-    position_1d: 0.90
+    position_1d: -0.60
     position:
       societal: -0.9
       economic: 0.4
-      authority: -0.8      # Le plus autoritaire — civilisationnel, identitaire
-      ecology: -0.7        # Le plus productiviste — croissance, anti-décroissance
-      sovereignty: -0.6    # Souverainiste civilisationnel mais pas anti-UE en bloc
+      authority: -0.8
+      ecology: -0.5
+      sovereignty: -0.7
     color: "#1A1A2E"
     leader: "Éric Zemmour"
+    # Extrême droite identitaire. Ultra-conservateur sociétal. Libéral économique. Très autoritaire. Productiviste. Souverainiste fort.
 
-# ── Ce que les 5 axes révèlent ─────────────────────────────────────
-#
-# ÉCOLOGIE :
-#   EELV (0.95) vs R! (-0.7) → l'écart le plus grand de tous les axes
-#   PCF (0.2) vs LFI (0.6) → la gauche est divisée sur l'écologie
-#   RE (0.1) → discours vert mais position quasi-neutre
-#
-# SOUVERAINETÉ :
-#   RN (-0.8) vs PS (0.5) → clivage massif
-#   LFI (-0.4) et RN (-0.8) → les deux sont souverainistes !
-#     C'est le 2ème point commun du bloc populaire (après l'économie)
-#   EELV (0.4) vs LFI (-0.4) → la gauche est divisée sur l'Europe
-#
-# COMBINAISONS SURPRENANTES :
-#   RE : progressiste + libéral + AUTORITAIRE + neutre écologie + mondialiste
-#   RN : conservateur + interventionniste + AUTORITAIRE + productiviste + SOUVERAINISTE
-#   LFI : progressiste + interventionniste + libertaire + écologiste + SOUVERAINISTE
-#   → LFI et RN partagent 2 axes sur 5 (économique + souveraineté)
-#     mais divergent sur 3 (sociétal, autorité, écologie)
+  # ── Droite souverainiste populaire ───────────────────────────────────
+
+  - id: udr
+    label: "Union des Droites"
+    abbreviation: "UDR"
+    position_1d: -0.16
+    position:
+      societal: -0.7
+      economic: 0.2
+      authority: -0.6
+      ecology: -0.4
+      sovereignty: -0.6
+    color: "#0B3D91"
+    leader: "Éric Ciotti"
+    # Scission de LR vers le RN. Droite dure, sécuritaire, anti-immigration forte. Position économique intermédiaire. Autoritaire et souverainiste.

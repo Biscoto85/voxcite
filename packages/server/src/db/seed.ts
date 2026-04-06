@@ -6,7 +6,7 @@ import yaml from 'js-yaml';
 // Load .env from project root
 dotenv.config({ path: path.resolve(import.meta.dirname, '../../../../.env') });
 import { db } from './index.js';
-import { domains, themes, partis, questions, medias, prompts, responses, biases, sharedLinks, mediaRatings, proposals, feedback, suggestions, programVersions, opinions, subjects } from './schema.js';
+import { domains, themes, partis, questions, medias, prompts, snapshots, votes, responses, biases, sharedLinks, mediaRatings, proposals, feedback, suggestions, programVersions, opinions, subjects } from './schema.js';
 import { and as dbAnd, eq as dbEq } from 'drizzle-orm';
 
 const DATA_DIR = path.resolve(import.meta.dirname, '../../../../data');
@@ -147,6 +147,8 @@ async function main() {
   await db.delete(mediaRatings);
   await db.delete(sharedLinks);
   await db.delete(biases);
+  await db.delete(votes);
+  await db.delete(snapshots);
   await db.delete(responses);
   await db.delete(opinions);
   await db.delete(subjects);
