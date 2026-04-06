@@ -287,17 +287,16 @@ adminRouter.get('/proposals', async (req, res) => {
 
 adminRouter.post('/batch/program', async (_req, res) => {
   try {
-    // Dynamic import to avoid loading batch logic at startup
-    const { default: runBatch } = await import('../batch/generate-program.js');
-    if (typeof runBatch === 'function') {
-      await runBatch();
-      res.json({ ok: true, message: 'Batch program completed' });
-    } else {
-      res.status(500).json({ error: 'Batch function not found' });
-    }
+    const { execSync } = await import('child_process');
+    const output = execSync('npx tsx src/batch/generate-program.ts', {
+      cwd: new URL('../../', import.meta.url).pathname,
+      timeout: 120_000,
+      encoding: 'utf-8',
+    });
+    res.json({ ok: true, message: 'Batch terminé', output: output.slice(-500) });
   } catch (err: any) {
     console.error('[admin] Batch error:', err);
-    res.status(500).json({ error: err.message });
+    res.status(500).json({ error: err.stderr?.slice(-500) || err.message });
   }
 });
 
