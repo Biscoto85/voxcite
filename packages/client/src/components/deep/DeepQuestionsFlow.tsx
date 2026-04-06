@@ -118,7 +118,20 @@ export function DeepQuestionsFlow({
         </div>
       </div>
 
-      <QuestionCard question={activeQuestion} onAnswer={handleAnswer} questionNumber={currentIndex + 1} />
+      <QuestionCard
+        question={activeQuestion}
+        onAnswer={handleAnswer}
+        onBack={() => {
+          if (currentIndex <= 0) return;
+          // Remove last response from localStorage
+          const saved: Array<{ questionId: string; value: number }> = JSON.parse(localStorage.getItem(LS_RESPONSES) || '[]');
+          saved.pop();
+          localStorage.setItem(LS_RESPONSES, JSON.stringify(saved));
+          setCurrentIndex((prev) => prev - 1);
+        }}
+        canGoBack={currentIndex > 0}
+        questionNumber={currentIndex + 1}
+      />
     </section>
   );
 }
