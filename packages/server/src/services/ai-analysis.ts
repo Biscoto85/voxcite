@@ -1,8 +1,8 @@
-import Anthropic from '@anthropic-ai/sdk';
 import type { CompassPosition, AxisId } from '@partiprism/shared';
 import { AXES } from '@partiprism/shared';
 import type { PopulationStats, UserPercentiles } from './population.js';
 import type { ResponseSignals } from './response-signals.js';
+import { trackedAiCall } from './tracked-ai.js';
 import { ALL_AXES, extractClaudeText, extractJSON } from '../utils/helpers.js';
 
 interface PartyInput {
@@ -236,17 +236,16 @@ Réponds UNIQUEMENT avec le JSON, rien d'autre.`;
  * Run analysis using Claude API.
  */
 export async function runAiAnalysis(input: AnalysisInput): Promise<AiAnalysisResult> {
-  const apiKey = process.env.ANTHROPIC_API_KEY;
-  if (!apiKey) {
+  if (!process.env.ANTHROPIC_API_KEY) {
     throw new Error('ANTHROPIC_API_KEY not set');
   }
 
-  const client = new Anthropic({ apiKey });
   const prompt = buildPrompt(input);
 
-  const response = await client.messages.create({
+  const response = await trackedAiCall({
+    promptKey: 'analysis',
     model: 'claude-sonnet-4-20250514',
-    max_tokens: 3500,
+    maxTokens: 3500,
     messages: [{ role: 'user', content: prompt }],
   });
 
