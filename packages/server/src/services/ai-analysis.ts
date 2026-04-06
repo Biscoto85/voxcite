@@ -59,7 +59,7 @@ const BIAS_LABELS: Record<string, string> = {
   les_deux: 'variées (gauche et droite)',
 };
 
-function buildPrompt(input: AnalysisInput): string {
+function buildPrompt(input: AnalysisInput): { dataBlock: string } {
   const { position, parties, populationStats, percentiles, infoSource, perceivedBias, mediaPosition, responseSignals } = input;
 
   const ranked = parties.map((p) => {
