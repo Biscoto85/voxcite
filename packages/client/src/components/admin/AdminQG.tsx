@@ -1,11 +1,13 @@
 import { useState, useEffect, useCallback } from 'react';
 
-type Tab = 'dashboard' | 'prompts' | 'questions' | 'feedbacks' | 'proposals' | 'api-calls';
+type Tab = 'dashboard' | 'prompts' | 'questions' | 'parties' | 'medias' | 'feedbacks' | 'proposals' | 'api-calls';
 
 const TABS: Array<{ id: Tab; label: string }> = [
   { id: 'dashboard', label: 'Dashboard' },
   { id: 'prompts', label: 'Prompts' },
   { id: 'questions', label: 'Questions' },
+  { id: 'parties', label: 'Partis' },
+  { id: 'medias', label: 'Médias' },
   { id: 'feedbacks', label: 'Feedbacks' },
   { id: 'proposals', label: 'Propositions' },
   { id: 'api-calls', label: 'API Calls' },
@@ -122,6 +124,8 @@ export function AdminQG() {
         {tab === 'dashboard' && <DashboardTab />}
         {tab === 'prompts' && <PromptsTab />}
         {tab === 'questions' && <QuestionsTab />}
+        {tab === 'parties' && <PartiesTab />}
+        {tab === 'medias' && <MediasTab />}
         {tab === 'feedbacks' && <FeedbacksTab />}
         {tab === 'proposals' && <ProposalsTab />}
         {tab === 'api-calls' && <ApiCallsTab />}
@@ -580,6 +584,308 @@ function ApiCallsTab() {
           </tbody>
         </table>
       </div>
+    </div>
+  );
+}
+
+// ── Axis slider helper ──────────────────────────────────────────────
+
+const AXIS_NAMES = [
+  { key: 'positionSocietal', label: 'Sociétal', neg: 'Conservateur', pos: 'Progressiste' },
+  { key: 'positionEconomic', label: 'Économique', neg: 'Interventionniste', pos: 'Libéral' },
+  { key: 'positionAuthority', label: 'Autorité', neg: 'Autoritaire', pos: 'Libertaire' },
+  { key: 'positionEcology', label: 'Écologie', neg: 'Productiviste', pos: 'Écologiste' },
+  { key: 'positionSovereignty', label: 'Souveraineté', neg: 'Souverainiste', pos: 'Mondialiste' },
+];
+
+function AxisSliders({ values, onChange }: {
+  values: Record<string, number>;
+  onChange: (key: string, val: number) => void;
+}) {
+  return (
+    <div className="space-y-2">
+      {AXIS_NAMES.map((a) => (
+        <div key={a.key}>
+          <div className="flex justify-between text-[10px] text-gray-500">
+            <span>{a.neg}</span>
+            <span className="text-gray-400">{a.label}: {(values[a.key] ?? 0).toFixed(2)}</span>
+            <span>{a.pos}</span>
+          </div>
+          <input
+            type="range" min={-100} max={100}
+            value={Math.round((values[a.key] ?? 0) * 100)}
+            onChange={(e) => onChange(a.key, Number(e.target.value) / 100)}
+            className="w-full accent-amber-500"
+          />
+        </div>
+      ))}
+      <div>
+        <div className="flex justify-between text-[10px] text-gray-500">
+          <span>Gauche</span>
+          <span className="text-gray-400">1D: {(values.position1d ?? 0).toFixed(2)}</span>
+          <span>Droite</span>
+        </div>
+        <input
+          type="range" min={-100} max={100}
+          value={Math.round((values.position1d ?? 0) * 100)}
+          onChange={(e) => onChange('position1d', Number(e.target.value) / 100)}
+          className="w-full accent-amber-500"
+        />
+      </div>
+    </div>
+  );
+}
+
+// ── Parties ──────────────────────────────────────────────────────────
+
+function PartiesTab() {
+  const [items, setItems] = useState<any[]>([]);
+  const [editId, setEditId] = useState<string | null>(null);
+  const [editData, setEditData] = useState<any>({});
+  const [adding, setAdding] = useState(false);
+  const [newParty, setNewParty] = useState({ id: '', label: '', abbreviation: '', color: '#3B82F6', leader: '', position1d: 0, positionSocietal: 0, positionEconomic: 0, positionAuthority: 0, positionEcology: 0, positionSovereignty: 0 });
+
+  const load = () => adminFetch('/parties').then((r) => r.json()).then(setItems).catch(() => {});
+  useEffect(() => { load(); }, []);
+
+  const handleSave = async (id: string) => {
+    await adminFetch(`/parties/${id}`, { method: 'PUT', body: JSON.stringify(editData) });
+    setEditId(null);
+    load();
+  };
+
+  const handleAdd = async () => {
+    if (!newParty.id || !newParty.label || !newParty.abbreviation) return;
+    await adminFetch('/parties', { method: 'POST', body: JSON.stringify(newParty) });
+    setAdding(false);
+    setNewParty({ id: '', label: '', abbreviation: '', color: '#3B82F6', leader: '', position1d: 0, positionSocietal: 0, positionEconomic: 0, positionAuthority: 0, positionEcology: 0, positionSovereignty: 0 });
+    load();
+  };
+
+  const handleDelete = async (id: string) => {
+    if (!confirm(`Supprimer le parti "${id}" ?`)) return;
+    await adminFetch(`/parties/${id}`, { method: 'DELETE' });
+    load();
+  };
+
+  return (
+    <div className="space-y-4">
+      <div className="flex items-center justify-between">
+        <h2 className="text-lg font-bold">Partis ({items.length})</h2>
+        <button onClick={() => setAdding(!adding)} className="px-3 py-1.5 bg-amber-500 hover:bg-amber-400 rounded text-xs font-medium text-black">
+          {adding ? 'Annuler' : '+ Ajouter'}
+        </button>
+      </div>
+
+      {adding && (
+        <div className="bg-gray-900 rounded-xl p-4 border border-amber-800/40 space-y-3">
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+            <input value={newParty.id} onChange={(e) => setNewParty({ ...newParty, id: e.target.value })} placeholder="ID (ex: udi)" className="bg-gray-800 border border-gray-700 rounded px-2 py-1.5 text-xs text-white" />
+            <input value={newParty.label} onChange={(e) => setNewParty({ ...newParty, label: e.target.value })} placeholder="Nom complet" className="bg-gray-800 border border-gray-700 rounded px-2 py-1.5 text-xs text-white" />
+            <input value={newParty.abbreviation} onChange={(e) => setNewParty({ ...newParty, abbreviation: e.target.value })} placeholder="Abréviation" className="bg-gray-800 border border-gray-700 rounded px-2 py-1.5 text-xs text-white" />
+            <div className="flex gap-1">
+              <input type="color" value={newParty.color} onChange={(e) => setNewParty({ ...newParty, color: e.target.value })} className="w-8 h-8 rounded border-0 cursor-pointer" />
+              <input value={newParty.leader} onChange={(e) => setNewParty({ ...newParty, leader: e.target.value })} placeholder="Leader" className="flex-1 bg-gray-800 border border-gray-700 rounded px-2 py-1.5 text-xs text-white" />
+            </div>
+          </div>
+          <AxisSliders values={newParty} onChange={(k, v) => setNewParty({ ...newParty, [k]: v })} />
+          <button onClick={handleAdd} className="px-4 py-2 bg-amber-500 hover:bg-amber-400 rounded text-sm font-medium text-black">Créer</button>
+        </div>
+      )}
+
+      {items.map((p) => (
+        <div key={p.id} className="bg-gray-900 rounded-xl p-4 border border-gray-800">
+          <div className="flex items-center justify-between mb-2">
+            <div className="flex items-center gap-2">
+              <span className="w-4 h-4 rounded-full" style={{ backgroundColor: p.color }} />
+              <span className="font-medium">{p.abbreviation}</span>
+              <span className="text-sm text-gray-400">{p.label}</span>
+              {p.leader && <span className="text-xs text-gray-600">({p.leader})</span>}
+            </div>
+            <div className="flex gap-2">
+              <button onClick={() => { setEditId(editId === p.id ? null : p.id); setEditData(p); }} className="text-xs text-gray-500 hover:text-amber-400">
+                {editId === p.id ? 'Fermer' : 'Éditer'}
+              </button>
+              <button onClick={() => handleDelete(p.id)} className="text-xs text-gray-600 hover:text-red-400">Suppr</button>
+            </div>
+          </div>
+
+          {editId === p.id && (
+            <div className="mt-3 space-y-3 border-t border-gray-800 pt-3">
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                <input value={editData.label} onChange={(e) => setEditData({ ...editData, label: e.target.value })} className="bg-gray-800 border border-gray-700 rounded px-2 py-1.5 text-xs text-white" />
+                <input value={editData.abbreviation} onChange={(e) => setEditData({ ...editData, abbreviation: e.target.value })} className="bg-gray-800 border border-gray-700 rounded px-2 py-1.5 text-xs text-white" />
+                <div className="flex gap-1">
+                  <input type="color" value={editData.color} onChange={(e) => setEditData({ ...editData, color: e.target.value })} className="w-8 h-8 rounded border-0 cursor-pointer" />
+                  <input value={editData.leader || ''} onChange={(e) => setEditData({ ...editData, leader: e.target.value })} placeholder="Leader" className="flex-1 bg-gray-800 border border-gray-700 rounded px-2 py-1.5 text-xs text-white" />
+                </div>
+              </div>
+              <AxisSliders values={editData} onChange={(k, v) => setEditData({ ...editData, [k]: v })} />
+              <button onClick={() => handleSave(p.id)} className="px-4 py-2 bg-amber-500 hover:bg-amber-400 rounded text-sm font-medium text-black">Sauvegarder</button>
+            </div>
+          )}
+
+          {editId !== p.id && (
+            <div className="flex gap-3 text-[10px] text-gray-600 flex-wrap">
+              {AXIS_NAMES.map((a) => (
+                <span key={a.key}>{a.label}: {(p[a.key] ?? 0).toFixed(2)}</span>
+              ))}
+              <span>1D: {(p.position1d ?? 0).toFixed(2)}</span>
+            </div>
+          )}
+        </div>
+      ))}
+    </div>
+  );
+}
+
+// ── Médias ───────────────────────────────────────────────────────────
+
+function MediasTab() {
+  const [data, setData] = useState<{ medias: any[]; missingMediaRequests: any[] }>({ medias: [], missingMediaRequests: [] });
+  const [editId, setEditId] = useState<string | null>(null);
+  const [editData, setEditData] = useState<any>({});
+  const [adding, setAdding] = useState(false);
+  const [typeFilter, setTypeFilter] = useState('');
+  const [newMedia, setNewMedia] = useState({ id: '', label: '', type: 'presse', url: '', owner: '', independent: false, editorialLabel: '', position1d: 0, positionSocietal: 0, positionEconomic: 0, positionAuthority: 0, positionEcology: 0, positionSovereignty: 0 });
+
+  const load = () => adminFetch('/medias').then((r) => r.json()).then(setData).catch(() => {});
+  useEffect(() => { load(); }, []);
+
+  const filtered = typeFilter ? data.medias.filter((m) => m.type === typeFilter) : data.medias;
+
+  const handleSave = async (id: string) => {
+    await adminFetch(`/medias/${id}`, { method: 'PUT', body: JSON.stringify(editData) });
+    setEditId(null);
+    load();
+  };
+
+  const handleAdd = async () => {
+    if (!newMedia.id || !newMedia.label) return;
+    await adminFetch('/medias', { method: 'POST', body: JSON.stringify(newMedia) });
+    setAdding(false);
+    setNewMedia({ id: '', label: '', type: 'presse', url: '', owner: '', independent: false, editorialLabel: '', position1d: 0, positionSocietal: 0, positionEconomic: 0, positionAuthority: 0, positionEcology: 0, positionSovereignty: 0 });
+    load();
+  };
+
+  const handleDelete = async (id: string) => {
+    if (!confirm(`Supprimer le média "${id}" ?`)) return;
+    await adminFetch(`/medias/${id}`, { method: 'DELETE' });
+    load();
+  };
+
+  return (
+    <div className="space-y-4">
+      <div className="flex items-center justify-between flex-wrap gap-2">
+        <h2 className="text-lg font-bold">Médias ({data.medias.length})</h2>
+        <div className="flex gap-2">
+          <select value={typeFilter} onChange={(e) => setTypeFilter(e.target.value)} className="bg-gray-800 border border-gray-700 rounded px-2 py-1 text-xs text-white">
+            <option value="">Tous</option>
+            <option value="tv">TV</option>
+            <option value="radio">Radio</option>
+            <option value="presse">Presse</option>
+            <option value="podcast">Podcast</option>
+            <option value="web">Web</option>
+          </select>
+          <button onClick={() => setAdding(!adding)} className="px-3 py-1.5 bg-amber-500 hover:bg-amber-400 rounded text-xs font-medium text-black">
+            {adding ? 'Annuler' : '+ Ajouter'}
+          </button>
+        </div>
+      </div>
+
+      {/* Missing media requests */}
+      {data.missingMediaRequests.length > 0 && (
+        <div className="bg-amber-900/20 border border-amber-800/40 rounded-xl p-4">
+          <h3 className="text-sm font-semibold text-amber-400 mb-2">Médias signalés manquants ({data.missingMediaRequests.length})</h3>
+          {data.missingMediaRequests.map((f) => (
+            <div key={f.id} className="text-xs text-gray-300 py-1 border-b border-gray-800 last:border-0">
+              {f.description}
+              <span className="text-gray-600 ml-2">{new Date(f.createdAt).toLocaleDateString('fr-FR')}</span>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Add form */}
+      {adding && (
+        <div className="bg-gray-900 rounded-xl p-4 border border-amber-800/40 space-y-3">
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+            <input value={newMedia.id} onChange={(e) => setNewMedia({ ...newMedia, id: e.target.value })} placeholder="ID (ex: hugo_decrypte)" className="bg-gray-800 border border-gray-700 rounded px-2 py-1.5 text-xs text-white" />
+            <input value={newMedia.label} onChange={(e) => setNewMedia({ ...newMedia, label: e.target.value })} placeholder="Nom" className="bg-gray-800 border border-gray-700 rounded px-2 py-1.5 text-xs text-white" />
+            <select value={newMedia.type} onChange={(e) => setNewMedia({ ...newMedia, type: e.target.value })} className="bg-gray-800 border border-gray-700 rounded px-2 py-1.5 text-xs text-white">
+              <option value="tv">TV</option><option value="radio">Radio</option><option value="presse">Presse</option><option value="podcast">Podcast</option><option value="web">Web</option>
+            </select>
+            <input value={newMedia.url} onChange={(e) => setNewMedia({ ...newMedia, url: e.target.value })} placeholder="URL" className="bg-gray-800 border border-gray-700 rounded px-2 py-1.5 text-xs text-white" />
+            <input value={newMedia.owner} onChange={(e) => setNewMedia({ ...newMedia, owner: e.target.value })} placeholder="Propriétaire" className="bg-gray-800 border border-gray-700 rounded px-2 py-1.5 text-xs text-white" />
+            <input value={newMedia.editorialLabel} onChange={(e) => setNewMedia({ ...newMedia, editorialLabel: e.target.value })} placeholder="Ligne éditoriale" className="bg-gray-800 border border-gray-700 rounded px-2 py-1.5 text-xs text-white" />
+          </div>
+          <label className="flex items-center gap-2 text-xs text-gray-400">
+            <input type="checkbox" checked={newMedia.independent} onChange={(e) => setNewMedia({ ...newMedia, independent: e.target.checked })} />
+            Indépendant
+          </label>
+          <AxisSliders values={newMedia} onChange={(k, v) => setNewMedia({ ...newMedia, [k]: v })} />
+          <button onClick={handleAdd} className="px-4 py-2 bg-amber-500 hover:bg-amber-400 rounded text-sm font-medium text-black">Créer</button>
+        </div>
+      )}
+
+      {/* Media list */}
+      {filtered.map((m) => (
+        <div key={m.id} className="bg-gray-900 rounded-xl p-4 border border-gray-800">
+          <div className="flex items-center justify-between mb-1">
+            <div className="flex items-center gap-2">
+              <span className="text-xs text-gray-600 uppercase w-12">{m.type}</span>
+              <span className="font-medium text-sm">{m.label}</span>
+              {m.independent && <span className="text-[10px] text-green-400 bg-green-900/30 px-1.5 py-0.5 rounded">indép.</span>}
+              <span className="text-xs text-gray-500">{m.editorialLabel}</span>
+            </div>
+            <div className="flex gap-2">
+              <button onClick={() => { setEditId(editId === m.id ? null : m.id); setEditData(m); }} className="text-xs text-gray-500 hover:text-amber-400">
+                {editId === m.id ? 'Fermer' : 'Éditer'}
+              </button>
+              <button onClick={() => handleDelete(m.id)} className="text-xs text-gray-600 hover:text-red-400">Suppr</button>
+            </div>
+          </div>
+
+          {/* Citizen ratings summary */}
+          {m.citizenStats && (
+            <div className="text-[10px] text-gray-500 mb-1">
+              {m.citizenStats.count} évaluations citoyennes — moy. soc: {m.citizenStats.avgSoc?.toFixed(2)} éco: {m.citizenStats.avgEco?.toFixed(2)}
+              {m.citizenSocietal != null && (
+                <span className="text-amber-400 ml-2">→ position blendée: soc={m.citizenSocietal.toFixed(2)} éco={m.citizenEconomic?.toFixed(2)}</span>
+              )}
+            </div>
+          )}
+
+          {editId === m.id && (
+            <div className="mt-3 space-y-3 border-t border-gray-800 pt-3">
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                <input value={editData.label} onChange={(e) => setEditData({ ...editData, label: e.target.value })} className="bg-gray-800 border border-gray-700 rounded px-2 py-1.5 text-xs text-white" />
+                <select value={editData.type} onChange={(e) => setEditData({ ...editData, type: e.target.value })} className="bg-gray-800 border border-gray-700 rounded px-2 py-1.5 text-xs text-white">
+                  <option value="tv">TV</option><option value="radio">Radio</option><option value="presse">Presse</option><option value="podcast">Podcast</option><option value="web">Web</option>
+                </select>
+                <input value={editData.url || ''} onChange={(e) => setEditData({ ...editData, url: e.target.value })} placeholder="URL" className="bg-gray-800 border border-gray-700 rounded px-2 py-1.5 text-xs text-white" />
+                <input value={editData.owner || ''} onChange={(e) => setEditData({ ...editData, owner: e.target.value })} placeholder="Propriétaire" className="bg-gray-800 border border-gray-700 rounded px-2 py-1.5 text-xs text-white" />
+                <input value={editData.editorialLabel || ''} onChange={(e) => setEditData({ ...editData, editorialLabel: e.target.value })} placeholder="Ligne éditoriale" className="bg-gray-800 border border-gray-700 rounded px-2 py-1.5 text-xs text-white" />
+                <label className="flex items-center gap-2 text-xs text-gray-400">
+                  <input type="checkbox" checked={editData.independent} onChange={(e) => setEditData({ ...editData, independent: e.target.checked })} />
+                  Indépendant
+                </label>
+              </div>
+              <AxisSliders values={editData} onChange={(k, v) => setEditData({ ...editData, [k]: v })} />
+              <button onClick={() => handleSave(m.id)} className="px-4 py-2 bg-amber-500 hover:bg-amber-400 rounded text-sm font-medium text-black">Sauvegarder</button>
+            </div>
+          )}
+
+          {editId !== m.id && (
+            <div className="flex gap-3 text-[10px] text-gray-600 flex-wrap">
+              {AXIS_NAMES.map((a) => (
+                <span key={a.key}>{a.label}: {(m[a.key] ?? 0).toFixed(2)}</span>
+              ))}
+              <span>1D: {(m.position1d ?? 0).toFixed(2)}</span>
+            </div>
+          )}
+        </div>
+      ))}
     </div>
   );
 }
