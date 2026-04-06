@@ -1,0 +1,77 @@
+# PartiPrism — Labels d'interface
+#
+# Tous les textes « métier » affichés dans l'interface.
+# Rien de politique ici, juste les libellés de navigation et d'échelle.
+
+# ── Échelle de réponse (questions de type "affirmation") ───────────
+
+response_scale:
+  - value: -2
+    label: "Pas du tout d'accord"
+  - value: -1
+    label: "Pas d'accord"
+  - value: 0
+    label: "Neutre"
+  - value: 1
+    label: "D'accord"
+  - value: 2
+    label: "Tout à fait d'accord"
+
+# ── Sources d'information (onboarding) ─────────────────────────────
+
+info_sources:
+  - value: tv
+    label: "Télévision"
+    description: "JT, chaînes info (TF1, BFM, CNews...)"
+  - value: internet
+    label: "Internet / Réseaux sociaux"
+    description: "X, TikTok, Facebook, YouTube..."
+  - value: radio
+    label: "Radio"
+    description: "France Inter, RTL, Europe 1..."
+  - value: journal
+    label: "Presse écrite / web"
+    description: "Le Monde, Le Figaro, Mediapart..."
+  - value: autre
+    label: "Autre / Pas de source principale"
+    description: ""
+
+# ── Biais perçu (onboarding) ──────────────────────────────────────
+
+perceived_biases:
+  - value: gauche
+    label: "Plutôt de gauche"
+  - value: droite
+    label: "Plutôt de droite"
+  - value: neutre
+    label: "Neutres / objectives"
+  - value: les_deux
+    label: "Je varie les sources"
+
+# ── Types de médias ────────────────────────────────────────────────
+
+media_types:
+  tv: "Télévision"
+  radio: "Radio"
+  presse: "Presse"
+  web: "Web"
+  podcast: "Podcasts / YouTube"
+
+# ── Vues suggérées du compas ───────────────────────────────────────
+
+suggested_views:
+  - x: societal
+    y: economic
+    label: "Compas classique"
+  - x: societal
+    y: authority
+    label: "Société × Autorité"
+  - x: economic
+    y: ecology
+    label: "Économie × Écologie"
+  - x: sovereignty
+    y: economic
+    label: "Souveraineté × Économie"
+  - x: authority
+    y: ecology
+    label: "Autorité × Écologie"
