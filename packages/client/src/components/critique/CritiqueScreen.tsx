@@ -3,6 +3,7 @@ import type { CompassPosition } from '@partiprism/shared';
 
 interface CritiqueScreenProps {
   userPosition: CompassPosition;
+  domainLabels: Record<string, string>;
   onBack: () => void;
 }
 
@@ -36,18 +37,7 @@ const TYPE_LABELS: Record<string, string> = {
   podcast: 'Podcasts / YouTube',
 };
 
-const DOMAIN_LABELS: Record<string, string> = {
-  travail: 'Travail et emploi',
-  sante: 'Santé et protection sociale',
-  education: 'Éducation et jeunesse',
-  securite: 'Sécurité et justice',
-  immigration: 'Immigration et identité',
-  environnement: 'Environnement et énergie',
-  economie: 'Économie et fiscalité',
-  numerique: 'Numérique et libertés',
-  democratie: 'Démocratie et institutions',
-  international: 'International et défense',
-};
+// DOMAIN_LABELS is now passed as prop from App (loaded from API)
 
 type AxisId = keyof CompassPosition;
 
@@ -68,7 +58,8 @@ const TABS: Array<{ id: Tab; label: string }> = [
   { id: 'signaler', label: 'Média manquant' },
 ];
 
-export function CritiqueScreen({ userPosition, onBack }: CritiqueScreenProps) {
+export function CritiqueScreen({ userPosition, domainLabels, onBack }: CritiqueScreenProps) {
+  const DOMAIN_LABELS = domainLabels;
   const [tab, setTab] = useState<Tab>('sources');
 
   return (
@@ -106,8 +97,8 @@ export function CritiqueScreen({ userPosition, onBack }: CritiqueScreenProps) {
       </div>
 
       {tab === 'sources' && <SourcesTab userPosition={userPosition} />}
-      {tab === 'infos' && <InfosTab />}
-      {tab === 'partager' && <PartagerTab />}
+      {tab === 'infos' && <InfosTab domainLabels={DOMAIN_LABELS} />}
+      {tab === 'partager' && <PartagerTab domainLabels={DOMAIN_LABELS} />}
       {tab === 'signaler' && <SignalerMediaTab />}
     </section>
   );
@@ -261,7 +252,7 @@ function SourcesTab({ userPosition }: { userPosition: CompassPosition }) {
 
 // ── Tab 2: Infos partagées ──────────────────────────────────────────
 
-function InfosTab() {
+function InfosTab({ domainLabels: DOMAIN_LABELS }: { domainLabels: Record<string, string> }) {
   const [links, setLinks] = useState<SharedLink[]>([]);
   const [loading, setLoading] = useState(true);
   const [domain, setDomain] = useState<string>('');
@@ -322,7 +313,7 @@ function InfosTab() {
 
 // ── Tab 3: Partager un lien ──────────────────────────────────────────
 
-function PartagerTab() {
+function PartagerTab({ domainLabels: DOMAIN_LABELS }: { domainLabels: Record<string, string> }) {
   const [domain, setDomain] = useState(Object.keys(DOMAIN_LABELS)[0]);
   const [url, setUrl] = useState('');
   const [description, setDescription] = useState('');

@@ -55,6 +55,7 @@ export function App() {
   const [previousScreen, setPreviousScreen] = useState<AppScreen>('menu');
   const [parties, setParties] = useState<Party[]>([]);
   const [onboardingQuestions, setOnboardingQuestions] = useState<Question[]>([]);
+  const [domainLabels, setDomainLabels] = useState<Record<string, string>>({});
   const [userPosition, setUserPosition] = useState<CompassPosition | undefined>();
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -75,10 +76,15 @@ export function App() {
     Promise.all([
       fetch('/api/partis').then((r) => r.json()),
       fetch('/api/questions/onboarding').then((r) => r.json()),
+      fetch('/api/domains').then((r) => r.json()),
     ])
-      .then(([p, q]) => {
+      .then(([p, q, d]) => {
         setParties(p);
         setOnboardingQuestions(q);
+        // Build domain label map from API (instead of hardcoding)
+        const labels: Record<string, string> = {};
+        for (const domain of d) labels[domain.id] = domain.label;
+        setDomainLabels(labels);
 
         // Restore from localStorage
         const savedPosition = loadFromLS<CompassPosition>(LS.POSITION);
@@ -200,6 +206,7 @@ export function App() {
         {screen === 'critique' && userPosition && (
           <CritiqueScreen
             userPosition={userPosition}
+            domainLabels={domainLabels}
             onBack={() => setScreen('menu')}
           />
         )}
@@ -207,6 +214,7 @@ export function App() {
         {screen === 'exprimer' && userPosition && (
           <ExprimerScreen
             userPosition={userPosition}
+            domainLabels={domainLabels}
             onBack={() => setScreen('menu')}
           />
         )}

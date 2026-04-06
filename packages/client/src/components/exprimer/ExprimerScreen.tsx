@@ -3,6 +3,7 @@ import type { CompassPosition } from '@partiprism/shared';
 
 interface ExprimerScreenProps {
   userPosition: CompassPosition;
+  domainLabels: Record<string, string>;
   onBack: () => void;
 }
 
@@ -30,20 +31,7 @@ interface Suggestion {
   text: string;
 }
 
-const DOMAIN_LABELS: Record<string, string> = {
-  travail: 'Travail et emploi',
-  sante: 'Santé et protection sociale',
-  education: 'Éducation et jeunesse',
-  securite: 'Sécurité et justice',
-  immigration: 'Immigration et identité',
-  environnement: 'Environnement et énergie',
-  economie: 'Économie et fiscalité',
-  numerique: 'Numérique et libertés',
-  democratie: 'Démocratie et institutions',
-  international: 'International et défense',
-};
-
-const DOMAIN_IDS = Object.keys(DOMAIN_LABELS);
+// DOMAIN_LABELS loaded from API, passed as prop
 
 const TABS: Array<{ id: Tab; label: string }> = [
   { id: 'programme', label: 'Le programme' },
@@ -51,7 +39,9 @@ const TABS: Array<{ id: Tab; label: string }> = [
   { id: 'reagir', label: 'Réagir' },
 ];
 
-export function ExprimerScreen({ userPosition, onBack }: ExprimerScreenProps) {
+export function ExprimerScreen({ userPosition, domainLabels, onBack }: ExprimerScreenProps) {
+  const DOMAIN_LABELS = domainLabels;
+  const DOMAIN_IDS = Object.keys(DOMAIN_LABELS);
   const [tab, setTab] = useState<Tab>('programme');
 
   return (
@@ -87,8 +77,8 @@ export function ExprimerScreen({ userPosition, onBack }: ExprimerScreenProps) {
 
       <div id={`exprimer-panel-${tab}`} role="tabpanel">
         {tab === 'programme' && <ProgramTab />}
-        {tab === 'proposer' && <ProposerTab userPosition={userPosition} />}
-        {tab === 'reagir' && <ReagirTab userPosition={userPosition} />}
+        {tab === 'proposer' && <ProposerTab userPosition={userPosition} domainLabels={DOMAIN_LABELS} />}
+        {tab === 'reagir' && <ReagirTab userPosition={userPosition} domainLabels={DOMAIN_LABELS} />}
       </div>
     </section>
   );
@@ -174,7 +164,8 @@ function ProgramTab() {
 
 // ── Tab 2: Proposer ────────────────────────────────────────────────
 
-function ProposerTab({ userPosition }: { userPosition: CompassPosition }) {
+function ProposerTab({ userPosition, domainLabels: DOMAIN_LABELS }: { userPosition: CompassPosition; domainLabels: Record<string, string> }) {
+  const DOMAIN_IDS = Object.keys(DOMAIN_LABELS);
   const [domain, setDomain] = useState(DOMAIN_IDS[0]);
   const [text, setText] = useState('');
   const [sending, setSending] = useState(false);
@@ -256,7 +247,7 @@ function ProposerTab({ userPosition }: { userPosition: CompassPosition }) {
 
 // ── Tab 3: Réagir (suggestions pré-générées) ──────────────────────
 
-function ReagirTab({ userPosition }: { userPosition: CompassPosition }) {
+function ReagirTab({ userPosition, domainLabels: DOMAIN_LABELS }: { userPosition: CompassPosition; domainLabels: Record<string, string> }) {
   const [suggestions, setSuggestions] = useState<Suggestion[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [loading, setLoading] = useState(true);
