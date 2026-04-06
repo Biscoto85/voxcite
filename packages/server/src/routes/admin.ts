@@ -2,7 +2,7 @@ import { Router } from 'express';
 import { db } from '../db/index.js';
 import {
   snapshots, votes, proposals, feedback, questions, prompts, apiCalls,
-  suggestions, programVersions, domains, medias,
+  suggestions, programVersions, domains, medias, partis, mediaRatings,
 } from '../db/schema.js';
 import { eq, desc, sql, and, count } from 'drizzle-orm';
 import { trackedAiCall } from '../services/tracked-ai.js';
@@ -317,4 +317,114 @@ adminRouter.get('/api-calls', async (req, res) => {
     .limit(limit);
 
   res.json(results);
+});
+
+// ══════════════════════════════════════════════════════════════════════
+// PARTIS
+// ══════════════════════════════════════════════════════════════════════
+
+adminRouter.get('/parties', async (_req, res) => {
+  const all = await db.select().from(partis).orderBy(partis.position1d);
+  res.json(all);
+});
+
+adminRouter.post('/parties', async (req, res) => {
+  const { id, label, abbreviation, color, leader, position1d,
+    positionSocietal, positionEconomic, positionAuthority, positionEcology, positionSovereignty,
+  } = req.body;
+
+  if (!id || !label || !abbreviation || !color) {
+    res.status(400).json({ error: 'id, label, abbreviation, color required' });
+    return;
+  }
+
+  const [row] = await db.insert(partis).values({
+    id, label, abbreviation, color,
+    leader: leader || null,
+    position1d: position1d ?? 0,
+    positionSocietal: positionSocietal ?? 0,
+    positionEconomic: positionEconomic ?? 0,
+    positionAuthority: positionAuthority ?? 0,
+    positionEcology: positionEcology ?? 0,
+    positionSovereignty: positionSovereignty ?? 0,
+  }).returning();
+
+  res.status(201).json(row);
+});
+
+adminRouter.put('/parties/:id', async (req, res) => {
+  const partyId = req.params.id;
+  const fields = ['label', 'abbreviation', 'color', 'leader', 'position1d',
+    'positionSocietal', 'positionEconomic', 'positionAuthority', 'positionEcology', 'positionSovereignty',
+    'visibleOnCompass'];
+  const updates: Record<string, any> = {};
+  for (const f of fields) { if (req.body[f] !== undefined) updates[f] = req.body[f]; }
+  if (Object.keys(updates).length === 0) { res.status(400).json({ error: 'No fields' }); return; }
+  await db.update(partis).set(updates).where(eq(partis.id, partyId));
+  res.json({ ok: true });
+});
+
+adminRouter.delete('/parties/:id', async (req, res) => {
+  await db.delete(partis).where(eq(partis.id, req.params.id));
+  res.json({ ok: true });
+});
+
+// ══════════════════════════════════════════════════════════════════════
+// MÉDIAS
+// ══════════════════════════════════════════════════════════════════════
+
+adminRouter.get('/medias', async (_req, res) => {
+  const all = await db.select().from(medias).orderBy(medias.type, medias.label);
+  const ratingStats = await db
+    .select({
+      mediaId: mediaRatings.mediaId, count: count(),
+      avgSoc: sql<number>`AVG(${mediaRatings.ratedSocietal})`,
+      avgEco: sql<number>`AVG(${mediaRatings.ratedEconomic})`,
+    })
+    .from(mediaRatings).groupBy(mediaRatings.mediaId);
+  const statsMap = new Map(ratingStats.map((r) => [r.mediaId, r]));
+
+  const missingMediaFeedbacks = await db.select().from(feedback)
+    .where(and(eq(feedback.targetType, 'missing_media'), eq(feedback.processed, false)))
+    .orderBy(desc(feedback.createdAt));
+
+  res.json({
+    medias: all.map((m) => ({ ...m, citizenStats: statsMap.get(m.id) || null })),
+    missingMediaRequests: missingMediaFeedbacks,
+  });
+});
+
+adminRouter.post('/medias', async (req, res) => {
+  const { id, label, type, url, owner, independent, editorialLabel, position1d,
+    positionSocietal, positionEconomic, positionAuthority, positionEcology, positionSovereignty,
+  } = req.body;
+  if (!id || !label || !type) { res.status(400).json({ error: 'id, label, type required' }); return; }
+
+  const [row] = await db.insert(medias).values({
+    id, label, type,
+    url: url || null, owner: owner || null,
+    independent: independent ?? false, editorialLabel: editorialLabel || null,
+    position1d: position1d ?? 0,
+    positionSocietal: positionSocietal ?? 0, positionEconomic: positionEconomic ?? 0,
+    positionAuthority: positionAuthority ?? 0, positionEcology: positionEcology ?? 0,
+    positionSovereignty: positionSovereignty ?? 0,
+  }).returning();
+  res.status(201).json(row);
+});
+
+adminRouter.put('/medias/:id', async (req, res) => {
+  const mediaId = req.params.id;
+  const fields = ['label', 'type', 'url', 'owner', 'independent', 'editorialLabel', 'position1d',
+    'positionSocietal', 'positionEconomic', 'positionAuthority', 'positionEcology', 'positionSovereignty',
+    'visibleOnCompass'];
+  const updates: Record<string, any> = {};
+  for (const f of fields) { if (req.body[f] !== undefined) updates[f] = req.body[f]; }
+  if (Object.keys(updates).length === 0) { res.status(400).json({ error: 'No fields' }); return; }
+  await db.update(medias).set(updates).where(eq(medias.id, mediaId));
+  res.json({ ok: true });
+});
+
+adminRouter.delete('/medias/:id', async (req, res) => {
+  await db.delete(medias).where(eq(medias.id, req.params.id));
+  res.json({ ok: true });
 });
