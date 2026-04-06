@@ -6,6 +6,7 @@ import {
 } from '../db/schema.js';
 import { eq, desc, sql, and, count } from 'drizzle-orm';
 import { trackedAiCall } from '../services/tracked-ai.js';
+import { invalidatePromptCache } from '../services/prompt-loader.js';
 import { extractClaudeText } from '../utils/helpers.js';
 
 export const adminRouter = Router();
@@ -137,6 +138,7 @@ adminRouter.post('/prompts', async (req, res) => {
     createdBy: adminUsername,
   }).returning();
 
+  invalidatePromptCache(key);
   res.status(201).json(row);
 });
 
@@ -154,6 +156,7 @@ adminRouter.put('/prompts/:id/activate', async (req, res) => {
   await db.update(prompts).set({ isActive: false }).where(eq(prompts.key, prompt.key));
   await db.update(prompts).set({ isActive: true }).where(eq(prompts.id, promptId));
 
+  invalidatePromptCache(prompt.key);
   res.json({ ok: true });
 });
 

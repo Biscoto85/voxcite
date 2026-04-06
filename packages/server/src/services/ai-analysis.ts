@@ -3,6 +3,7 @@ import { AXES } from '@partiprism/shared';
 import type { PopulationStats, UserPercentiles } from './population.js';
 import type { ResponseSignals } from './response-signals.js';
 import { trackedAiCall } from './tracked-ai.js';
+import { loadPrompt, fillTemplate } from './prompt-loader.js';
 import { ALL_AXES, extractClaudeText, extractJSON } from '../utils/helpers.js';
 
 interface PartyInput {
@@ -165,7 +166,23 @@ Note : les réseaux sociaux (internet) ont un effet miroir — ils renforcent le
     signalsBlock = '\n\n' + parts.join('\n\n');
   }
 
-  return `Tu es l'analyste politique de PartiPrism, une application citoyenne française.
+  // Build the data block (assembled from runtime data)
+  const dataBlock = `PROFIL GLOBAL DU RÉPONDANT (MOYENNES — attention, ces moyennes masquent des nuances) :
+sociétal=${position.societal.toFixed(2)}, économique=${position.economic.toFixed(2)}, autorité=${position.authority.toFixed(2)}, écologie=${position.ecology.toFixed(2)}, souveraineté=${position.sovereignty.toFixed(2)}
+
+POSITION PAR RAPPORT À LA POPULATION (${populationStats.totalRespondents} répondants) :
+${statsBlock}
+
+PARTIS POLITIQUES (triés par proximité) :
+${partyBlock}
+${mediaBiasBlock}
+${signalsBlock}`;
+
+  return { dataBlock };
+}
+
+// Fallback hardcoded template (used when no prompt in DB)
+const FALLBACK_ANALYSIS_TEMPLATE = `Tu es l'analyste politique de PartiPrism, une application citoyenne française.
 Tu analyses le profil d'un répondant sur 5 axes politiques (échelle -1 à +1).
 
 AXES :
@@ -175,16 +192,7 @@ AXES :
 - écologie : -1=productiviste, +1=écologiste
 - souveraineté : -1=souverainiste, +1=mondialiste
 
-PROFIL GLOBAL DU RÉPONDANT (MOYENNES — attention, ces moyennes masquent des nuances) :
-sociétal=${position.societal.toFixed(2)}, économique=${position.economic.toFixed(2)}, autorité=${position.authority.toFixed(2)}, écologie=${position.ecology.toFixed(2)}, souveraineté=${position.sovereignty.toFixed(2)}
-
-POSITION PAR RAPPORT À LA POPULATION (${populationStats.totalRespondents} répondants) :
-${statsBlock}
-
-PARTIS POLITIQUES (triés par proximité) :
-${partyBlock}
-${mediaBiasBlock}
-${signalsBlock}
+{{DATA_BLOCK}}
 
 INSTRUCTIONS :
 1. Tutoie le répondant. Sois direct, factuel, sans jargon. Pas de flatterie.
@@ -230,17 +238,22 @@ RÈGLES :
 - Les pistes esprit critique doivent être CONCRÈTES (pas "renseigne-toi sur X" mais "les données de l'INSEE montrent que..." ou "le rapport du GIEC 2025 indique que...")
 
 Réponds UNIQUEMENT avec le JSON, rien d'autre.`;
-}
 
 /**
  * Run analysis using Claude API.
+ * Loads prompt template from DB if available, otherwise uses hardcoded fallback.
  */
 export async function runAiAnalysis(input: AnalysisInput): Promise<AiAnalysisResult> {
   if (!process.env.ANTHROPIC_API_KEY) {
     throw new Error('ANTHROPIC_API_KEY not set');
   }
 
-  const prompt = buildPrompt(input);
+  const { dataBlock } = buildPrompt(input);
+
+  // Load prompt template from DB (editable from QG), fallback to hardcoded
+  const dbTemplate = await loadPrompt('analysis');
+  const template = dbTemplate || FALLBACK_ANALYSIS_TEMPLATE;
+  const prompt = fillTemplate(template, { DATA_BLOCK: dataBlock });
 
   const response = await trackedAiCall({
     promptKey: 'analysis',

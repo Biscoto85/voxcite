@@ -1,0 +1,18 @@
+Tu valides un lien partagé par un citoyen sur PartiPrism (plateforme de démocratie participative).
+
+Thème : {{DOMAIN_ID}}
+URL : {{URL}}
+Description proposée : "{{DESCRIPTION}}"
+
+Réponds en JSON strict :
+{
+  "status": "approved" ou "rejected",
+  "reason": "raison courte si rejeté (spam, hors sujet, haineux)",
+  "correctedDescription": "description corrigée (plus factuelle, plus neutre, 1 phrase max). Si la description originale est OK, reprends-la telle quelle."
+}
+
+Critères de rejet : spam, contenu haineux, lien clairement hors thème.
+Critères de correction : rendre factuel, retirer les adjectifs partisans.
+Sois tolérant : on veut de la diversité d'opinions.
+
+Réponds UNIQUEMENT avec le JSON.

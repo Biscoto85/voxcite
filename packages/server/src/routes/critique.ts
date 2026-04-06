@@ -2,9 +2,10 @@ import { Router } from 'express';
 import { db } from '../db/index.js';
 import { medias, mediaRatings, sharedLinks } from '../db/schema.js';
 import { eq, desc, and, sql } from 'drizzle-orm';
-import Anthropic from '@anthropic-ai/sdk';
-import { clamp, isValidHttpUrl, parseClaudeJSON, extractClaudeText, extractJSON } from '../utils/helpers.js';
+import { clamp, isValidHttpUrl, extractClaudeText } from '../utils/helpers.js';
 import { aiRateLimit } from '../middleware/rateLimit.js';
+import { trackedAiCall } from '../services/tracked-ai.js';
+import { loadPrompt, fillTemplate } from '../services/prompt-loader.js';
 
 export const critiqueRouter = Router();
 
@@ -136,17 +137,13 @@ critiqueRouter.post('/links', aiRateLimit, async (req, res) => {
   // Validate with Haiku if available
   if (process.env.ANTHROPIC_API_KEY) {
     try {
-      const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
-      const response = await client.messages.create({
-        model: 'claude-haiku-4-5-20251001',
-        max_tokens: 300,
-        messages: [{
-          role: 'user',
-          content: `Tu valides un lien partagé par un citoyen sur PartiPrism (plateforme de démocratie participative).
+      // Load prompt from DB or use fallback
+      const dbTemplate = await loadPrompt('link_validation');
+      const fallback = `Tu valides un lien partagé par un citoyen sur PartiPrism (plateforme de démocratie participative).
 
-Thème : ${domainId}
-URL : ${url}
-Description proposée : "${description}"
+Thème : {{DOMAIN_ID}}
+URL : {{URL}}
+Description proposée : "{{DESCRIPTION}}"
 
 Réponds en JSON strict :
 {
@@ -159,11 +156,21 @@ Critères de rejet : spam, contenu haineux, lien clairement hors thème.
 Critères de correction : rendre factuel, retirer les adjectifs partisans.
 Sois tolérant : on veut de la diversité d'opinions.
 
-Réponds UNIQUEMENT avec le JSON.`,
-        }],
+Réponds UNIQUEMENT avec le JSON.`;
+      const promptContent = fillTemplate(dbTemplate || fallback, {
+        DOMAIN_ID: domainId,
+        URL: url,
+        DESCRIPTION: description,
       });
 
-      const rawText = response.content[0].type === 'text' ? response.content[0].text : '';
+      const response = await trackedAiCall({
+        promptKey: 'link_validation',
+        model: 'claude-haiku-4-5-20251001',
+        maxTokens: 300,
+        messages: [{ role: 'user', content: promptContent }],
+      });
+
+      const rawText = extractClaudeText(response);
       const cleaned = rawText.replace(/^```(?:json)?\s*\n?/i, '').replace(/\n?```\s*$/i, '').trim();
       const parsed = JSON.parse(cleaned);
       status = parsed.status || 'approved';

@@ -6,7 +6,8 @@ import yaml from 'js-yaml';
 // Load .env from project root
 dotenv.config({ path: path.resolve(import.meta.dirname, '../../../../.env') });
 import { db } from './index.js';
-import { domains, themes, partis, questions, medias, responses, biases, sharedLinks, mediaRatings, proposals, feedback, suggestions, programVersions, opinions, subjects } from './schema.js';
+import { domains, themes, partis, questions, medias, prompts, responses, biases, sharedLinks, mediaRatings, proposals, feedback, suggestions, programVersions, opinions, subjects } from './schema.js';
+import { and as dbAnd, eq as dbEq } from 'drizzle-orm';
 
 const DATA_DIR = path.resolve(import.meta.dirname, '../../../../data');
 
@@ -239,12 +240,44 @@ async function main() {
     });
   }
 
+  // Seed prompts (from data/prompts/*.txt) — only if no active prompt exists
+  const promptFiles = [
+    { key: 'analysis', label: 'Analyse politique', file: 'analysis.txt' },
+    { key: 'program', label: 'Programme citoyen', file: 'program.txt' },
+    { key: 'link_validation', label: 'Validation de lien', file: 'link_validation.txt' },
+  ];
+
+  let promptCount = 0;
+  for (const pf of promptFiles) {
+    try {
+      const content = fs.readFileSync(path.join(DATA_DIR, 'prompts', pf.file), 'utf-8');
+      // Check if this key already has an active prompt
+      const existing = await db.select().from(prompts).where(
+        dbAnd(dbEq(prompts.key, pf.key), dbEq(prompts.isActive, true)),
+      );
+      if (existing.length === 0) {
+        await db.insert(prompts).values({
+          key: pf.key,
+          label: pf.label,
+          content,
+          version: 1,
+          isActive: true,
+          createdBy: 'seed',
+        });
+        promptCount++;
+      }
+    } catch (err) {
+      console.warn(`[seed] Prompt file ${pf.file} not found, skipping`);
+    }
+  }
+
   console.log('[seed] Done!');
   console.log(`  - ${rawDomains.length} domains`);
   console.log(`  - ${rawDomains.reduce((acc, d) => acc + d.themes_permanents.length, 0)} themes`);
   console.log(`  - ${rawPartis.length} partis`);
   console.log(`  - ${rawMedias.length} medias`);
   console.log(`  - ${rawQuestions.length} questions`);
+  console.log(`  - ${promptCount} prompts (new)`);
 
   process.exit(0);
 }
