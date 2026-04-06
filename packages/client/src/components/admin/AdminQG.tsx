@@ -599,7 +599,7 @@ const AXIS_NAMES = [
 ];
 
 function AxisSliders({ values, onChange }: {
-  values: Record<string, number>;
+  values: Record<string, any>;
   onChange: (key: string, val: number) => void;
 }) {
   return (
