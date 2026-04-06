@@ -169,7 +169,7 @@ Ces 12 questions produisent la première image du positionnement. Elles sont pos
 
 ---
 
-## Questions d'approfondissement (40)
+## Questions d'approfondissement (38)
 
 Ces questions affinent le positionnement. Elles sont proposées après l'onboarding, regroupées par domaine. L'utilisateur peut choisir les domaines qui l'intéressent.
 
@@ -177,497 +177,459 @@ Ces questions affinent le positionnement. Elles sont proposées après l'onboard
 
 ### Domaine : Travail et emploi
 
-#### Q11
+#### Q13
 - **id** : `deep-travail-01`
-- **text** : "Le CDI devrait rester la norme, et l'ubérisation devrait être beaucoup plus encadrée."
+- **text** : "Le contrat de travail stable (CDI) devrait rester la norme en France."
 - **type** : affirmation
 - **axis** : economic
 - **polarity** : -1
 - **domain** : travail
 - **phase** : deep
 - **weight** : 1.0
-- **calibration** : D'accord → interventionniste / Pas d'accord → libéral.
-
-#### Q12
-- **id** : `deep-travail-02`
-- **text** : "La semaine de 4 jours devrait être généralisée, même si ça réduit la compétitivité des entreprises."
-- **type** : affirmation
-- **axis** : both
-- **polarity** : +1
-- **domain** : travail
-- **phase** : deep
-- **weight** : 1.0
-- **calibration** : D'accord → progressiste + interventionniste / Pas d'accord → conservateur + libéral.
-
-#### Q13
-- **id** : `deep-travail-03`
-- **text** : "On devrait pouvoir toucher le RSA sans condition, même sans chercher activement un emploi."
-- **type** : affirmation
-- **axis** : both
-- **polarity** : +1
-- **domain** : travail
-- **phase** : deep
-- **weight** : 1.0
-- **calibration** : D'accord → progressiste (solidarité inconditionnelle) + interventionniste / Pas d'accord → conservateur (mérite) + libéral.
+- **calibration** : D'accord = interventionniste (protection). Pas d'accord = libéral (flexibilité).
 
 #### Q14
-- **id** : `deep-travail-04`
-- **text** : "L'âge de départ à la retraite devrait être le même pour tous, sans régimes spéciaux."
+- **id** : `deep-travail-02`
+- **text** : "Le temps de travail hebdomadaire devrait être réduit."
 - **type** : affirmation
 - **axis** : societal
+- **polarity** : +1
+- **domain** : travail
+- **phase** : deep
+- **weight** : 1.0
+- **calibration** : D'accord = progressiste (rapport au travail). Pas d'accord = conservateur (valeur travail).
+
+#### Q15
+- **id** : `deep-travail-03`
+- **text** : "Il est normal que certains métiers pénibles permettent de partir en retraite plus tôt."
+- **type** : affirmation
+- **axis** : economic
 - **polarity** : -1
 - **domain** : travail
 - **phase** : deep
 - **weight** : 1.0
-- **calibration** : D'accord → conservateur (uniformité, ordre) / Pas d'accord → progressiste (prise en compte des différences).
+- **calibration** : D'accord = interventionniste (protection différenciée). Pas d'accord = libéral (uniformité, coût).
+
+#### Q16
+- **id** : `deep-travail-04`
+- **text** : "Les aides sociales découragent le travail."
+- **type** : affirmation
+- **axis** : economic
+- **polarity** : +1
+- **domain** : travail
+- **phase** : deep
+- **weight** : 1.0
+- **calibration** : D'accord = libéral (responsabilité individuelle). Pas d'accord = interventionniste (filet de sécurité).
 
 ---
 
 ### Domaine : Santé et protection sociale
 
-#### Q15
+#### Q17
 - **id** : `deep-sante-01`
-- **text** : "La PMA devrait être accessible à toutes les femmes, y compris les femmes seules et les couples de femmes."
-- **type** : affirmation
-- **axis** : societal
-- **polarity** : +1
-- **domain** : sante
-- **phase** : deep
-- **weight** : 1.0
-- **calibration** : D'accord → progressiste / Pas d'accord → conservateur.
-
-#### Q16
-- **id** : `deep-sante-02`
-- **text** : "L'hôpital public devrait être le seul système de soins, sans cliniques privées."
+- **text** : "La santé devrait être entièrement gratuite pour tous, financée par l'impôt."
 - **type** : affirmation
 - **axis** : economic
 - **polarity** : -1
 - **domain** : sante
 - **phase** : deep
 - **weight** : 1.0
-- **calibration** : D'accord → interventionniste / Pas d'accord → libéral.
-
-#### Q17
-- **id** : `deep-sante-03`
-- **text** : "La vaccination obligatoire est justifiée quand il y a un risque pour la santé collective."
-- **type** : affirmation
-- **axis** : societal
-- **polarity** : -1
-- **domain** : sante
-- **phase** : deep
-- **weight** : 1.0
-- **calibration** : D'accord → conservateur (ordre collectif) / Pas d'accord → progressiste (liberté individuelle). Question intéressante car elle inverse le clivage habituel.
+- **calibration** : D'accord = interventionniste. Pas d'accord = libéral.
 
 #### Q18
-- **id** : `deep-sante-04`
-- **text** : "Le cannabis devrait être légalisé et vendu dans un cadre réglementé, comme l'alcool."
+- **id** : `deep-sante-02`
+- **text** : "Le cannabis devrait être légalisé et réglementé comme l'alcool."
 - **type** : affirmation
 - **axis** : societal
 - **polarity** : +1
 - **domain** : sante
 - **phase** : deep
 - **weight** : 1.0
-- **calibration** : D'accord → progressiste / Pas d'accord → conservateur.
+- **calibration** : D'accord = progressiste. Pas d'accord = conservateur.
+
+#### Q19
+- **id** : `deep-sante-03`
+- **text** : "La vaccination devrait être obligatoire quand il y a un risque pour la santé collective."
+- **type** : affirmation
+- **axis** : authority
+- **polarity** : -1
+- **domain** : sante
+- **phase** : deep
+- **weight** : 1.0
+- **calibration** : D'accord = autoritaire (santé collective prime). Pas d'accord = libertaire (liberté individuelle).
+
+#### Q20
+- **id** : `deep-sante-04`
+- **text** : "Les cliniques privées jouent un rôle utile dans le système de soins."
+- **type** : affirmation
+- **axis** : economic
+- **polarity** : +1
+- **domain** : sante
+- **phase** : deep
+- **weight** : 1.0
+- **calibration** : D'accord = libéral. Pas d'accord = interventionniste.
 
 ---
 
 ### Domaine : Éducation et jeunesse
 
-#### Q19
+#### Q21
 - **id** : `deep-education-01`
-- **text** : "Les écoles privées sous contrat ne devraient plus recevoir de financement public."
-- **type** : affirmation
-- **axis** : economic
-- **polarity** : -1
-- **domain** : education
-- **phase** : deep
-- **weight** : 1.0
-- **calibration** : D'accord → interventionniste / Pas d'accord → libéral.
-
-#### Q20
-- **id** : `deep-education-02`
-- **text** : "Le port de signes religieux visibles devrait être interdit pour les élèves à l'université, comme au lycée."
+- **text** : "L'école devrait avant tout transmettre les savoirs et la discipline."
 - **type** : affirmation
 - **axis** : societal
 - **polarity** : -1
 - **domain** : education
 - **phase** : deep
 - **weight** : 1.0
-- **calibration** : D'accord → conservateur (laïcité stricte) / Pas d'accord → progressiste (liberté d'expression).
+- **calibration** : D'accord = conservateur (transmission). Pas d'accord = progressiste (épanouissement).
 
-#### Q21
+#### Q22
+- **id** : `deep-education-02`
+- **text** : "Les parents devraient pouvoir choisir librement l'école de leurs enfants."
+- **type** : affirmation
+- **axis** : economic
+- **polarity** : +1
+- **domain** : education
+- **phase** : deep
+- **weight** : 1.0
+- **calibration** : D'accord = libéral (libre choix). Pas d'accord = interventionniste (mixité sociale organisée).
+
+#### Q23
 - **id** : `deep-education-03`
-- **text** : "L'université devrait être entièrement gratuite, y compris les grandes écoles."
+- **text** : "L'enseignement supérieur devrait être entièrement gratuit."
 - **type** : affirmation
 - **axis** : economic
 - **polarity** : -1
 - **domain** : education
 - **phase** : deep
 - **weight** : 1.0
-- **calibration** : D'accord → interventionniste / Pas d'accord → libéral.
+- **calibration** : D'accord = interventionniste. Pas d'accord = libéral.
 
-#### Q22
+#### Q24
 - **id** : `deep-education-04`
-- **text** : "Les parents devraient avoir le droit de choisir librement l'école de leurs enfants, sans carte scolaire."
+- **text** : "Les signes religieux visibles n'ont pas leur place dans les établissements scolaires publics."
 - **type** : affirmation
-- **axis** : both
-- **polarity** : +1
+- **axis** : authority
+- **polarity** : -1
 - **domain** : education
 - **phase** : deep
 - **weight** : 1.0
-- **calibration** : D'accord → libéral (choix individuel) / Pas d'accord → interventionniste (mixité sociale organisée). Touche aussi le sociétal.
+- **calibration** : D'accord = autoritaire (l'État impose la neutralité). Pas d'accord = libertaire (liberté d'expression).
 
 ---
 
 ### Domaine : Sécurité et justice
 
-#### Q23
-- **id** : `deep-securite-01`
-- **text** : "Les peines de prison devraient être beaucoup plus longues pour les récidivistes."
-- **type** : affirmation
-- **axis** : authority
-- **polarity** : -1
-- **domain** : securite
-- **phase** : deep
-- **weight** : 1.0
-- **calibration** : D'accord → conservateur (répression) / Pas d'accord → progressiste (réinsertion).
-
-#### Q24
-- **id** : `deep-securite-02`
-- **text** : "La police devrait porter des caméras individuelles obligatoires lors de chaque intervention."
-- **type** : affirmation
-- **axis** : authority
-- **polarity** : +1
-- **domain** : securite
-- **phase** : deep
-- **weight** : 1.0
-- **calibration** : D'accord → progressiste (contrôle de l'autorité) / Pas d'accord → conservateur (confiance en l'institution).
-
 #### Q25
-- **id** : `deep-securite-03`
-- **text** : "La justice est trop laxiste en France aujourd'hui."
+- **id** : `deep-securite-01`
+- **text** : "La police devrait avoir plus de moyens et plus de liberté d'action."
 - **type** : affirmation
 - **axis** : authority
 - **polarity** : -1
 - **domain** : securite
 - **phase** : deep
 - **weight** : 1.0
-- **calibration** : D'accord → conservateur / Pas d'accord → progressiste. Formulation volontairement directe et populaire.
+- **calibration** : D'accord = autoritaire. Pas d'accord = libertaire.
 
 #### Q26
-- **id** : `deep-securite-04`
-- **text** : "Préfères-tu investir massivement dans la prévention (éducateurs, associations), ou dans les forces de l'ordre et les prisons ?"
-- **type** : dilemme
-- **axis** : both
-- **axes** : ["authority", "economic"]
+- **id** : `deep-securite-02`
+- **text** : "La prévention et l'éducation sont plus efficaces que la répression pour lutter contre la délinquance."
+- **type** : affirmation
+- **axis** : authority
 - **polarity** : +1
 - **domain** : securite
 - **phase** : deep
 - **weight** : 1.0
-- **options** : ["Forces de l'ordre", "Plutôt sécurité", "Équilibre", "Plutôt prévention", "Prévention"]
-- **calibration** : Prévention → progressiste + interventionniste social / Sécurité → conservateur + libéral.
+- **calibration** : D'accord = libertaire (prévention). Pas d'accord = autoritaire (répression).
+
+#### Q27
+- **id** : `deep-securite-03`
+- **text** : "Les caméras de surveillance dans l'espace public améliorent la sécurité."
+- **type** : affirmation
+- **axis** : authority
+- **polarity** : -1
+- **domain** : securite
+- **phase** : deep
+- **weight** : 1.0
+- **calibration** : D'accord = autoritaire (surveillance acceptée). Pas d'accord = libertaire (vie privée).
+
+#### Q28
+- **id** : `deep-securite-04`
+- **text** : "Les policiers devraient porter des caméras individuelles lors de chaque intervention."
+- **type** : affirmation
+- **axis** : authority
+- **polarity** : +1
+- **domain** : securite
+- **phase** : deep
+- **weight** : 1.0
+- **calibration** : D'accord = libertaire (contrôle du pouvoir). Pas d'accord = autoritaire (confiance en l'institution).
 
 ---
 
 ### Domaine : Immigration et identité
 
-#### Q27
+#### Q29
 - **id** : `deep-immigration-01`
-- **text** : "Un immigré qui travaille et paie ses impôts depuis 5 ans devrait être automatiquement régularisé."
+- **text** : "La France accueille trop de personnes étrangères par rapport à sa capacité d'intégration."
 - **type** : affirmation
-- **axis** : both
-- **axes** : ["societal", "sovereignty"]
+- **axis** : societal
+- **polarity** : -1
+- **domain** : immigration
+- **phase** : deep
+- **weight** : 1.0
+- **calibration** : D'accord = conservateur. Pas d'accord = progressiste. Formulation modérée.
+
+#### Q30
+- **id** : `deep-immigration-02`
+- **text** : "Un étranger qui travaille et paie ses impôts depuis longtemps devrait obtenir la nationalité facilement."
+- **type** : affirmation
+- **axis** : societal
 - **polarity** : +1
 - **domain** : immigration
 - **phase** : deep
 - **weight** : 1.0
-- **calibration** : D'accord → progressiste + interventionniste (régularisation) / Pas d'accord → conservateur + libéral (immigration choisie).
+- **calibration** : D'accord = progressiste. Pas d'accord = conservateur.
 
-#### Q28
-- **id** : `deep-immigration-02`
-- **text** : "Pour devenir français, il devrait être obligatoire de maîtriser la langue et d'adhérer aux valeurs de la République."
-- **type** : affirmation
-- **axis** : societal
-- **polarity** : -1
-- **domain** : immigration
-- **phase** : deep
-- **weight** : 1.0
-- **calibration** : D'accord → conservateur (assimilation) / Pas d'accord → progressiste (intégration souple).
-
-#### Q29
+#### Q31
 - **id** : `deep-immigration-03`
-- **text** : "La France devrait consacrer 1% de son PIB à l'aide au développement pour réduire l'immigration à la source."
+- **text** : "Pour devenir Français, il est essentiel de maîtriser la langue et d'adhérer aux valeurs de la République."
 - **type** : affirmation
-- **axis** : economic
+- **axis** : authority
 - **polarity** : -1
 - **domain** : immigration
 - **phase** : deep
 - **weight** : 1.0
-- **calibration** : D'accord → interventionniste (solidarité internationale) / Pas d'accord → libéral (réduire les dépenses).
+- **calibration** : D'accord = autoritaire (assimilation exigée). Pas d'accord = libertaire (intégration souple).
 
-#### Q30
+#### Q32
 - **id** : `deep-immigration-04`
-- **text** : "La double nationalité devrait être supprimée : on est français ou on ne l'est pas."
+- **text** : "La France devrait consacrer beaucoup plus de moyens à l'aide au développement des pays pauvres."
 - **type** : affirmation
-- **axis** : societal
-- **axes** : ["societal", "sovereignty"]
-- **polarity** : -1
+- **axis** : sovereignty
+- **polarity** : +1
 - **domain** : immigration
 - **phase** : deep
 - **weight** : 1.0
-- **calibration** : D'accord → conservateur (identité nationale stricte) / Pas d'accord → progressiste (identités multiples).
+- **calibration** : D'accord = mondialiste (solidarité internationale). Pas d'accord = souverainiste (priorité nationale).
 
 ---
 
 ### Domaine : Environnement et énergie
 
-#### Q31
+#### Q33
 - **id** : `deep-environnement-01`
-- **text** : "Le nucléaire est indispensable pour réussir la transition écologique."
-- **type** : affirmation
-- **axis** : economic
-- **axes** : ["economic", "ecology"]
-- **polarity** : +1
-- **domain** : environnement
-- **phase** : deep
-- **weight** : 1.0
-- **calibration** : Question transversale qui ne suit pas les clivages classiques. Pro-nucléaire = souvent libéral-pragmatique / Anti-nucléaire = souvent interventionniste-écologiste.
-
-#### Q32
-- **id** : `deep-environnement-02`
-- **text** : "Il faudrait interdire la vente de viande issue de l'élevage intensif, même si ça fait monter les prix."
+- **text** : "Le nucléaire est indispensable pour répondre aux enjeux énergétiques."
 - **type** : affirmation
 - **axis** : ecology
-- **axes** : ["ecology", "economic"]
+- **polarity** : -1
+- **domain** : environnement
+- **phase** : deep
+- **weight** : 1.0
+- **calibration** : D'accord = productiviste/techno-optimiste. Pas d'accord = écologiste/anti-nucléaire.
+
+#### Q34
+- **id** : `deep-environnement-02`
+- **text** : "Il faudrait interdire les produits et pratiques les plus polluants, quitte à limiter certaines libertés."
+- **type** : affirmation
+- **axis** : ecology
 - **polarity** : +1
 - **domain** : environnement
 - **phase** : deep
 - **weight** : 1.0
-- **calibration** : D'accord → progressiste + interventionniste / Pas d'accord → conservateur + libéral.
+- **calibration** : D'accord = écologiste (régulation). Pas d'accord = productiviste (liberté).
 
-#### Q33
+#### Q35
 - **id** : `deep-environnement-03`
-- **text** : "Les entreprises qui polluent devraient payer une taxe carbone très élevée, quitte à délocaliser."
+- **text** : "Les entreprises polluantes devraient payer une taxe proportionnelle à leur pollution."
 - **type** : affirmation
-- **axis** : economic
-- **axes** : ["economic", "ecology"]
-- **polarity** : -1
+- **axis** : ecology
+- **polarity** : +1
 - **domain** : environnement
 - **phase** : deep
 - **weight** : 1.0
-- **calibration** : D'accord → interventionniste / Pas d'accord → libéral. Le "quitte à délocaliser" force à assumer le coût économique.
+- **calibration** : D'accord = écologiste. Pas d'accord = productiviste.
 
-#### Q34
+#### Q36
 - **id** : `deep-environnement-04`
-- **text** : "Préfères-tu qu'on laisse chacun libre de ses choix de consommation, ou qu'on impose des normes écologiques strictes à tous ?"
-- **type** : dilemme
-- **axis** : both
-- **axes** : ["ecology", "authority"]
+- **text** : "La chasse est une tradition rurale qui doit être préservée."
+- **type** : affirmation
+- **axis** : societal
 - **polarity** : -1
 - **domain** : environnement
 - **phase** : deep
 - **weight** : 1.0
-- **options** : ["Liberté totale", "Plutôt liberté", "Équilibre", "Plutôt normes", "Normes strictes"]
-- **calibration** : Liberté → libéral + conservateur / Normes → interventionniste + progressiste.
+- **calibration** : D'accord = conservateur (traditions). Pas d'accord = progressiste (droits des animaux). Révèle bien le clivage rural/urbain sur l'axe sociétal.
 
 ---
 
 ### Domaine : Économie et fiscalité
 
-#### Q35
-- **id** : `deep-economie-01`
-- **text** : "L'ISF (impôt sur la fortune) devrait être rétabli et renforcé."
-- **type** : affirmation
-- **axis** : economic
-- **polarity** : -1
-- **domain** : economie
-- **phase** : deep
-- **weight** : 1.0
-- **calibration** : D'accord → interventionniste / Pas d'accord → libéral.
-
-#### Q36
-- **id** : `deep-economie-02`
-- **text** : "Le prix des loyers devrait être plafonné par l'État dans toutes les grandes villes."
-- **type** : affirmation
-- **axis** : economic
-- **polarity** : -1
-- **domain** : economie
-- **phase** : deep
-- **weight** : 1.0
-- **calibration** : D'accord → interventionniste / Pas d'accord → libéral. Sujet concret qui touche directement le quotidien.
-
 #### Q37
-- **id** : `deep-economie-03`
-- **text** : "Les aides sociales sont trop élevées en France et découragent le travail."
+- **id** : `deep-economie-01`
+- **text** : "Le marché libre, sans trop de régulation, crée plus de richesse pour tout le monde."
 - **type** : affirmation
-- **axis** : both
-- **polarity** : -1
-- **domain** : economie
-- **phase** : deep
-- **weight** : 1.0
-- **calibration** : D'accord → libéral + conservateur (mérite, responsabilité) / Pas d'accord → interventionniste + progressiste (solidarité).
-
-#### Q38
-- **id** : `deep-economie-04`
-- **text** : "La France devrait avoir un revenu universel versé à tous, sans condition."
-- **type** : affirmation
-- **axis** : both
+- **axis** : economic
 - **polarity** : +1
 - **domain** : economie
 - **phase** : deep
 - **weight** : 1.0
-- **calibration** : D'accord → progressiste + interventionniste / Pas d'accord → conservateur + libéral. Question clivante qui mélange les camps habituels.
+- **calibration** : D'accord = libéral. Pas d'accord = interventionniste.
+
+#### Q38
+- **id** : `deep-economie-02`
+- **text** : "L'État devrait fixer un prix maximum pour les loyers dans les grandes villes."
+- **type** : affirmation
+- **axis** : economic
+- **polarity** : -1
+- **domain** : economie
+- **phase** : deep
+- **weight** : 1.0
+- **calibration** : D'accord = interventionniste. Pas d'accord = libéral.
+
+#### Q39
+- **id** : `deep-economie-03`
+- **text** : "Chaque citoyen devrait recevoir un revenu de base inconditionnel."
+- **type** : affirmation
+- **axis** : economic
+- **polarity** : -1
+- **domain** : economie
+- **phase** : deep
+- **weight** : 1.0
+- **calibration** : D'accord = interventionniste (redistribution universelle). Pas d'accord = libéral (incitation au travail).
+
+#### Q40
+- **id** : `deep-economie-04`
+- **text** : "L'héritage important devrait être lourdement taxé pour réduire les inégalités de départ."
+- **type** : affirmation
+- **axis** : economic
+- **polarity** : -1
+- **domain** : economie
+- **phase** : deep
+- **weight** : 1.0
+- **calibration** : D'accord = interventionniste. Pas d'accord = libéral.
 
 ---
 
 ### Domaine : Numérique et libertés
 
-#### Q39
+#### Q41
 - **id** : `deep-numerique-01`
-- **text** : "Les réseaux sociaux devraient vérifier l'identité réelle de chaque utilisateur pour lutter contre le harcèlement."
+- **text** : "Les réseaux sociaux devraient vérifier l'identité réelle de chaque utilisateur."
 - **type** : affirmation
 - **axis** : authority
 - **polarity** : -1
 - **domain** : numerique
 - **phase** : deep
 - **weight** : 1.0
-- **calibration** : D'accord → conservateur (ordre, responsabilité) / Pas d'accord → progressiste (anonymat, vie privée). Question qui fait écho à la réflexion fondatrice de PartiPrism.
+- **calibration** : D'accord = autoritaire (responsabilité). Pas d'accord = libertaire (anonymat, vie privée).
 
-#### Q40
+#### Q42
 - **id** : `deep-numerique-02`
-- **text** : "Les GAFAM (Google, Apple, Amazon, Meta) devraient être démantelées car elles ont trop de pouvoir."
+- **text** : "L'intelligence artificielle devrait être strictement réglementée par l'État."
+- **type** : affirmation
+- **axis** : authority
+- **polarity** : -1
+- **domain** : numerique
+- **phase** : deep
+- **weight** : 1.0
+- **calibration** : D'accord = autoritaire (régulation). Pas d'accord = libertaire (innovation libre).
+
+#### Q43
+- **id** : `deep-numerique-03`
+- **text** : "Les géants du numérique (Google, Amazon, Meta) ont trop de pouvoir et devraient être démantelés."
 - **type** : affirmation
 - **axis** : economic
 - **polarity** : -1
 - **domain** : numerique
 - **phase** : deep
 - **weight** : 1.0
-- **calibration** : D'accord → interventionniste / Pas d'accord → libéral.
+- **calibration** : D'accord = interventionniste. Pas d'accord = libéral.
 
-#### Q41
-- **id** : `deep-numerique-03`
-- **text** : "L'intelligence artificielle devrait être très strictement réglementée par l'État, même si ça freine l'innovation."
-- **type** : affirmation
-- **axis** : both
-- **polarity** : -1
-- **domain** : numerique
-- **phase** : deep
-- **weight** : 1.0
-- **calibration** : D'accord → interventionniste + conservateur (précaution) / Pas d'accord → libéral + progressiste (innovation).
-
-#### Q42
+#### Q44
 - **id** : `deep-numerique-04`
-- **text** : "Les enfants de moins de 16 ans ne devraient pas avoir accès aux réseaux sociaux, même avec l'accord de leurs parents."
+- **text** : "Les enfants devraient être interdits de réseaux sociaux jusqu'à un certain âge."
 - **type** : affirmation
-- **axis** : societal
-- **axes** : ["societal", "authority"]
+- **axis** : authority
 - **polarity** : -1
 - **domain** : numerique
 - **phase** : deep
 - **weight** : 1.0
-- **calibration** : D'accord → conservateur (protection, autorité) / Pas d'accord → progressiste (liberté, responsabilité parentale).
+- **calibration** : D'accord = autoritaire (protection par l'interdit). Pas d'accord = libertaire (responsabilité parentale).
 
 ---
 
 ### Domaine : Démocratie et institutions
 
-#### Q43
-- **id** : `deep-democratie-01`
-- **text** : "Les citoyens devraient pouvoir déclencher un référendum sur n'importe quel sujet avec suffisamment de signatures (RIC)."
-- **type** : affirmation
-- **axis** : societal
-- **axes** : ["societal", "authority"]
-- **polarity** : +1
-- **domain** : democratie
-- **phase** : deep
-- **weight** : 1.0
-- **calibration** : D'accord → progressiste (démocratie directe) / Pas d'accord → conservateur (démocratie représentative).
-
-#### Q44
-- **id** : `deep-democratie-02`
-- **text** : "Le cumul des mandats devrait être totalement interdit, et aucun élu ne devrait faire plus de deux mandats."
-- **type** : affirmation
-- **axis** : societal
-- **polarity** : +1
-- **domain** : democratie
-- **phase** : deep
-- **weight** : 1.0
-- **calibration** : D'accord → progressiste (renouvellement) / Pas d'accord → conservateur (expérience, stabilité).
-
 #### Q45
-- **id** : `deep-democratie-03`
-- **text** : "Les élections législatives devraient se faire à la proportionnelle intégrale."
+- **id** : `deep-democratie-01`
+- **text** : "Les citoyens devraient pouvoir déclencher un référendum sur n'importe quel sujet."
 - **type** : affirmation
-- **axis** : societal
-- **polarity** : +1
-- **domain** : democratie
-- **phase** : deep
-- **weight** : 1.0
-- **calibration** : D'accord → progressiste (représentativité) / Pas d'accord → conservateur (gouvernabilité).
-
-#### Q46
-- **id** : `deep-democratie-04`
-- **text** : "Préfères-tu un président fort qui peut décider vite, ou un parlement fort qui oblige au compromis ?"
-- **type** : dilemme
 - **axis** : authority
 - **polarity** : +1
 - **domain** : democratie
 - **phase** : deep
 - **weight** : 1.0
-- **options** : ["Président fort", "Plutôt président", "Équilibre", "Plutôt parlement", "Parlement fort"]
-- **calibration** : Président fort → conservateur (autorité) / Parlement → progressiste (délibération).
+- **calibration** : D'accord = libertaire (pouvoir au peuple). Pas d'accord = autoritaire (stabilité institutionnelle).
+
+#### Q46
+- **id** : `deep-democratie-02`
+- **text** : "Les élections législatives devraient se faire à la proportionnelle."
+- **type** : affirmation
+- **axis** : societal
+- **polarity** : +1
+- **domain** : democratie
+- **phase** : deep
+- **weight** : 1.0
+- **calibration** : D'accord = progressiste (représentativité). Pas d'accord = conservateur (gouvernabilité, tradition institutionnelle).
+
+#### Q47
+- **id** : `deep-democratie-03`
+- **text** : "Un président fort qui décide vite est préférable à un parlement qui négocie lentement."
+- **type** : affirmation
+- **axis** : authority
+- **polarity** : -1
+- **domain** : democratie
+- **phase** : deep
+- **weight** : 1.0
+- **calibration** : D'accord = autoritaire (verticalité). Pas d'accord = libertaire (délibération).
+
+#### Q48
+- **id** : `deep-democratie-04`
+- **text** : "Aucun élu ne devrait pouvoir faire plus de deux mandats."
+- **type** : affirmation
+- **axis** : societal
+- **polarity** : +1
+- **domain** : democratie
+- **phase** : deep
+- **weight** : 1.0
+- **calibration** : D'accord = progressiste (renouvellement). Pas d'accord = conservateur (expérience, continuité).
 
 ---
 
 ### Domaine : International et défense
 
-#### Q47
+#### Q49
 - **id** : `deep-international-01`
-- **text** : "La France devrait augmenter son budget militaire à 3% du PIB, même si ça se fait au détriment des dépenses sociales."
+- **text** : "La France devrait renforcer sa défense militaire, même au détriment d'autres budgets."
 - **type** : affirmation
-- **axis** : both
-- **axes** : ["sovereignty", "economic"]
+- **axis** : sovereignty
 - **polarity** : -1
 - **domain** : international
 - **phase** : deep
 - **weight** : 1.0
-- **calibration** : D'accord → conservateur (puissance) + libéral (priorité régalienne) / Pas d'accord → progressiste (paix) + interventionniste (priorité sociale).
+- **calibration** : D'accord = souverainiste (puissance nationale). Pas d'accord = mondialiste (coopération, budget social).
 
-#### Q48
+#### Q50
 - **id** : `deep-international-02`
 - **text** : "La France devrait arrêter de vendre des armes aux pays qui ne respectent pas les droits de l'homme."
 - **type** : affirmation
 - **axis** : societal
-- **axes** : ["societal", "sovereignty"]
 - **polarity** : +1
 - **domain** : international
 - **phase** : deep
 - **weight** : 1.0
-- **calibration** : D'accord → progressiste (droits de l'homme) / Pas d'accord → conservateur (intérêts nationaux, pragmatisme).
-
-#### Q49
-- **id** : `deep-international-03`
-- **text** : "Les accords de libre-échange (CETA, Mercosur) sont une bonne chose pour l'économie française."
-- **type** : affirmation
-- **axis** : economic
-- **axes** : ["economic", "sovereignty"]
-- **polarity** : +1
-- **domain** : international
-- **phase** : deep
-- **weight** : 1.0
-- **calibration** : D'accord → libéral / Pas d'accord → interventionniste (protectionnisme).
-
-#### Q50
-- **id** : `deep-international-04`
-- **text** : "Préfères-tu que la France agisse seule pour défendre ses intérêts, ou qu'elle s'appuie sur des alliances internationales comme l'OTAN ou l'UE ?"
-- **type** : dilemme
-- **axis** : sovereignty
-- **polarity** : +1
-- **domain** : international
-- **phase** : deep
-- **weight** : 1.0
-- **options** : ["Seule", "Plutôt seule", "Selon les cas", "Plutôt alliances", "Alliances"]
-- **calibration** : Seule → conservateur + interventionniste (souverainisme) / Alliances → progressiste + libéral (multilatéralisme).
+- **calibration** : D'accord = progressiste (éthique). Pas d'accord = conservateur (intérêt national, pragmatisme).
 
 ---
 
@@ -676,12 +638,12 @@ Ces questions affinent le positionnement. Elles sont proposées après l'onboard
 ### Par axe
 | Axe | Onboarding | Approfondissement | Total |
 |-----|-----------|-------------------|-------|
-| Sociétal | 3 | 15 | 18 |
-| Économique | 3 | 11 | 14 |
-| Autorité | 2 | 4 | 6 |
-| Écologie | 2 | 4 | 6 |
-| Souveraineté | 2 | 4 | 6 |
-| **Total** | **12** | **40** | **52** |
+| Sociétal | 3 | 9 | 12 |
+| Économique | 3 | 12 | 15 |
+| Autorité | 2 | 12 | 14 |
+| Écologie | 2 | 3 | 5 |
+| Souveraineté | 2 | 2 | 4 |
+| **Total** | **12** | **38** | **50** |
 
 ### Par domaine
 | Domaine | Onboarding | Approfondissement | Total |
@@ -695,13 +657,13 @@ Ces questions affinent le positionnement. Elles sont proposées après l'onboard
 | Économie et fiscalité | 3 | 4 | 7 |
 | Numérique et libertés | 0 | 4 | 4 |
 | Démocratie et institutions | 0 | 4 | 4 |
-| International et défense | 2 | 4 | 6 |
+| International et défense | 2 | 2 | 4 |
 
 ### Par format
 | Format | Onboarding | Approfondissement | Total |
 |--------|-----------|-------------------|-------|
-| Affirmation | 12 | 34 | 46 |
-| Dilemme | 0 | 6 | 6 |
+| Affirmation | 12 | 38 | 50 |
+| Dilemme | 0 | 0 | 0 |
 
 ---
 
