@@ -59,6 +59,7 @@ interface RawMedia {
   owner?: string;
   independent?: boolean;
   editorial_label?: string;
+  description?: string;
 }
 
 function parseMedias(): RawMedia[] {
