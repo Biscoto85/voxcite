@@ -1,9 +1,10 @@
 import { useState, useEffect, useCallback } from 'react';
 
-type Tab = 'dashboard' | 'prompts' | 'questions' | 'parties' | 'medias' | 'feedbacks' | 'proposals' | 'api-calls';
+type Tab = 'dashboard' | 'snapshots' | 'prompts' | 'questions' | 'parties' | 'medias' | 'feedbacks' | 'proposals' | 'api-calls';
 
 const TABS: Array<{ id: Tab; label: string }> = [
   { id: 'dashboard', label: 'Dashboard' },
+  { id: 'snapshots', label: 'Réponses' },
   { id: 'prompts', label: 'Prompts' },
   { id: 'questions', label: 'Questions' },
   { id: 'parties', label: 'Partis' },
@@ -122,6 +123,7 @@ export function AdminQG() {
 
       <div className="p-4">
         {tab === 'dashboard' && <DashboardTab />}
+        {tab === 'snapshots' && <SnapshotsTab />}
         {tab === 'prompts' && <PromptsTab />}
         {tab === 'questions' && <QuestionsTab />}
         {tab === 'parties' && <PartiesTab />}
@@ -192,6 +194,119 @@ function DashboardTab() {
               );
             })}
           </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ── Snapshots (Réponses) ────────────────────────────────────────────
+
+function SnapshotsTab() {
+  const [data, setData] = useState<{ rows: any[]; pagination: any }>({ rows: [], pagination: { page: 1, limit: 50, total: 0, totalPages: 0 } });
+  const [page, setPage] = useState(1);
+  const [sort, setSort] = useState('createdAt');
+  const [dir, setDir] = useState<'desc' | 'asc'>('desc');
+  const [loading, setLoading] = useState(true);
+
+  const load = useCallback(() => {
+    setLoading(true);
+    adminFetch(`/snapshots?page=${page}&limit=50&sort=${sort}&dir=${dir}`)
+      .then((r) => r.json())
+      .then((d) => { setData(d); setLoading(false); })
+      .catch(() => setLoading(false));
+  }, [page, sort, dir]);
+
+  useEffect(() => { load(); }, [load]);
+
+  const handleSort = (col: string) => {
+    if (sort === col) {
+      setDir(dir === 'desc' ? 'asc' : 'desc');
+    } else {
+      setSort(col);
+      setDir('desc');
+    }
+    setPage(1);
+  };
+
+  const sortIcon = (col: string) => sort === col ? (dir === 'desc' ? ' ↓' : ' ↑') : '';
+
+  const handleExport = async () => {
+    const res = await adminFetch(`/snapshots/export?sort=${sort}&dir=${dir}`);
+    if (!res.ok) return;
+    const blob = await res.blob();
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `partiprism-snapshots-${new Date().toISOString().slice(0, 10)}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  const { pagination: pg } = data;
+
+  return (
+    <div className="space-y-4">
+      <div className="flex items-center justify-between flex-wrap gap-2">
+        <h2 className="text-lg font-bold">Réponses ({pg.total})</h2>
+        <button onClick={handleExport} className="px-3 py-1.5 bg-amber-500 hover:bg-amber-400 rounded text-xs font-medium text-black">
+          Exporter CSV
+        </button>
+      </div>
+
+      {loading && <p className="text-gray-500 text-center">Chargement...</p>}
+
+      <div className="overflow-x-auto">
+        <table className="w-full text-xs">
+          <thead>
+            <tr className="text-gray-500 border-b border-gray-800">
+              <th className="text-left py-2 px-1.5 cursor-pointer hover:text-amber-400" onClick={() => handleSort('createdAt')}>Date{sortIcon('createdAt')}</th>
+              <th className="text-left py-2 px-1.5 cursor-pointer hover:text-amber-400" onClick={() => handleSort('postalCode')}>CP{sortIcon('postalCode')}</th>
+              <th className="text-left py-2 px-1.5 cursor-pointer hover:text-amber-400" onClick={() => handleSort('infoSource')}>Source{sortIcon('infoSource')}</th>
+              <th className="text-right py-2 px-1.5 cursor-pointer hover:text-amber-400" onClick={() => handleSort('societal')}>Soc{sortIcon('societal')}</th>
+              <th className="text-right py-2 px-1.5 cursor-pointer hover:text-amber-400" onClick={() => handleSort('economic')}>Éco{sortIcon('economic')}</th>
+              <th className="text-right py-2 px-1.5 cursor-pointer hover:text-amber-400" onClick={() => handleSort('authority')}>Aut{sortIcon('authority')}</th>
+              <th className="text-right py-2 px-1.5 cursor-pointer hover:text-amber-400" onClick={() => handleSort('ecology')}>Écol{sortIcon('ecology')}</th>
+              <th className="text-right py-2 px-1.5 cursor-pointer hover:text-amber-400" onClick={() => handleSort('sovereignty')}>Souv{sortIcon('sovereignty')}</th>
+            </tr>
+          </thead>
+          <tbody>
+            {data.rows.map((r: any) => (
+              <tr key={r.id} className="border-b border-gray-900 hover:bg-gray-900/50">
+                <td className="py-1.5 px-1.5 text-gray-400">{new Date(r.createdAt).toLocaleString('fr-FR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })}</td>
+                <td className="py-1.5 px-1.5 text-white font-mono">{r.postalCode || '-'}</td>
+                <td className="py-1.5 px-1.5 text-gray-400">{r.infoSource || '-'}</td>
+                <td className={`py-1.5 px-1.5 text-right ${r.positionSocietal > 0 ? 'text-cyan-400' : r.positionSocietal < 0 ? 'text-red-400' : 'text-gray-500'}`}>{r.positionSocietal.toFixed(2)}</td>
+                <td className={`py-1.5 px-1.5 text-right ${r.positionEconomic > 0 ? 'text-cyan-400' : r.positionEconomic < 0 ? 'text-red-400' : 'text-gray-500'}`}>{r.positionEconomic.toFixed(2)}</td>
+                <td className={`py-1.5 px-1.5 text-right ${r.positionAuthority > 0 ? 'text-cyan-400' : r.positionAuthority < 0 ? 'text-red-400' : 'text-gray-500'}`}>{r.positionAuthority.toFixed(2)}</td>
+                <td className={`py-1.5 px-1.5 text-right ${r.positionEcology > 0 ? 'text-cyan-400' : r.positionEcology < 0 ? 'text-red-400' : 'text-gray-500'}`}>{r.positionEcology.toFixed(2)}</td>
+                <td className={`py-1.5 px-1.5 text-right ${r.positionSovereignty > 0 ? 'text-cyan-400' : r.positionSovereignty < 0 ? 'text-red-400' : 'text-gray-500'}`}>{r.positionSovereignty.toFixed(2)}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+
+      {/* Pagination */}
+      {pg.totalPages > 1 && (
+        <div className="flex items-center justify-center gap-2 pt-2">
+          <button
+            onClick={() => setPage((p) => Math.max(1, p - 1))}
+            disabled={page <= 1}
+            className="px-3 py-1.5 bg-gray-800 rounded text-xs disabled:opacity-30 hover:bg-gray-700"
+          >
+            ← Précédent
+          </button>
+          <span className="text-xs text-gray-500">
+            Page {pg.page} / {pg.totalPages}
+          </span>
+          <button
+            onClick={() => setPage((p) => Math.min(pg.totalPages, p + 1))}
+            disabled={page >= pg.totalPages}
+            className="px-3 py-1.5 bg-gray-800 rounded text-xs disabled:opacity-30 hover:bg-gray-700"
+          >
+            Suivant →
+          </button>
         </div>
       )}
     </div>

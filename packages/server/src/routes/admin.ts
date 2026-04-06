@@ -4,7 +4,7 @@ import {
   snapshots, votes, proposals, feedback, questions, prompts, apiCalls,
   suggestions, programVersions, domains, medias, partis, mediaRatings,
 } from '../db/schema.js';
-import { eq, desc, sql, and, count } from 'drizzle-orm';
+import { eq, desc, asc, sql, and, count } from 'drizzle-orm';
 import { trackedAiCall } from '../services/tracked-ai.js';
 import { invalidatePromptCache } from '../services/prompt-loader.js';
 import { extractClaudeText } from '../utils/helpers.js';
@@ -427,4 +427,88 @@ adminRouter.put('/medias/:id', async (req, res) => {
 adminRouter.delete('/medias/:id', async (req, res) => {
   await db.delete(medias).where(eq(medias.id, req.params.id));
   res.json({ ok: true });
+});
+
+// ══════════════════════════════════════════════════════════════════════
+// SNAPSHOTS (réponses anonymes)
+// ══════════════════════════════════════════════════════════════════════
+
+const SNAPSHOT_SORT_COLS: Record<string, any> = {
+  createdAt: snapshots.createdAt,
+  postalCode: snapshots.postalCode,
+  societal: snapshots.positionSocietal,
+  economic: snapshots.positionEconomic,
+  authority: snapshots.positionAuthority,
+  ecology: snapshots.positionEcology,
+  sovereignty: snapshots.positionSovereignty,
+  infoSource: snapshots.infoSource,
+};
+
+adminRouter.get('/snapshots', async (req, res) => {
+  const page = Math.max(1, parseInt(req.query.page as string) || 1);
+  const limit = Math.min(100, parseInt(req.query.limit as string) || 50);
+  const sortBy = (req.query.sort as string) || 'createdAt';
+  const sortDir = (req.query.dir as string) === 'asc' ? 'asc' : 'desc';
+  const offset = (page - 1) * limit;
+
+  const sortCol = SNAPSHOT_SORT_COLS[sortBy] || snapshots.createdAt;
+  const orderFn = sortDir === 'asc' ? asc : desc;
+
+  const [totalResult] = await db.select({ count: count() }).from(snapshots);
+  const total = totalResult.count;
+
+  const rows = await db
+    .select()
+    .from(snapshots)
+    .orderBy(orderFn(sortCol))
+    .limit(limit)
+    .offset(offset);
+
+  res.json({
+    rows,
+    pagination: { page, limit, total, totalPages: Math.ceil(total / limit) },
+  });
+});
+
+// GET /snapshots/export — CSV export
+adminRouter.get('/snapshots/export', async (req, res) => {
+  const sortBy = (req.query.sort as string) || 'createdAt';
+  const sortDir = (req.query.dir as string) === 'asc' ? 'asc' : 'desc';
+  const sortCol = SNAPSHOT_SORT_COLS[sortBy] || snapshots.createdAt;
+  const orderFn = sortDir === 'asc' ? asc : desc;
+
+  // Optional filters
+  const postalCode = req.query.postalCode as string | undefined;
+  const infoSource = req.query.infoSource as string | undefined;
+
+  let query = db.select().from(snapshots).orderBy(orderFn(sortCol));
+
+  const rows = await query;
+
+  // Apply filters in JS (simpler than building dynamic where clauses)
+  let filtered = rows;
+  if (postalCode) filtered = filtered.filter((r) => r.postalCode === postalCode);
+  if (infoSource) filtered = filtered.filter((r) => r.infoSource === infoSource);
+
+  // Build CSV
+  const header = 'date,code_postal,info_source,biais_percu,societal,economic,authority,ecology,sovereignty';
+  const csvRows = filtered.map((r) =>
+    [
+      r.createdAt.toISOString(),
+      r.postalCode || '',
+      r.infoSource || '',
+      r.perceivedBias || '',
+      r.positionSocietal.toFixed(3),
+      r.positionEconomic.toFixed(3),
+      r.positionAuthority.toFixed(3),
+      r.positionEcology.toFixed(3),
+      r.positionSovereignty.toFixed(3),
+    ].join(','),
+  );
+
+  const csv = [header, ...csvRows].join('\n');
+
+  res.setHeader('Content-Type', 'text/csv; charset=utf-8');
+  res.setHeader('Content-Disposition', `attachment; filename="partiprism-snapshots-${new Date().toISOString().slice(0, 10)}.csv"`);
+  res.send(csv);
 });
