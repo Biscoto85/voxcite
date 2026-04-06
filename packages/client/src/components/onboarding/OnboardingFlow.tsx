@@ -27,7 +27,6 @@ export function OnboardingFlow({ questions, parties, onComplete }: OnboardingFlo
   const handleProfileSubmit = useCallback(async (data: UserProfile) => {
     setProfileError(null);
 
-    // Validate postal code vs IP by attempting a snapshot dry-run
     try {
       const res = await fetch('/api/sessions/snapshot', {
         method: 'POST',
@@ -52,7 +51,7 @@ export function OnboardingFlow({ questions, parties, onComplete }: OnboardingFlo
         }
       }
     } catch {
-      // Network error — accept and continue (offline-friendly)
+      // Network error — accept and continue
     }
 
     setProfile(data);
@@ -89,6 +88,13 @@ export function OnboardingFlow({ questions, parties, onComplete }: OnboardingFlo
     }
   }, [currentQuestion, responses, currentIndex, questions, profile, onComplete]);
 
+  const handleBack = useCallback(() => {
+    if (currentIndex <= 0) return;
+    // Remove the last response and go back one question
+    setResponses((prev) => prev.slice(0, -1));
+    setCurrentIndex((prev) => prev - 1);
+  }, [currentIndex]);
+
   if (step === 'postal') {
     return <PostalCodeInput onSubmit={handleProfileSubmit} serverError={profileError} />;
   }
@@ -113,6 +119,8 @@ export function OnboardingFlow({ questions, parties, onComplete }: OnboardingFlo
       <QuestionCard
         question={currentQuestion}
         onAnswer={handleAnswer}
+        onBack={handleBack}
+        canGoBack={currentIndex > 0}
         questionNumber={currentIndex + 1}
       />
     </div>

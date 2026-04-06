@@ -1,13 +1,17 @@
+import { useState } from 'react';
 import type { Question } from '@partiprism/shared';
 import { RESPONSE_LABELS_AFFIRMATION } from '@partiprism/shared';
 
 interface QuestionCardProps {
   question: Question;
   onAnswer: (value: -2 | -1 | 0 | 1 | 2) => void;
+  onBack?: () => void;
   questionNumber: number;
+  canGoBack?: boolean;
 }
 
-export function QuestionCard({ question, onAnswer, questionNumber }: QuestionCardProps) {
+export function QuestionCard({ question, onAnswer, onBack, questionNumber, canGoBack }: QuestionCardProps) {
+  const [answering, setAnswering] = useState(false);
   const isDialemme = question.type === 'dilemme' && question.options;
 
   const options = isDialemme
@@ -29,6 +33,14 @@ export function QuestionCard({ question, onAnswer, questionNumber }: QuestionCar
     'hover:bg-green-900/40 hover:border-green-500',
   ];
 
+  const handleAnswer = (value: -2 | -1 | 0 | 1 | 2) => {
+    if (answering) return; // prevent double-tap on mobile
+    setAnswering(true);
+    onAnswer(value);
+    // Re-enable after a short delay (for the next question render)
+    setTimeout(() => setAnswering(false), 400);
+  };
+
   return (
     <section
       className="bg-gray-900 rounded-xl p-5 sm:p-6 border border-gray-800"
@@ -42,13 +54,24 @@ export function QuestionCard({ question, onAnswer, questionNumber }: QuestionCar
         {options.map((opt, i) => (
           <button
             key={opt.value}
-            onClick={() => onAnswer(opt.value)}
-            className={`w-full py-3 px-4 rounded-lg border border-gray-700 text-sm text-left transition-all touch-target focus-ring ${buttonColors[i]} active:scale-[0.98]`}
+            onClick={() => handleAnswer(opt.value)}
+            disabled={answering}
+            className={`w-full py-3 px-4 rounded-lg border border-gray-700 text-sm text-left transition-all touch-target focus-ring disabled:opacity-50 ${buttonColors[i]} active:scale-[0.98]`}
           >
             {opt.label}
           </button>
         ))}
       </div>
+
+      {canGoBack && onBack && (
+        <button
+          onClick={onBack}
+          disabled={answering}
+          className="mt-4 w-full text-center text-xs text-gray-500 hover:text-gray-300 transition-colors py-2 focus-ring rounded"
+        >
+          ← Question précédente
+        </button>
+      )}
     </section>
   );
 }
