@@ -21,23 +21,36 @@ Toutes les questions utilisent une échelle à 5 niveaux :
 
 ---
 
-## Questions d'onboarding (10)
+## Questions d'onboarding (12)
 
-Ces 10 questions produisent la première image du positionnement. Elles sont posées à tous les utilisateurs lors du parcours "révélation".
+Ces 12 questions produisent la première image du positionnement. Elles sont posées à tous les utilisateurs lors du parcours "révélation". Deux questions par axe.
+
+### Axe sociétal
 
 ### Q1
 - **id** : `onb-01`
-- **text** : "Les services publics essentiels (santé, énergie, transports) devraient appartenir à l'État, pas au privé."
+- **text** : "Les couples de même sexe devraient avoir exactement les mêmes droits que les autres, y compris l'adoption."
 - **type** : affirmation
-- **axis** : economic
-- **polarity** : -1
-- **domain** : economie
+- **axis** : societal
+- **polarity** : +1
+- **domain** : sante
 - **phase** : onboarding
-- **weight** : 1.5
-- **calibration** : D'accord → interventionniste / Pas d'accord → libéral. Question centrale sur le rapport État vs marché.
+- **weight** : 1.0
+- **calibration** : D'accord = progressiste. Pas d'accord = conservateur. Sujet clair, pas d'ambiguïté, mesure le rapport aux évolutions de mœurs.
 
 ### Q2
 - **id** : `onb-02`
+- **text** : "La France a une identité culturelle forte qu'il faut protéger face aux influences extérieures."
+- **type** : affirmation
+- **axis** : societal
+- **polarity** : -1
+- **domain** : immigration
+- **phase** : onboarding
+- **weight** : 1.0
+- **calibration** : D'accord = conservateur. Pas d'accord = progressiste. Formulation respectueuse des deux camps. Pas de mention d'immigration directement — mesure le rapport à l'identité.
+
+### Q3
+- **id** : `onb-03`
 - **text** : "Chacun devrait pouvoir choisir librement sa fin de vie, y compris l'euthanasie."
 - **type** : affirmation
 - **axis** : societal
@@ -45,120 +58,114 @@ Ces 10 questions produisent la première image du positionnement. Elles sont pos
 - **domain** : sante
 - **phase** : onboarding
 - **weight** : 1.0
-- **calibration** : D'accord → progressiste / Pas d'accord → conservateur. Liberté individuelle vs valeurs morales collectives.
+- **calibration** : D'accord = progressiste. Pas d'accord = conservateur. Touche à la liberté individuelle vs valeurs morales collectives.
 
-### Q3
-- **id** : `onb-03`
-- **text** : "Les impôts sur les héritages de plus d'un million d'euros devraient être fortement augmentés."
+### Axe économique
+
+### Q4
+- **id** : `onb-04`
+- **text** : "L'État devrait posséder et gérer les services essentiels comme l'énergie, les transports et la santé."
 - **type** : affirmation
 - **axis** : economic
 - **polarity** : -1
 - **domain** : economie
 - **phase** : onboarding
-- **weight** : 1.5
-- **calibration** : D'accord → interventionniste / Pas d'accord → libéral. Marqueur économique très discriminant.
-
-### Q4
-- **id** : `onb-04`
-- **text** : "La France accueille trop d'immigrés par rapport à sa capacité d'intégration."
-- **type** : affirmation
-- **axis** : societal
-- **polarity** : -1
-- **domain** : immigration
-- **phase** : onboarding
-- **weight** : 1.5
-- **calibration** : D'accord → conservateur / Pas d'accord → progressiste. Sujet le plus clivant sur l'axe sociétal. Formulation modérée pour éviter l'autocensure.
+- **weight** : 1.0
+- **calibration** : D'accord = interventionniste. Pas d'accord = libéral. Question fondamentale sur le rôle de l'État dans l'économie.
 
 ### Q5
 - **id** : `onb-05`
-- **text** : "Préfères-tu une société où chacun garde le maximum de ce qu'il gagne, ou une société qui redistribue fortement pour réduire les écarts ?"
-- **type** : dilemme
-- **axis** : both
-- **polarity** : -1
+- **text** : "Les impôts et les charges sur les entreprises sont trop élevés en France."
+- **type** : affirmation
+- **axis** : economic
+- **polarity** : +1
 - **domain** : economie
 - **phase** : onboarding
-- **weight** : 1.5
-- **options** : ["Garder", "Plutôt garder", "Neutre", "Plutôt redistribuer", "Redistribuer"]
-- **calibration** : Garder → libéral + conservateur / Redistribuer → interventionniste + progressiste.
+- **weight** : 1.0
+- **calibration** : D'accord = libéral. Pas d'accord = interventionniste. Formulation directe, les deux positions sont défendables.
 
 ### Q6
 - **id** : `onb-06`
-- **text** : "L'État devrait pouvoir accéder aux communications privées pour lutter contre le terrorisme et la criminalité."
+- **text** : "Les grandes fortunes devraient être beaucoup plus taxées pour financer les services publics."
+- **type** : affirmation
+- **axis** : economic
+- **polarity** : -1
+- **domain** : economie
+- **phase** : onboarding
+- **weight** : 1.0
+- **calibration** : D'accord = interventionniste. Pas d'accord = libéral. Pas de montant précis, mesure la direction.
+
+### Axe autorité
+
+### Q7
+- **id** : `onb-07`
+- **text** : "L'État devrait pouvoir surveiller les communications numériques pour assurer la sécurité du pays."
 - **type** : affirmation
 - **axis** : authority
 - **polarity** : -1
 - **domain** : securite
 - **phase** : onboarding
 - **weight** : 1.0
-- **calibration** : D'accord → conservateur (autorité) / Pas d'accord → progressiste (libertés).
-
-### Q7
-- **id** : `onb-07`
-- **text** : "Le SMIC devrait être augmenté à 1 600€ net par mois, même si certaines entreprises ne peuvent pas suivre."
-- **type** : affirmation
-- **axis** : economic
-- **polarity** : -1
-- **domain** : travail
-- **phase** : onboarding
-- **weight** : 1.0
-- **calibration** : D'accord → interventionniste / Pas d'accord → libéral. Concret et le "même si" force à trancher.
+- **calibration** : D'accord = autoritaire. Pas d'accord = libertaire. Sujet clair, pas de mélange.
 
 ### Q8
 - **id** : `onb-08`
-- **text** : "L'école devrait avant tout transmettre les savoirs fondamentaux et la discipline, plutôt que favoriser l'épanouissement personnel de l'enfant."
+- **text** : "La justice est trop laxiste en France : il faut des peines plus sévères."
 - **type** : affirmation
-- **axis** : societal
+- **axis** : authority
 - **polarity** : -1
-- **domain** : education
+- **domain** : securite
 - **phase** : onboarding
 - **weight** : 1.0
-- **calibration** : D'accord → conservateur (transmission) / Pas d'accord → progressiste (émancipation).
+- **calibration** : D'accord = autoritaire. Pas d'accord = libertaire. Formulation populaire, les deux camps se reconnaissent.
+
+### Axe écologie
 
 ### Q9
 - **id** : `onb-09`
-- **text** : "Préfères-tu que la France privilégie sa souveraineté nationale, ou qu'elle s'intègre davantage dans une Europe fédérale ?"
-- **type** : dilemme
+- **text** : "La protection de l'environnement devrait passer avant la croissance économique."
+- **type** : affirmation
+- **axis** : ecology
+- **polarity** : +1
+- **domain** : environnement
+- **phase** : onboarding
+- **weight** : 1.0
+- **calibration** : D'accord = écologiste. Pas d'accord = productiviste. Question nette, un seul enjeu.
+
+### Q10
+- **id** : `onb-10`
+- **text** : "La technologie et l'innovation sont la meilleure réponse aux problèmes écologiques, pas la sobriété."
+- **type** : affirmation
+- **axis** : ecology
+- **polarity** : -1
+- **domain** : environnement
+- **phase** : onboarding
+- **weight** : 1.0
+- **calibration** : D'accord = productiviste (techno-optimiste). Pas d'accord = écologiste (sobriété). Mesure le rapport à la croissance verte vs décroissance.
+
+### Axe souveraineté
+
+### Q11
+- **id** : `onb-11`
+- **text** : "La France devrait pouvoir décider seule de ses lois, sans être soumise aux règles européennes."
+- **type** : affirmation
+- **axis** : sovereignty
+- **polarity** : -1
+- **domain** : international
+- **phase** : onboarding
+- **weight** : 1.0
+- **calibration** : D'accord = souverainiste. Pas d'accord = mondialiste/pro-UE.
+
+### Q12
+- **id** : `onb-12`
+- **text** : "La mondialisation est globalement une bonne chose pour la France."
+- **type** : affirmation
 - **axis** : sovereignty
 - **polarity** : +1
 - **domain** : international
 - **phase** : onboarding
 - **weight** : 1.0
-- **options** : ["Souveraineté", "Plutôt souveraineté", "Neutre", "Plutôt Europe", "Europe fédérale"]
-- **calibration** : Souveraineté → conservateur + interventionniste / Europe → progressiste + libéral.
-
-### Q10
-- **id** : `onb-10`
-- **text** : "La transition écologique doit passer par des interdictions (voitures polluantes, pesticides), même si ça contraint les libertés individuelles et coûte des emplois."
-- **type** : affirmation
-- **axis** : ecology
-- **axes** : ["ecology", "authority"]
-- **polarity** : +1
-- **domain** : environnement
-- **phase** : onboarding
-- **weight** : 1.0
-- **calibration** : D'accord → progressiste + interventionniste / Pas d'accord → conservateur + libéral.
-
-### Q11
-- **id** : `onb-11`
-- **text** : "La justice est trop laxiste en France aujourd'hui."
-- **type** : affirmation
-- **axis** : authority
-- **polarity** : -1
-- **domain** : securite
-- **phase** : onboarding
-- **weight** : 1.0
-- **calibration** : D'accord → autoritaire / Pas d'accord → libertaire. Formulation volontairement directe et populaire. Complémentaire de Q6 (surveillance) pour mieux cerner l'axe autorité.
-
-### Q12
-- **id** : `onb-12`
-- **text** : "Il faudrait interdire la vente de viande issue de l'élevage intensif, même si ça fait monter les prix."
-- **type** : affirmation
-- **axis** : ecology
-- **polarity** : +1
-- **domain** : environnement
-- **phase** : onboarding
-- **weight** : 1.0
-- **calibration** : D'accord → écologiste / Pas d'accord → productiviste. Le "même si" force le trade-off concret. Complémentaire de Q10 (interdictions transports/pesticides).
+- **calibration** : D'accord = mondialiste. Pas d'accord = souverainiste. Question simple, directe, réponse rapide.
 
 ---
 
@@ -669,30 +676,32 @@ Ces questions affinent le positionnement. Elles sont proposées après l'onboard
 ### Par axe
 | Axe | Onboarding | Approfondissement | Total |
 |-----|-----------|-------------------|-------|
-| Sociétal pur | 4 | 15 | 19 |
-| Économique pur | 3 | 11 | 14 |
-| Les deux axes | 3 | 14 | 17 |
-| **Total** | **10** | **40** | **50** |
+| Sociétal | 3 | 15 | 18 |
+| Économique | 3 | 11 | 14 |
+| Autorité | 2 | 4 | 6 |
+| Écologie | 2 | 4 | 6 |
+| Souveraineté | 2 | 4 | 6 |
+| **Total** | **12** | **40** | **52** |
 
 ### Par domaine
 | Domaine | Onboarding | Approfondissement | Total |
 |---------|-----------|-------------------|-------|
-| Travail et emploi | 1 | 4 | 5 |
-| Santé et protection sociale | 1 | 4 | 5 |
-| Éducation et jeunesse | 1 | 4 | 5 |
-| Sécurité et justice | 1 | 4 | 5 |
+| Travail et emploi | 0 | 4 | 4 |
+| Santé et protection sociale | 2 | 4 | 6 |
+| Éducation et jeunesse | 0 | 4 | 4 |
+| Sécurité et justice | 2 | 4 | 6 |
 | Immigration et identité | 1 | 4 | 5 |
-| Environnement et énergie | 1 | 4 | 5 |
+| Environnement et énergie | 2 | 4 | 6 |
 | Économie et fiscalité | 3 | 4 | 7 |
-| Numérique et libertés | 1 | 4 | 5 |
+| Numérique et libertés | 0 | 4 | 4 |
 | Démocratie et institutions | 0 | 4 | 4 |
-| International et défense | 1 | 4 | 5 |
+| International et défense | 2 | 4 | 6 |
 
 ### Par format
 | Format | Onboarding | Approfondissement | Total |
 |--------|-----------|-------------------|-------|
-| Affirmation | 7 | 34 | 41 |
-| Dilemme | 3 | 6 | 9 |
+| Affirmation | 12 | 34 | 46 |
+| Dilemme | 0 | 6 | 6 |
 
 ---
 
