@@ -27,7 +27,6 @@ async function main() {
       id: m.id,
       label: m.label,
       type: m.type,
-      url: m.url ?? null,
       position1d: m.position_1d ?? 0,
       positionSocietal: m.position.societal,
       positionEconomic: m.position.economic,
@@ -36,7 +35,7 @@ async function main() {
       positionSovereignty: m.position.sovereignty,
       owner: m.owner ?? null,
       independent: m.independent ?? false,
-      editorialLabel: m.editorial_label ?? null,
+      editorialLabel: m.description ?? m.editorial_label ?? null,
     });
   }
 

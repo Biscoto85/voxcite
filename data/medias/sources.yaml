@@ -5,537 +5,720 @@
 # pas la diversité des opinions qui y sont exprimées.
 #
 # independent: true si la source n'appartient pas à un groupe industriel/milliardaire
-# editorial_label: description courte de la ligne éditoriale
-# url: lien principal vers le site ou la chaîne
+# description: description courte de la ligne éditoriale
 #
 # IMPORTANT : Ces positions sont des estimations éditoriales initiales.
-# Elles sont progressivement corrigées par les évaluations des visiteurs.
+# Elles sont affinées via le QG admin.
+#
+# Échelle : -1.0 à +1.0 pour chaque axe
+#   Sociétal :       -1 = conservateur, +1 = progressiste
+#   Économique :     -1 = interventionniste, +1 = libéral
+#   Autorité :       -1 = autoritaire, +1 = libertaire
+#   Écologie :       -1 = productiviste, +1 = écologiste
+#   Souveraineté :   -1 = souverainiste, +1 = mondialiste
+#   position_1d :    projection gauche-droite simplifiée
 
-# ── Télévision ──────────────────────────────────────────────────────
+# ── Télévision (6) ────────────────────────────────────────────────────
 
 sources:
 
-  - id: tf1
-    label: "TF1 / LCI"
-    type: tv
-    url: "https://www.tf1info.fr"
-    position_1d: 0.2
-    position:
-      societal: -0.1
-      economic: 0.3
-      authority: -0.2
-      ecology: -0.1
-      sovereignty: 0.1
-    owner: "Bouygues"
-    independent: false
-    editorial_label: "Centre-droit libéral"
-
-  - id: france2
-    label: "France 2 / France Info TV"
-    type: tv
-    url: "https://www.francetvinfo.fr"
-    position_1d: -0.1
-    position:
-      societal: 0.2
-      economic: 0.1
-      authority: -0.1
-      ecology: 0.1
-      sovereignty: 0.2
-    owner: "France Télévisions (État)"
-    independent: false
-    editorial_label: "Centre institutionnel"
-
-  - id: bfmtv
+  - id: bfm-tv
     label: "BFM TV"
     type: tv
-    url: "https://www.bfmtv.com"
-    position_1d: 0.2
-    position:
-      societal: -0.1
-      economic: 0.4
-      authority: -0.3
-      ecology: -0.2
-      sovereignty: 0.1
-    owner: "Altice (Patrick Drahi)"
     independent: false
-    editorial_label: "Libéral sécuritaire"
+    owner: "CMA CGM (Rodolphe Saadé)"
+    description: "Libéral sécuritaire, info continue"
+    position_1d: 0.20
+    position:
+      societal: -0.10
+      economic: 0.40
+      authority: -0.30
+      ecology: -0.20
+      sovereignty: 0.10
 
   - id: cnews
     label: "CNews"
     type: tv
-    url: "https://www.cnews.fr"
-    position_1d: 0.6
-    position:
-      societal: -0.6
-      economic: 0.3
-      authority: -0.5
-      ecology: -0.4
-      sovereignty: -0.4
-    owner: "Vivendi (Bolloré)"
     independent: false
-    editorial_label: "Droite conservatrice souverainiste"
-
-# ── Presse écrite / web ─────────────────────────────────────────────
-
-  - id: lemonde
-    label: "Le Monde"
-    type: presse
-    url: "https://www.lemonde.fr"
-    position_1d: -0.1
+    owner: "Vivendi (Vincent Bolloré)"
+    description: "Droite conservatrice souverainiste"
+    position_1d: 0.60
     position:
-      societal: 0.3
-      economic: 0.2
-      authority: 0.1
-      ecology: 0.2
-      sovereignty: 0.3
-    owner: "Xavier Niel / Matthieu Pigasse / Daniel Kretinsky"
+      societal: -0.60
+      economic: 0.30
+      authority: -0.50
+      ecology: -0.40
+      sovereignty: -0.40
+
+  - id: france2
+    label: "France 2 / France Info TV"
+    type: tv
     independent: false
-    editorial_label: "Centre-gauche mondialiste"
-
-  - id: lefigaro
-    label: "Le Figaro"
-    type: presse
-    url: "https://www.lefigaro.fr"
-    position_1d: 0.4
+    owner: "France Télévisions (État)"
+    description: "Centre institutionnel, service public"
+    position_1d: -0.10
     position:
-      societal: -0.3
-      economic: 0.5
-      authority: -0.3
-      ecology: -0.2
-      sovereignty: 0.1
-    owner: "Famille Dassault"
+      societal: 0.20
+      economic: 0.10
+      authority: -0.10
+      ecology: 0.10
+      sovereignty: 0.20
+
+  - id: tf1
+    label: "TF1 / LCI"
+    type: tv
     independent: false
-    editorial_label: "Droite libérale"
-
-  - id: liberation
-    label: "Libération"
-    type: presse
-    url: "https://www.liberation.fr"
-    position_1d: -0.4
+    owner: "Bouygues"
+    description: "Centre-droit libéral grand public"
+    position_1d: 0.20
     position:
-      societal: 0.6
-      economic: -0.3
-      authority: 0.3
-      ecology: 0.3
-      sovereignty: 0.2
-    owner: "Patrick Drahi (SFR Presse)"
+      societal: -0.10
+      economic: 0.30
+      authority: -0.20
+      ecology: -0.10
+      sovereignty: 0.10
+
+  - id: arte
+    label: "Arte"
+    type: tv
     independent: false
-    editorial_label: "Gauche progressiste"
-
-  - id: mediapart
-    label: "Mediapart"
-    type: presse
-    url: "https://www.mediapart.fr"
-    position_1d: -0.5
+    owner: "Arte GEIE (État FR + État DE)"
+    description: "Culturel, européen, progressiste"
+    position_1d: -0.20
     position:
-      societal: 0.5
-      economic: -0.4
-      authority: 0.5
-      ecology: 0.4
-      sovereignty: -0.1
-    owner: "Indépendant (abonnés)"
-    independent: true
-    editorial_label: "Gauche libertaire enquête"
+      societal: 0.40
+      economic: 0.00
+      authority: 0.30
+      ecology: 0.40
+      sovereignty: 0.40
 
-  - id: valeurs_actuelles
-    label: "Valeurs Actuelles"
-    type: presse
-    url: "https://www.valeursactuelles.com"
-    position_1d: 0.7
-    position:
-      societal: -0.7
-      economic: 0.4
-      authority: -0.6
-      ecology: -0.5
-      sovereignty: -0.5
-    owner: "Privinvest (Iskandar Safa)"
+  - id: c8
+    label: "C8"
+    type: tv
     independent: false
-    editorial_label: "Droite conservatrice identitaire"
-
-  - id: canard_enchaine
-    label: "Le Canard Enchaîné"
-    type: presse
-    url: "https://www.lecanardenchaine.fr"
-    position_1d: -0.2
+    owner: "Canal+ (Vivendi / Bolloré)"
+    description: "Divertissement populaire, droite populaire"
+    position_1d: 0.30
     position:
-      societal: 0.1
-      economic: -0.2
-      authority: 0.6
-      ecology: 0.1
-      sovereignty: -0.1
-    owner: "Indépendant (actionnariat interne)"
-    independent: true
-    editorial_label: "Satirique anti-pouvoir"
+      societal: -0.30
+      economic: 0.10
+      authority: -0.30
+      ecology: -0.20
+      sovereignty: -0.20
 
-  - id: asi
-    label: "Arrêt sur images (ASI)"
-    type: presse
-    url: "https://www.arretsurimages.net"
-    position_1d: -0.3
-    position:
-      societal: 0.3
-      economic: -0.2
-      authority: 0.4
-      ecology: 0.2
-      sovereignty: 0.0
-    owner: "Indépendant (abonnés)"
-    independent: true
-    editorial_label: "Critique des médias, centre-gauche"
+# ── Radio (7) ─────────────────────────────────────────────────────────
 
-  - id: reporterre
-    label: "Reporterre"
-    type: presse
-    url: "https://reporterre.net"
-    position_1d: -0.4
-    position:
-      societal: 0.3
-      economic: -0.5
-      authority: 0.3
-      ecology: 0.8
-      sovereignty: -0.1
-    owner: "Indépendant (dons + abonnés)"
-    independent: true
-    editorial_label: "Écologiste radical"
-
-  - id: bastamag
-    label: "Basta!"
-    type: presse
-    url: "https://basta.media"
-    position_1d: -0.5
-    position:
-      societal: 0.4
-      economic: -0.6
-      authority: 0.4
-      ecology: 0.5
-      sovereignty: -0.2
-    owner: "Indépendant (association)"
-    independent: true
-    editorial_label: "Gauche sociale et écologiste"
-
-  - id: contrepoints
-    label: "Contrepoints"
-    type: presse
-    url: "https://www.contrepoints.org"
-    position_1d: 0.4
-    position:
-      societal: 0.2
-      economic: 0.7
-      authority: 0.5
-      ecology: -0.3
-      sovereignty: 0.3
-    owner: "Indépendant (association libérale)"
-    independent: true
-    editorial_label: "Libéral classique"
-
-  - id: le_point
-    label: "Le Point"
-    type: presse
-    url: "https://www.lepoint.fr"
-    position_1d: 0.3
-    position:
-      societal: -0.1
-      economic: 0.4
-      authority: -0.1
-      ecology: -0.1
-      sovereignty: 0.1
-    owner: "François Pinault / Artémis"
-    independent: false
-    editorial_label: "Centre-droit libéral"
-
-  - id: lopinion
-    label: "L'Opinion"
-    type: presse
-    url: "https://www.lopinion.fr"
-    position_1d: 0.3
-    position:
-      societal: 0.0
-      economic: 0.5
-      authority: -0.1
-      ecology: -0.2
-      sovereignty: 0.2
-    owner: "Bernard Arnault (LVMH)"
-    independent: false
-    editorial_label: "Libéral pro-business"
-
-  - id: present
-    label: "Présent"
-    type: presse
-    url: "https://present.fr"
-    position_1d: 0.8
-    position:
-      societal: -0.8
-      economic: -0.1
-      authority: -0.6
-      ecology: -0.2
-      sovereignty: -0.7
-    owner: "Association loi 1901"
-    independent: true
-    editorial_label: "Droite traditionaliste catholique"
-
-  - id: boulevard_voltaire
-    label: "Boulevard Voltaire"
-    type: presse
-    url: "https://www.bvoltaire.fr"
-    position_1d: 0.6
-    position:
-      societal: -0.6
-      economic: -0.2
-      authority: -0.4
-      ecology: -0.2
-      sovereignty: -0.6
-    owner: "Indépendant (association)"
-    independent: true
-    editorial_label: "Droite souverainiste populaire"
-
-# ── Radio ────────────────────────────────────────────────────────────
-
-  - id: franceinter
+  - id: france-inter
     label: "France Inter"
     type: radio
-    url: "https://www.radiofrance.fr/franceinter"
-    position_1d: -0.2
-    position:
-      societal: 0.3
-      economic: -0.1
-      authority: 0.2
-      ecology: 0.3
-      sovereignty: 0.2
-    owner: "Radio France (État)"
     independent: false
-    editorial_label: "Centre-gauche culturel"
+    owner: "Radio France (État)"
+    description: "Centre-gauche culturel"
+    position_1d: -0.20
+    position:
+      societal: 0.30
+      economic: -0.10
+      authority: 0.20
+      ecology: 0.30
+      sovereignty: 0.20
+
+  - id: france-culture
+    label: "France Culture"
+    type: radio
+    independent: false
+    owner: "Radio France (État)"
+    description: "Intellectuel progressiste"
+    position_1d: -0.30
+    position:
+      societal: 0.40
+      economic: -0.20
+      authority: 0.40
+      ecology: 0.30
+      sovereignty: 0.20
 
   - id: europe1
     label: "Europe 1"
     type: radio
-    url: "https://www.europe1.fr"
-    position_1d: 0.3
-    position:
-      societal: -0.2
-      economic: 0.3
-      authority: -0.3
-      ecology: -0.2
-      sovereignty: -0.1
-    owner: "Vivendi (Bolloré)"
     independent: false
-    editorial_label: "Droite populaire"
+    owner: "Lagardère / Vivendi"
+    description: "Droite populaire"
+    position_1d: 0.30
+    position:
+      societal: -0.20
+      economic: 0.30
+      authority: -0.30
+      ecology: -0.20
+      sovereignty: -0.10
 
   - id: rtl
     label: "RTL"
     type: radio
-    url: "https://www.rtl.fr"
-    position_1d: 0.1
-    position:
-      societal: 0.0
-      economic: 0.2
-      authority: -0.1
-      ecology: 0.0
-      sovereignty: 0.1
-    owner: "M6 / RTL Group"
     independent: false
-    editorial_label: "Centre grand public"
-
-  - id: franceculture
-    label: "France Culture"
-    type: radio
-    url: "https://www.radiofrance.fr/franceculture"
-    position_1d: -0.3
+    owner: "M6 Group (RTL Group / Bertelsmann)"
+    description: "Centre grand public"
+    position_1d: 0.10
     position:
-      societal: 0.4
-      economic: -0.2
-      authority: 0.4
-      ecology: 0.3
-      sovereignty: 0.2
-    owner: "Radio France (État)"
-    independent: false
-    editorial_label: "Intellectuel progressiste"
+      societal: 0.00
+      economic: 0.20
+      authority: -0.10
+      ecology: 0.00
+      sovereignty: 0.10
 
-  - id: sudradio
+  - id: sud-radio
     label: "Sud Radio"
     type: radio
-    url: "https://www.sudradio.fr"
-    position_1d: 0.4
-    position:
-      societal: -0.3
-      economic: 0.1
-      authority: -0.3
-      ecology: -0.2
-      sovereignty: -0.4
-    owner: "Groupe Fiducial (Christian Latouche)"
     independent: false
-    editorial_label: "Droite populaire souverainiste"
-
-# ── Podcasts / YouTube / Twitch ──────────────────────────────────────
-
-  - id: thinkerview
-    label: "Thinkerview"
-    type: podcast
-    url: "https://www.youtube.com/@Thinkerview"
-    position_1d: 0.0
+    owner: "Fiducial (Christian Latouche)"
+    description: "Droite populaire souverainiste"
+    position_1d: 0.40
     position:
-      societal: 0.0
-      economic: -0.2
-      authority: 0.3
-      ecology: 0.1
-      sovereignty: -0.3
-    owner: "Indépendant"
+      societal: -0.30
+      economic: 0.10
+      authority: -0.30
+      ecology: -0.20
+      sovereignty: -0.40
+
+  - id: rmc
+    label: "RMC"
+    type: radio
+    independent: false
+    owner: "CMA CGM (Rodolphe Saadé)"
+    description: "Populaire, débat grand public, sécuritaire"
+    position_1d: 0.20
+    position:
+      societal: -0.20
+      economic: 0.20
+      authority: -0.30
+      ecology: -0.10
+      sovereignty: -0.10
+
+  - id: franceinfo-radio
+    label: "Franceinfo (radio)"
+    type: radio
+    independent: false
+    owner: "Radio France (État)"
+    description: "Info continue, institutionnel neutre"
+    position_1d: 0.00
+    position:
+      societal: 0.10
+      economic: 0.10
+      authority: -0.10
+      ecology: 0.10
+      sovereignty: 0.20
+
+# ── Presse écrite et web (21) ─────────────────────────────────────────
+
+  - id: mediapart
+    label: "Mediapart"
+    type: presse
     independent: true
-    editorial_label: "Entretiens longs, souverainiste critique"
+    description: "Gauche libertaire, investigation"
+    position_1d: -0.50
+    position:
+      societal: 0.50
+      economic: -0.40
+      authority: 0.50
+      ecology: 0.40
+      sovereignty: -0.10
+
+  - id: liberation
+    label: "Libération"
+    type: presse
+    independent: false
+    owner: "SFR Presse (Patrick Drahi)"
+    description: "Gauche progressiste"
+    position_1d: -0.40
+    position:
+      societal: 0.60
+      economic: -0.30
+      authority: 0.30
+      ecology: 0.30
+      sovereignty: 0.20
+
+  - id: le-monde
+    label: "Le Monde"
+    type: presse
+    independent: false
+    owner: "Groupe Le Monde (Xavier Niel, Matthieu Pigasse, Daniel Kretinsky)"
+    description: "Centre-gauche mondialiste"
+    position_1d: -0.10
+    position:
+      societal: 0.30
+      economic: 0.20
+      authority: 0.10
+      ecology: 0.20
+      sovereignty: 0.30
+
+  - id: le-figaro
+    label: "Le Figaro"
+    type: presse
+    independent: false
+    owner: "Groupe Dassault"
+    description: "Droite libérale"
+    position_1d: 0.40
+    position:
+      societal: -0.30
+      economic: 0.50
+      authority: -0.30
+      ecology: -0.20
+      sovereignty: 0.10
+
+  - id: le-point
+    label: "Le Point"
+    type: presse
+    independent: false
+    owner: "Artémis (François Pinault)"
+    description: "Centre-droit libéral"
+    position_1d: 0.30
+    position:
+      societal: -0.10
+      economic: 0.40
+      authority: -0.10
+      ecology: -0.10
+      sovereignty: 0.10
+
+  - id: lopinion
+    label: "L'Opinion"
+    type: presse
+    independent: false
+    owner: "Bernard Arnault (actionnaire)"
+    description: "Libéral pro-business"
+    position_1d: 0.30
+    position:
+      societal: 0.00
+      economic: 0.50
+      authority: -0.10
+      ecology: -0.20
+      sovereignty: 0.20
+
+  - id: valeurs-actuelles
+    label: "Valeurs Actuelles"
+    type: presse
+    independent: false
+    owner: "Iskandar Safa"
+    description: "Droite conservatrice identitaire"
+    position_1d: 0.70
+    position:
+      societal: -0.70
+      economic: 0.40
+      authority: -0.60
+      ecology: -0.50
+      sovereignty: -0.50
+
+  - id: present
+    label: "Présent"
+    type: presse
+    independent: true
+    description: "Droite traditionaliste catholique"
+    position_1d: 0.80
+    position:
+      societal: -0.80
+      economic: -0.10
+      authority: -0.60
+      ecology: -0.20
+      sovereignty: -0.70
+
+  - id: boulevard-voltaire
+    label: "Boulevard Voltaire"
+    type: presse
+    independent: true
+    description: "Droite souverainiste populaire"
+    position_1d: 0.60
+    position:
+      societal: -0.60
+      economic: -0.20
+      authority: -0.40
+      ecology: -0.20
+      sovereignty: -0.60
+
+  - id: contrepoints
+    label: "Contrepoints"
+    type: presse
+    independent: true
+    description: "Libéral classique, libertarien"
+    position_1d: 0.40
+    position:
+      societal: 0.20
+      economic: 0.70
+      authority: 0.50
+      ecology: -0.30
+      sovereignty: 0.30
+
+  - id: reporterre
+    label: "Reporterre"
+    type: presse
+    independent: true
+    description: "Écologiste radical"
+    position_1d: -0.40
+    position:
+      societal: 0.30
+      economic: -0.50
+      authority: 0.30
+      ecology: 0.80
+      sovereignty: -0.10
+
+  - id: basta
+    label: "Basta!"
+    type: presse
+    independent: true
+    description: "Gauche sociale et écologiste"
+    position_1d: -0.50
+    position:
+      societal: 0.40
+      economic: -0.60
+      authority: 0.40
+      ecology: 0.50
+      sovereignty: -0.20
+
+  - id: asi
+    label: "Arrêt sur images (ASI)"
+    type: presse
+    independent: true
+    description: "Critique des médias, centre-gauche"
+    position_1d: -0.30
+    position:
+      societal: 0.30
+      economic: -0.20
+      authority: 0.40
+      ecology: 0.20
+      sovereignty: 0.00
+
+  - id: canard-enchaine
+    label: "Le Canard Enchaîné"
+    type: presse
+    independent: true
+    description: "Satirique anti-pouvoir"
+    position_1d: -0.20
+    position:
+      societal: 0.10
+      economic: -0.20
+      authority: 0.60
+      ecology: 0.10
+      sovereignty: -0.10
+
+  - id: les-echos
+    label: "Les Échos"
+    type: presse
+    independent: false
+    owner: "LVMH (Bernard Arnault)"
+    description: "Économie, libéral pro-entreprise"
+    position_1d: 0.40
+    position:
+      societal: 0.00
+      economic: 0.60
+      authority: -0.10
+      ecology: -0.10
+      sovereignty: 0.30
+
+  - id: lexpress
+    label: "L'Express"
+    type: presse
+    independent: false
+    owner: "Alain Weill"
+    description: "Centre-droit réformiste, macroniste"
+    position_1d: 0.20
+    position:
+      societal: 0.10
+      economic: 0.40
+      authority: -0.10
+      ecology: 0.00
+      sovereignty: 0.30
+
+  - id: la-croix
+    label: "La Croix"
+    type: presse
+    independent: false
+    owner: "Groupe Bayard"
+    description: "Humaniste chrétien, ni droite ni gauche"
+    position_1d: -0.10
+    position:
+      societal: 0.00
+      economic: -0.10
+      authority: 0.10
+      ecology: 0.20
+      sovereignty: 0.10
+
+  - id: courrier-international
+    label: "Courrier International"
+    type: presse
+    independent: false
+    owner: "Groupe Le Monde"
+    description: "Traduction de presse mondiale, mondialiste"
+    position_1d: -0.10
+    position:
+      societal: 0.20
+      economic: 0.10
+      authority: 0.20
+      ecology: 0.20
+      sovereignty: 0.50
+
+  - id: atlantico
+    label: "Atlantico"
+    type: presse
+    independent: true
+    description: "Centre-droit, débat ouvert, libéral"
+    position_1d: 0.30
+    position:
+      societal: -0.10
+      economic: 0.40
+      authority: -0.10
+      ecology: -0.10
+      sovereignty: 0.00
+
+  - id: mediacites
+    label: "Médiacités"
+    type: presse
+    independent: true
+    description: "Investigation locale, pluraliste"
+    position_1d: -0.20
+    position:
+      societal: 0.20
+      economic: -0.20
+      authority: 0.30
+      ecology: 0.20
+      sovereignty: 0.00
+
+  - id: streetpress
+    label: "StreetPress"
+    type: presse
+    independent: true
+    description: "Investigation anti-extrême droite, gauche"
+    position_1d: -0.40
+    position:
+      societal: 0.50
+      economic: -0.30
+      authority: 0.30
+      ecology: 0.20
+      sovereignty: 0.00
+
+  - id: omerta
+    label: "Omerta"
+    type: presse
+    independent: true
+    description: "Investigation souverainiste, droite populaire"
+    position_1d: 0.30
+    position:
+      societal: -0.30
+      economic: -0.10
+      authority: -0.10
+      ecology: -0.10
+      sovereignty: -0.50
+
+# ── Podcasts et YouTube (14) ──────────────────────────────────────────
 
   - id: blast
     label: "Blast"
     type: podcast
-    url: "https://www.youtube.com/@Aborresciences"
-    position_1d: -0.5
-    position:
-      societal: 0.4
-      economic: -0.5
-      authority: 0.4
-      ecology: 0.4
-      sovereignty: -0.2
-    owner: "Indépendant (Denis Robert)"
     independent: true
-    editorial_label: "Gauche enquête anti-système"
+    description: "Gauche enquête anti-système"
+    position_1d: -0.50
+    position:
+      societal: 0.40
+      economic: -0.50
+      authority: 0.40
+      ecology: 0.40
+      sovereignty: -0.20
 
-  - id: lemedia
+  - id: thinkerview
+    label: "Thinkerview"
+    type: podcast
+    independent: true
+    description: "Entretiens longs, souverainiste critique"
+    position_1d: 0.00
+    position:
+      societal: 0.00
+      economic: -0.20
+      authority: 0.30
+      ecology: 0.10
+      sovereignty: -0.30
+
+  - id: le-media
     label: "Le Média"
     type: podcast
-    url: "https://www.youtube.com/@LeMediaTV"
-    position_1d: -0.6
-    position:
-      societal: 0.4
-      economic: -0.6
-      authority: 0.3
-      ecology: 0.3
-      sovereignty: -0.3
-    owner: "Indépendant (souscription)"
     independent: true
-    editorial_label: "Gauche radicale populaire"
+    description: "Gauche radicale populaire"
+    position_1d: -0.60
+    position:
+      societal: 0.40
+      economic: -0.60
+      authority: 0.30
+      ecology: 0.30
+      sovereignty: -0.30
 
-  - id: osons_causer
+  - id: osons-causer
     label: "Osons Causer"
     type: podcast
-    url: "https://www.youtube.com/@OsonsCauser"
-    position_1d: -0.3
-    position:
-      societal: 0.2
-      economic: -0.4
-      authority: 0.3
-      ecology: 0.3
-      sovereignty: -0.2
-    owner: "Indépendant"
     independent: true
-    editorial_label: "Pédagogie politique, gauche sociale"
-
-  - id: idriss_aberkane
-    label: "Idriss Aberkane"
-    type: podcast
-    url: "https://www.youtube.com/@IdrissAberkane"
-    position_1d: 0.2
+    description: "Pédagogie politique, gauche sociale"
+    position_1d: -0.30
     position:
-      societal: -0.1
-      economic: 0.2
-      authority: 0.1
-      ecology: -0.1
-      sovereignty: -0.3
-    owner: "Indépendant"
-    independent: true
-    editorial_label: "Hétérodoxe souverainiste"
-
-  - id: trouble_fait
-    label: "Trouble Fait"
-    type: podcast
-    url: "https://www.youtube.com/@TroubleFait"
-    position_1d: 0.0
-    position:
-      societal: -0.1
-      economic: -0.1
-      authority: 0.2
-      ecology: 0.0
-      sovereignty: -0.2
-    owner: "Indépendant"
-    independent: true
-    editorial_label: "Investigation complotisme/science"
-
-  - id: livre_noir
-    label: "Le Livre Noir"
-    type: podcast
-    url: "https://www.youtube.com/@LeLivreNoir"
-    position_1d: 0.4
-    position:
-      societal: -0.4
-      economic: 0.1
-      authority: -0.2
-      ecology: -0.1
-      sovereignty: -0.5
-    owner: "Indépendant"
-    independent: true
-    editorial_label: "Droite identitaire investigation"
-
-  - id: jean_marc_jancovici
-    label: "Jancovici (podcasts/conférences)"
-    type: podcast
-    url: "https://www.youtube.com/@JeanMarcJancovici"
-    position_1d: 0.0
-    position:
-      societal: 0.0
-      economic: -0.2
-      authority: -0.2
-      ecology: 0.7
-      sovereignty: -0.1
-    owner: "Indépendant"
-    independent: true
-    editorial_label: "Écologiste techno-réaliste"
+      societal: 0.20
+      economic: -0.40
+      authority: 0.30
+      ecology: 0.30
+      sovereignty: -0.20
 
   - id: heureka
     label: "Heu?reka"
     type: podcast
-    url: "https://www.youtube.com/@Heurekaa"
-    position_1d: -0.1
-    position:
-      societal: 0.1
-      economic: -0.3
-      authority: 0.2
-      ecology: 0.2
-      sovereignty: 0.1
-    owner: "Indépendant"
     independent: true
-    editorial_label: "Vulgarisation économique critique"
+    description: "Vulgarisation économique critique"
+    position_1d: -0.10
+    position:
+      societal: 0.10
+      economic: -0.30
+      authority: 0.20
+      ecology: 0.20
+      sovereignty: 0.10
 
-  - id: samuel_fitoussi
+  - id: jancovici
+    label: "Jancovici (podcasts/conférences)"
+    type: podcast
+    independent: true
+    description: "Écologiste techno-réaliste"
+    position_1d: 0.00
+    position:
+      societal: 0.00
+      economic: -0.20
+      authority: -0.20
+      ecology: 0.70
+      sovereignty: -0.10
+
+  - id: livre-noir
+    label: "Le Livre Noir"
+    type: podcast
+    independent: true
+    description: "Droite identitaire investigation"
+    position_1d: 0.40
+    position:
+      societal: -0.40
+      economic: 0.10
+      authority: -0.20
+      ecology: -0.10
+      sovereignty: -0.50
+
+  - id: trouble-fait
+    label: "Trouble Fait"
+    type: podcast
+    independent: true
+    description: "Investigation complotisme/science"
+    position_1d: 0.00
+    position:
+      societal: -0.10
+      economic: -0.10
+      authority: 0.20
+      ecology: 0.00
+      sovereignty: -0.20
+
+  - id: aberkane
+    label: "Idriss Aberkane"
+    type: podcast
+    independent: true
+    description: "Hétérodoxe souverainiste"
+    position_1d: 0.20
+    position:
+      societal: -0.10
+      economic: 0.20
+      authority: 0.10
+      ecology: -0.10
+      sovereignty: -0.30
+
+  - id: fitoussi
     label: "Samuel Fitoussi"
     type: podcast
-    url: "https://www.youtube.com/@SamuelFitoussi"
-    position_1d: 0.3
-    position:
-      societal: -0.3
-      economic: 0.4
-      authority: 0.2
-      ecology: -0.1
-      sovereignty: 0.1
-    owner: "Indépendant"
     independent: true
-    editorial_label: "Libéral conservateur rationnel"
+    description: "Libéral conservateur rationnel"
+    position_1d: 0.30
+    position:
+      societal: -0.30
+      economic: 0.40
+      authority: 0.20
+      ecology: -0.10
+      sovereignty: 0.10
 
-# ── Web / réseaux ────────────────────────────────────────────────────
+  - id: hugo-decrypte
+    label: "Hugo Décrypte"
+    type: podcast
+    independent: true
+    description: "Info jeune, centre pragmatique"
+    position_1d: 0.00
+    position:
+      societal: 0.10
+      economic: 0.00
+      authority: 0.10
+      ecology: 0.10
+      sovereignty: 0.10
 
-  - id: reseaux_sociaux
+  - id: taddei
+    label: "Frédéric Taddéi (Interdit d'interdire)"
+    type: podcast
+    independent: false
+    owner: "RT France (suspendu) puis indépendant"
+    description: "Libre débat, souverainiste intellectuel"
+    position_1d: 0.00
+    position:
+      societal: 0.00
+      economic: -0.10
+      authority: 0.40
+      ecology: 0.00
+      sovereignty: -0.40
+
+  - id: enthoven
+    label: "Raphaël Enthoven (podcasts)"
+    type: podcast
+    independent: true
+    description: "Intellectuel universaliste, anti-woke"
+    position_1d: 0.20
+    position:
+      societal: 0.10
+      economic: 0.30
+      authority: 0.20
+      ecology: -0.10
+      sovereignty: 0.20
+
+  - id: la-breche
+    label: "La Brèche"
+    type: podcast
+    independent: true
+    description: "Investigation environnement, santé publique"
+    position_1d: -0.20
+    position:
+      societal: 0.20
+      economic: -0.30
+      authority: 0.30
+      ecology: 0.60
+      sovereignty: 0.00
+
+# ── Web / Réseaux sociaux (2) ─────────────────────────────────────────
+
+  - id: reseaux-sociaux
     label: "Réseaux sociaux (X, TikTok, Facebook)"
     type: web
-    url: "https://x.com"
-    position_1d: 0.0
-    position:
-      societal: 0.0
-      economic: 0.0
-      authority: 0.0
-      ecology: 0.0
-      sovereignty: 0.0
-    owner: "Algorithmes"
     independent: false
-    editorial_label: "Miroir algorithmique"
-    # NOTE: Les réseaux sociaux n'ont pas de biais éditorial fixe.
-    # Leur biais est de RENFORCER celui de l'utilisateur (bulle algorithmique).
+    owner: "Meta / X Corp / ByteDance"
+    description: "Miroir algorithmique — pas de ligne éditoriale, amplifie les biais existants"
+    position_1d: 0.00
+    position:
+      societal: 0.00
+      economic: 0.00
+      authority: 0.00
+      ecology: 0.00
+      sovereignty: 0.00
 
-# ── Agrégats par type (pour l'analyse quand on connait seulement le type) ──
+  - id: wikipedia
+    label: "Wikipédia"
+    type: web
+    independent: true
+    description: "Encyclopédie collaborative, neutre revendiqué"
+    position_1d: 0.00
+    position:
+      societal: 0.10
+      economic: 0.00
+      authority: 0.20
+      ecology: 0.10
+      sovereignty: 0.10
+
+# ── Agrégats par type (pour l'analyse quand on connaît seulement le type) ──
 
 aggregates:
 
@@ -543,38 +726,38 @@ aggregates:
     label: "Télévision (moyenne)"
     type: tv
     position:
-      societal: -0.15
-      economic: 0.25
-      authority: -0.28
-      ecology: -0.15
-      sovereignty: 0.0
+      societal: -0.08
+      economic: 0.18
+      authority: -0.18
+      ecology: -0.07
+      sovereignty: 0.03
 
   - id: aggregate_radio
     label: "Radio (moyenne)"
     type: radio
     position:
-      societal: 0.03
-      economic: 0.13
-      authority: -0.07
+      societal: 0.01
+      economic: 0.08
+      authority: -0.01
       ecology: 0.03
-      sovereignty: 0.07
+      sovereignty: 0.01
 
   - id: aggregate_presse
     label: "Presse (moyenne)"
     type: presse
     position:
-      societal: 0.08
-      economic: 0.08
-      authority: 0.0
-      ecology: 0.04
-      sovereignty: 0.0
+      societal: 0.01
+      economic: 0.05
+      authority: 0.06
+      ecology: 0.03
+      sovereignty: -0.03
 
   - id: aggregate_internet
     label: "Internet / Réseaux sociaux"
     type: web
     position:
-      societal: 0.0
-      economic: 0.0
-      authority: 0.0
-      ecology: 0.0
-      sovereignty: 0.0
+      societal: 0.00
+      economic: 0.00
+      authority: 0.00
+      ecology: 0.00
+      sovereignty: 0.00
