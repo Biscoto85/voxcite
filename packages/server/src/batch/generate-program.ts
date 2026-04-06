@@ -1,114 +1,149 @@
 /**
- * Batch quotidien : génère le programme citoyen + suggestions
+ * Batch : génère le programme citoyen + suggestions
  *
  * Usage : npx tsx src/batch/generate-program.ts
  * Cron  : 0 3 * * * (3h du matin)
  *
- * 1. Récupère toutes les propositions (user + ai_accepted + ai_amended)
- * 2. Récupère le programme précédent (pour l'évolution)
- * 3. Génère le nouveau programme via Claude Haiku
- * 4. Génère des suggestions personnalisées par profil-type
- * 5. Traite les feedbacks pour améliorer les prompts
+ * Stratégie incrémentale :
+ * 1. Charge le programme actuel
+ * 2. Récupère uniquement les nouvelles propositions (depuis la dernière génération)
+ * 3. Le LLM met à jour le programme existant (pas de re-synthèse complète)
+ * 4. Génère des suggestions par profil-type
+ * 5. Traite les feedbacks
  */
 
 import dotenv from 'dotenv';
 import path from 'path';
 dotenv.config({ path: path.resolve(import.meta.dirname, '../../../../.env') });
 
-import Anthropic from '@anthropic-ai/sdk';
 import { db } from '../db/index.js';
 import { proposals, programVersions, suggestions, feedback, domains } from '../db/schema.js';
-import { desc, eq, inArray, sql, isNotNull } from 'drizzle-orm';
-
+import { desc, eq, inArray, gt, sql } from 'drizzle-orm';
 import { extractJSON, extractClaudeText } from '../utils/helpers.js';
+import { trackedAiCall } from '../services/tracked-ai.js';
+import { loadPrompt, fillTemplate } from '../services/prompt-loader.js';
 
 const MODEL = 'claude-haiku-4-5-20251001';
-const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY! });
 
-// ── 1. Générer le programme citoyen ─────────────────────────────────
+// ── Fallback prompt (used if no active prompt in DB) ──────────────
 
-async function generateProgram() {
-  console.log('[batch] Fetching proposals...');
+const FALLBACK_PROGRAM_PROMPT = `Tu es le rédacteur non partisan du Programme Citoyen de Parti-Prism, une plateforme de démocratie participative française.
 
-  // All accepted proposals (user-written, ai-accepted, ai-amended)
-  const validSources = ['user', 'ai_accepted', 'ai_amended'];
-  const allProposals = await db
-    .select()
-    .from(proposals)
-    .where(inArray(proposals.source, validSources));
+MISSION : Mets à jour le programme citoyen en intégrant les nouvelles propositions reçues depuis la dernière version. Tu ne repars pas de zéro — tu enrichis, ajustes ou confirmes le programme existant.
 
-  console.log(`[batch] ${allProposals.length} valid proposals found`);
+PROGRAMME ACTUEL :
+{{CURRENT_PROGRAM_JSON}}
 
-  // Group by domain
-  const byDomain = new Map<string, string[]>();
-  for (const p of allProposals) {
-    const list = byDomain.get(p.domainId) || [];
-    list.push(p.text);
-    byDomain.set(p.domainId, list);
-  }
-
-  // Get all domains
-  const allDomains = await db.select().from(domains);
-
-  // Get previous program for evolution comparison
-  const [previousProgram] = await db
-    .select()
-    .from(programVersions)
-    .orderBy(desc(programVersions.generatedAt))
-    .limit(1);
-
-  // Count proposals as proxy for contributors (anonymous — no session to deduplicate)
-  const totalContributors = allProposals.length;
-
-  // Build prompt
-  const domainBlocks = allDomains.map((d) => {
-    const domainProposals = byDomain.get(d.id) || [];
-    return `## ${d.label} (${d.id})
-Propositions citoyennes (${domainProposals.length}) :
-${domainProposals.length > 0 ? domainProposals.map((p, i) => `${i + 1}. ${p}`).join('\n') : '(aucune proposition encore)'}`;
-  }).join('\n\n');
-
-  const previousSummary = previousProgram
-    ? `\nPROGRAMME PRÉCÉDENT (pour comparer l'évolution) :\n${JSON.stringify(previousProgram.content, null, 2).slice(0, 3000)}`
-    : '';
-
-  const prompt = `Tu es le rédacteur du Programme Citoyen de PartiPrism, une plateforme de démocratie participative française.
-
-MISSION : Synthétise les propositions des citoyens en un programme cohérent, structuré par domaine thématique.
-
-PROPOSITIONS CITOYENNES PAR DOMAINE :
-
-${domainBlocks}
-${previousSummary}
+NOUVELLES PROPOSITIONS DEPUIS LA DERNIÈRE MISE À JOUR :
+{{NEW_PROPOSALS_ONLY}}
 
 INSTRUCTIONS :
-1. Pour chaque domaine, produis :
-   - title: le titre du domaine
-   - summary: 1 phrase résumant la tendance des propositions citoyennes
-   - proposals: 3-8 propositions synthétisées (reformulées pour être claires et actionables)
-   - Si aucune proposition citoyenne n'existe pour un domaine, génère 2-3 propositions "neutres" équilibrées (à challenger par les citoyens)
+1. Intègre les nouvelles propositions dans le programme existant :
+   - Si une nouvelle proposition rejoint une existante → renforcer la formulation, ne pas dupliquer
+   - Si une nouvelle proposition contredit une existante → ajouter la position alternative, ajuster le consensusLevel
+   - Si une nouvelle proposition ouvre un angle absent → l'ajouter comme nouvelle entrée
+   - Si aucune nouvelle proposition pour un domaine → le laisser inchangé
+   - Ne jamais supprimer une proposition existante sauf si elle est absorbée par une reformulation plus complète
 
-2. Produis aussi un "evolutionSummary" : 2-3 phrases décrivant comment le programme a évolué par rapport à la version précédente (ou "Version initiale du programme" si c'est le premier).
+2. Pour chaque domaine modifié, mettre à jour :
+   - summary : refléter la nouvelle tendance et les tensions
+   - consensusLevel : "fort" (>70% convergent), "modere" (50-70%), "clive" (<50%)
+   - proposals : 3-8 max par domaine, fusionner si nécessaire
 
-3. Format JSON strict :
+3. Pour les domaines sans proposition citoyenne (ni existante ni nouvelle), générer 2-3 propositions d'amorce variées marquées "type": "amorce"
+
+4. Produire un "evolutionSummary" décrivant en 2-3 phrases ce qui a changé dans cette mise à jour
+
+5. Format JSON strict :
 {
   "domains": {
     "domainId": {
       "domainId": "...",
       "title": "...",
       "summary": "...",
-      "proposals": ["...", "..."]
+      "consensusLevel": "fort|modere|clive",
+      "proposals": [
+        { "text": "...", "type": "citoyenne|amorce" }
+      ]
     }
   },
   "evolutionSummary": "..."
 }
 
-Réponds UNIQUEMENT avec le JSON.`;
+Réponds UNIQUEMENT avec le JSON. Les domaines non modifiés doivent être retournés tels quels.`;
 
-  console.log('[batch] Calling Claude Haiku for program generation...');
-  const response = await client.messages.create({
+// ── 1. Générer le programme citoyen (incrémental) ─────────────────
+
+async function generateProgram() {
+  console.log('[batch] Fetching data...');
+
+  // Get previous program
+  const [previousProgram] = await db
+    .select()
+    .from(programVersions)
+    .orderBy(desc(programVersions.generatedAt))
+    .limit(1);
+
+  const lastGeneratedAt = previousProgram?.generatedAt ?? new Date(0);
+  const currentProgramJson = previousProgram
+    ? JSON.stringify(previousProgram.content, null, 2)
+    : '{}';
+
+  // Get ONLY new proposals since last generation
+  const validSources = ['user', 'ai_accepted', 'ai_amended'];
+  const newProposals = await db
+    .select()
+    .from(proposals)
+    .where(
+      inArray(proposals.source, validSources),
+    )
+    .then((all) => all.filter((p) => p.createdAt > lastGeneratedAt));
+
+  console.log(`[batch] ${newProposals.length} new proposals since last generation (${lastGeneratedAt.toISOString()})`);
+
+  // If no new proposals and we already have a program, skip
+  if (newProposals.length === 0 && previousProgram) {
+    console.log('[batch] No new proposals — skipping program generation.');
+    return;
+  }
+
+  // Get all domains for reference
+  const allDomains = await db.select().from(domains);
+
+  // Build new proposals block grouped by domain
+  const byDomain = new Map<string, string[]>();
+  for (const p of newProposals) {
+    const list = byDomain.get(p.domainId) || [];
+    list.push(p.text);
+    byDomain.set(p.domainId, list);
+  }
+
+  let newProposalsBlock: string;
+  if (newProposals.length === 0) {
+    newProposalsBlock = '(Aucune nouvelle proposition — version initiale à créer à partir de rien)';
+  } else {
+    newProposalsBlock = allDomains
+      .filter((d) => byDomain.has(d.id))
+      .map((d) => {
+        const props = byDomain.get(d.id)!;
+        return `## ${d.label} (${d.id})\n${props.map((p, i) => `${i + 1}. ${p}`).join('\n')}`;
+      })
+      .join('\n\n');
+  }
+
+  // Load prompt template from DB or use fallback
+  const dbTemplate = await loadPrompt('program');
+  const template = dbTemplate || FALLBACK_PROGRAM_PROMPT;
+  const prompt = fillTemplate(template, {
+    CURRENT_PROGRAM_JSON: currentProgramJson,
+    NEW_PROPOSALS_ONLY: newProposalsBlock,
+  });
+
+  console.log('[batch] Calling Claude for program generation...');
+  const response = await trackedAiCall({
+    promptKey: 'program',
     model: MODEL,
-    max_tokens: 4000,
+    maxTokens: 4000,
     messages: [{ role: 'user', content: prompt }],
   });
 
@@ -121,17 +156,23 @@ Réponds UNIQUEMENT avec le JSON.`;
     return;
   }
 
+  // Count total proposals (all time)
+  const totalProposals = await db
+    .select({ count: sql<number>`count(*)` })
+    .from(proposals)
+    .where(inArray(proposals.source, validSources));
+
   // Store new program version
   const isInitial = !previousProgram;
   await db.insert(programVersions).values({
     content: parsed.domains,
     evolutionSummary: parsed.evolutionSummary,
-    totalProposals: allProposals.length,
-    totalContributors,
+    totalProposals: Number(totalProposals[0]?.count ?? 0),
+    totalContributors: newProposals.length, // new contributions in this batch
     isInitial,
   });
 
-  console.log(`[batch] Program generated: ${Object.keys(parsed.domains).length} domains, ${allProposals.length} proposals from ${totalContributors} contributors`);
+  console.log(`[batch] Program generated: ${Object.keys(parsed.domains).length} domains, ${newProposals.length} new proposals integrated`);
 }
 
 // ── 2. Générer les suggestions par profil-type ──────────────────────
@@ -142,10 +183,8 @@ async function generateSuggestions() {
   // Deactivate old suggestions
   await db.update(suggestions).set({ isActive: false }).where(eq(suggestions.isActive, true));
 
-  // Get all domains
   const allDomains = await db.select().from(domains);
 
-  // Define profile archetypes for diverse suggestions
   const archetypes = [
     { label: 'progressiste-interventionniste', societal: 0.6, economic: -0.6, authority: 0.3, ecology: 0.5, sovereignty: 0.2 },
     { label: 'conservateur-libéral', societal: -0.5, economic: 0.5, authority: -0.3, ecology: -0.2, sovereignty: -0.4 },
@@ -177,9 +216,10 @@ IMPORTANT : domainId doit être EXACTEMENT un de : ${validIds.join(', ')}
 Réponds UNIQUEMENT avec le JSON.`;
 
     try {
-      const response = await client.messages.create({
+      const response = await trackedAiCall({
+        promptKey: 'suggestions',
         model: MODEL,
-        max_tokens: 2000,
+        maxTokens: 2000,
         messages: [{ role: 'user', content: prompt }],
       });
 
@@ -225,7 +265,6 @@ async function processFeedback() {
     return;
   }
 
-  // Group by type for logging/future processing
   const byType = new Map<string, number>();
   for (const f of unprocessed) {
     byType.set(f.feedbackType, (byType.get(f.feedbackType) || 0) + 1);
@@ -236,15 +275,12 @@ async function processFeedback() {
     console.log(`  - ${type}: ${count}`);
   }
 
-  // Mark as processed
   const ids = unprocessed.map((f) => f.id);
   await db
     .update(feedback)
     .set({ processed: true, processedAt: new Date() })
     .where(inArray(feedback.id, ids));
 
-  // TODO: Use Claude to analyze feedback and suggest question improvements
-  // For now, just log and mark processed
   console.log(`[batch] Marked ${ids.length} feedback items as processed.`);
 }
 
