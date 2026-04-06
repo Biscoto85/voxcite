@@ -238,3 +238,43 @@ CREATE TABLE IF NOT EXISTS feedback (
   processed_at TIMESTAMP
 );
 CREATE INDEX IF NOT EXISTS feedback_processed_idx ON feedback(processed);
+
+-- ══════════════════════════════════════════════════════════════════════
+-- Admin (QG)
+-- ══════════════════════════════════════════════════════════════════════
+
+-- Administrateurs
+CREATE TABLE IF NOT EXISTS admin_users (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  username TEXT NOT NULL UNIQUE,
+  password_hash TEXT NOT NULL,
+  created_at TIMESTAMP NOT NULL DEFAULT NOW()
+);
+
+-- Prompts IA (versionnés)
+CREATE TABLE IF NOT EXISTS prompts (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  key TEXT NOT NULL,
+  label TEXT NOT NULL,
+  content TEXT NOT NULL,
+  version INTEGER NOT NULL DEFAULT 1,
+  is_active BOOLEAN NOT NULL DEFAULT false,
+  created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+  created_by TEXT
+);
+CREATE INDEX IF NOT EXISTS prompts_key_active_idx ON prompts(key, is_active);
+
+-- Journal des appels API IA
+CREATE TABLE IF NOT EXISTS api_calls (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  prompt_key TEXT NOT NULL,
+  model TEXT NOT NULL,
+  input_tokens INTEGER,
+  output_tokens INTEGER,
+  cost_estimate REAL,
+  duration_ms INTEGER,
+  success BOOLEAN NOT NULL DEFAULT true,
+  error_message TEXT,
+  created_at TIMESTAMP NOT NULL DEFAULT NOW()
+);
+CREATE INDEX IF NOT EXISTS api_calls_created_at_idx ON api_calls(created_at);

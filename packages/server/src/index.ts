@@ -18,7 +18,9 @@ import { feedbackRouter } from './routes/feedback.js';
 import { proposalsRouter } from './routes/proposals.js';
 import { programRouter } from './routes/program.js';
 import { critiqueRouter } from './routes/critique.js';
+import { adminRouter } from './routes/admin.js';
 import { rateLimit, aiRateLimit, sessionRateLimit } from './middleware/rateLimit.js';
+import { adminAuth } from './middleware/adminAuth.js';
 
 // ── Environment validation ─────────────────────────────────────────
 
@@ -64,6 +66,9 @@ app.use(`${API_PREFIX}/feedback`, feedbackRouter);
 
 // Esprit critique
 app.use(`${API_PREFIX}/critique`, critiqueRouter);
+
+// Admin QG (protégé par Basic Auth)
+app.use(`${API_PREFIX}/admin`, adminAuth, adminRouter);
 
 // Health check
 app.get(`${API_PREFIX}/health`, (_req, res) => {

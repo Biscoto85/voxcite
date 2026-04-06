@@ -267,3 +267,50 @@ export const feedback = pgTable('feedback', {
 }, (table) => [
   index('feedback_processed_idx').on(table.processed),
 ]);
+
+// ══════════════════════════════════════════════════════════════════════
+// Admin (QG) — gestion interne
+// ══════════════════════════════════════════════════════════════════════
+
+// ── Administrateurs ──
+
+export const adminUsers = pgTable('admin_users', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  username: text('username').notNull().unique(),
+  passwordHash: text('password_hash').notNull(),
+  createdAt: timestamp('created_at').notNull().defaultNow(),
+});
+
+// ── Prompts IA (versionnés) ──
+// Chaque prompt a un key unique (ex: 'analysis', 'program', 'link_validation')
+// Seul le prompt avec is_active=true est utilisé par le système.
+
+export const prompts = pgTable('prompts', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  key: text('key').notNull(),               // 'analysis' | 'program' | 'link_validation'
+  label: text('label').notNull(),            // nom lisible
+  content: text('content').notNull(),        // le prompt complet
+  version: integer('version').notNull().default(1),
+  isActive: boolean('is_active').notNull().default(false),
+  createdAt: timestamp('created_at').notNull().defaultNow(),
+  createdBy: text('created_by'),            // username de l'admin
+}, (table) => [
+  index('prompts_key_active_idx').on(table.key, table.isActive),
+]);
+
+// ── Journal des appels API IA ──
+
+export const apiCalls = pgTable('api_calls', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  promptKey: text('prompt_key').notNull(),   // 'analysis' | 'program' | 'link_validation' | 'test'
+  model: text('model').notNull(),
+  inputTokens: integer('input_tokens'),
+  outputTokens: integer('output_tokens'),
+  costEstimate: real('cost_estimate'),       // en USD
+  durationMs: integer('duration_ms'),
+  success: boolean('success').notNull().default(true),
+  errorMessage: text('error_message'),
+  createdAt: timestamp('created_at').notNull().defaultNow(),
+}, (table) => [
+  index('api_calls_created_at_idx').on(table.createdAt),
+]);
