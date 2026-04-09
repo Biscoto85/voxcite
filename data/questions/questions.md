@@ -323,7 +323,7 @@ Ces questions affinent le positionnement. Elles sont proposées après l'onboard
 
 #### Q25
 - **id** : `deep-securite-01`
-- **text** : "La police devrait avoir plus de moyens et plus de liberté d'action."
+- **text** : "La police devrait avoir davantage de moyens et de marges d'action pour assurer la sécurité."
 - **type** : affirmation
 - **axis** : authority
 - **polarity** : -1
@@ -382,7 +382,7 @@ Ces questions affinent le positionnement. Elles sont proposées après l'onboard
 
 #### Q30
 - **id** : `deep-immigration-02`
-- **text** : "Un étranger qui travaille et paie ses impôts depuis longtemps devrait obtenir la nationalité facilement."
+- **text** : "Un étranger qui travaille, paie ses impôts depuis plusieurs années et respecte les lois devrait pouvoir obtenir la nationalité française."
 - **type** : affirmation
 - **axis** : societal
 - **polarity** : +1
@@ -430,7 +430,7 @@ Ces questions affinent le positionnement. Elles sont proposées après l'onboard
 
 #### Q34
 - **id** : `deep-environnement-02`
-- **text** : "Il faudrait interdire les produits et pratiques les plus polluants, quitte à limiter certaines libertés."
+- **text** : "Il faudrait interdire les produits et pratiques les plus polluants, même si cela pénalise certains secteurs économiques."
 - **type** : affirmation
 - **axis** : ecology
 - **polarity** : +1
@@ -526,7 +526,7 @@ Ces questions affinent le positionnement. Elles sont proposées après l'onboard
 
 #### Q42
 - **id** : `deep-numerique-02`
-- **text** : "L'intelligence artificielle devrait être strictement réglementée par l'État."
+- **text** : "L'intelligence artificielle devrait être réglementée par l'État."
 - **type** : affirmation
 - **axis** : authority
 - **polarity** : -1
@@ -537,7 +537,7 @@ Ces questions affinent le positionnement. Elles sont proposées après l'onboard
 
 #### Q43
 - **id** : `deep-numerique-03`
-- **text** : "Les géants du numérique (Google, Amazon, Meta) ont trop de pouvoir et devraient être démantelés."
+- **text** : "Les géants du numérique (Google, Amazon, Meta) ont trop de pouvoir et devraient être fortement régulés, voire démantelés."
 - **type** : affirmation
 - **axis** : economic
 - **polarity** : -1
@@ -563,7 +563,7 @@ Ces questions affinent le positionnement. Elles sont proposées après l'onboard
 
 #### Q45
 - **id** : `deep-democratie-01`
-- **text** : "Les citoyens devraient pouvoir déclencher un référendum sur n'importe quel sujet."
+- **text** : "Les citoyens devraient pouvoir déclencher des référendums d'initiative populaire (RIC) sur les grandes décisions qui les concernent."
 - **type** : affirmation
 - **axis** : authority
 - **polarity** : +1
@@ -596,7 +596,7 @@ Ces questions affinent le positionnement. Elles sont proposées après l'onboard
 
 #### Q48
 - **id** : `deep-democratie-04`
-- **text** : "Aucun élu ne devrait pouvoir faire plus de deux mandats."
+- **text** : "Aucun élu ne devrait pouvoir exercer plus de deux mandats consécutifs dans la même fonction."
 - **type** : affirmation
 - **axis** : societal
 - **polarity** : +1
