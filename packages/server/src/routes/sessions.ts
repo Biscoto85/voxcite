@@ -47,6 +47,28 @@ sessionsRouter.post('/snapshot', async (req, res) => {
   res.status(201).json({ ok: true });
 });
 
+// POST /validate-postal — valider le code postal vs IP sans créer de snapshot
+sessionsRouter.post('/validate-postal', async (req, res) => {
+  const { postalCode } = req.body as { postalCode?: string };
+
+  if (!postalCode) {
+    res.status(400).json({ error: 'postalCode required' });
+    return;
+  }
+
+  const ip = req.ip ?? req.socket.remoteAddress ?? '';
+  const geo = await geolocateIP(ip);
+  const validation = validatePostalCode(postalCode, geo);
+
+  if (!validation.valid) {
+    console.warn(`[partiprism-api] validate-postal mismatch: postal=${postalCode} reason=${validation.reason}`);
+    res.status(403).json({ error: 'Code postal incohérent avec ta localisation' });
+    return;
+  }
+
+  res.status(200).json({ ok: true });
+});
+
 // POST /vote — enregistrer un vote anonyme individuel
 // Pas de session, pas d'IP, pas de lien entre les votes.
 sessionsRouter.post('/vote', async (req, res) => {

@@ -28,15 +28,10 @@ export function OnboardingFlow({ questions, parties, onComplete }: OnboardingFlo
     setProfileError(null);
 
     try {
-      const res = await fetch('/api/sessions/snapshot', {
+      const res = await fetch('/api/sessions/validate-postal', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          postalCode: data.postalCode,
-          position: { societal: 0, economic: 0, authority: 0, ecology: 0, sovereignty: 0 },
-          infoSource: data.infoSource,
-          perceivedBias: data.perceivedBias,
-        }),
+        body: JSON.stringify({ postalCode: data.postalCode }),
       });
 
       if (!res.ok) {
