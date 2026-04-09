@@ -474,6 +474,8 @@ function QuestionsTab() {
   const [filter, setFilter] = useState('');
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editText, setEditText] = useState('');
+  const [editPolarity, setEditPolarity] = useState<number>(1);
+  const [polarityChanged, setPolarityChanged] = useState(false);
 
   useEffect(() => {
     adminFetch('/questions').then((r) => r.json()).then(setAllQuestions).catch(() => {});
@@ -483,12 +485,21 @@ function QuestionsTab() {
     ? allQuestions.filter((q) => q.phase === filter || q.axis === filter || q.domainId === filter)
     : allQuestions;
 
-  const handleSave = async (id: string) => {
+  const startEdit = (q: any) => {
+    setEditingId(q.id);
+    setEditText(q.text);
+    setEditPolarity(q.polarity);
+    setPolarityChanged(false);
+  };
+
+  const handleSave = async (id: string, originalPolarity: number) => {
+    const body: Record<string, any> = { text: editText };
+    if (editPolarity !== originalPolarity) body.polarity = editPolarity;
     await adminFetch(`/questions/${id}`, {
       method: 'PUT',
-      body: JSON.stringify({ text: editText }),
+      body: JSON.stringify(body),
     });
-    setAllQuestions((prev) => prev.map((q) => q.id === id ? { ...q, text: editText } : q));
+    setAllQuestions((prev) => prev.map((q) => q.id === id ? { ...q, text: editText, polarity: editPolarity } : q));
     setEditingId(null);
   };
 
@@ -509,6 +520,11 @@ function QuestionsTab() {
         </div>
       </div>
 
+      <p className="text-xs text-gray-500">
+        Modifier le texte n'affecte pas les scores passés (stockés dans les snapshots).
+        Modifier la polarité change l'interprétation des votes futurs.
+      </p>
+
       <div className="space-y-2">
         {filtered.map((q) => (
           <div key={q.id} className="bg-gray-900 rounded-lg p-3 border border-gray-800">
@@ -522,19 +538,40 @@ function QuestionsTab() {
                       className="w-full bg-gray-800 border border-gray-700 rounded px-2 py-1 text-sm text-white resize-none"
                       rows={3}
                     />
+                    <div className="flex items-center gap-3">
+                      <label className="text-xs text-gray-400">Polarité :</label>
+                      <select
+                        value={editPolarity}
+                        onChange={(e) => {
+                          const val = parseFloat(e.target.value);
+                          setEditPolarity(val);
+                          setPolarityChanged(val !== q.polarity);
+                        }}
+                        className="bg-gray-800 border border-gray-700 rounded px-2 py-1 text-xs text-white"
+                      >
+                        <option value={1}>+1 (D'accord → pôle positif)</option>
+                        <option value={-1}>-1 (D'accord → pôle négatif)</option>
+                      </select>
+                      {polarityChanged && (
+                        <span className="text-xs text-amber-400">⚠ Affecte les votes futurs</span>
+                      )}
+                    </div>
                     <div className="flex gap-2">
-                      <button onClick={() => handleSave(q.id)} className="px-3 py-1 bg-amber-500 rounded text-xs text-black font-medium">Sauver</button>
+                      <button onClick={() => handleSave(q.id, q.polarity)} className="px-3 py-1 bg-amber-500 rounded text-xs text-black font-medium">Sauver</button>
                       <button onClick={() => setEditingId(null)} className="px-3 py-1 bg-gray-700 rounded text-xs">Annuler</button>
                     </div>
                   </div>
                 ) : (
-                  <p className="text-sm text-gray-200 cursor-pointer" onClick={() => { setEditingId(q.id); setEditText(q.text); }}>
+                  <p className="text-sm text-gray-200 cursor-pointer hover:text-white" onClick={() => startEdit(q)}>
                     {q.text}
                   </p>
                 )}
                 <div className="flex gap-2 mt-1 text-[10px] text-gray-600">
                   <span>{q.phase}</span>
                   <span>axe: {q.axis}</span>
+                  <span className={q.polarity > 0 ? 'text-green-700' : 'text-red-700'}>
+                    polarité: {q.polarity > 0 ? '+1' : '-1'}
+                  </span>
                   <span>domaine: {q.domainId}</span>
                   <span>poids: {q.weight}</span>
                   {q.voteCount > 0 && <span className="text-amber-400">{q.voteCount} votes (moy: {q.voteAvg?.toFixed(1)})</span>}
@@ -579,6 +616,8 @@ function FeedbacksTab() {
 
       {items.length === 0 && <p className="text-gray-500 text-center py-8">Aucun feedback en attente.</p>}
 
+      <p className="text-xs text-gray-500">Aucun traitement automatique — le bouton "Traité" est la seule action.</p>
+
       {items.map((f) => (
         <div key={f.id} className="bg-gray-900 rounded-lg p-3 border border-gray-800">
           <div className="flex items-start justify-between gap-2">
@@ -587,6 +626,7 @@ function FeedbacksTab() {
               <div className="flex gap-2 mt-1 text-[10px] text-gray-600">
                 <span className="text-amber-400">{f.feedbackType}</span>
                 <span>{f.targetType}</span>
+                {f.targetId && <span className="text-blue-400">→ {f.targetId}</span>}
                 {f.screen && <span>écran: {f.screen}</span>}
                 <span>{new Date(f.createdAt).toLocaleDateString('fr-FR')}</span>
               </div>
