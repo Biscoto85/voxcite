@@ -1,8 +1,6 @@
-import { useState } from 'react';
 import type { CompassPosition, Party } from '@partiprism/shared';
 import type { AppScreen } from '@/App';
 import { getProfileLabel } from '@/utils/scoring';
-import { SharePanel } from '@/components/share/SharePanel';
 
 interface MainMenuProps {
   userPosition?: CompassPosition;
@@ -61,8 +59,6 @@ const MENU_ITEMS: Array<{
 ];
 
 export function MainMenu({ userPosition, parties, onNavigate }: MainMenuProps) {
-  const [showShare, setShowShare] = useState(false);
-
   return (
     <div className="max-w-lg mx-auto">
       {userPosition && (
@@ -106,40 +102,6 @@ export function MainMenu({ userPosition, parties, onNavigate }: MainMenuProps) {
           ))}
         </ul>
       </nav>
-
-      {/* Share section */}
-      {userPosition && (
-        <div className="mt-4">
-          <button
-            onClick={() => setShowShare((v) => !v)}
-            className={`w-full p-4 rounded-xl border transition-all touch-target focus-ring text-left ${
-              showShare
-                ? 'bg-amber-950/30 border-amber-800/50'
-                : 'bg-gray-900 border-gray-800 hover:border-amber-500 hover:bg-gray-900/80'
-            }`}
-            aria-expanded={showShare}
-          >
-            <div className="flex items-center gap-3">
-              <span className="text-2xl text-amber-400" aria-hidden="true">↗</span>
-              <div className="flex-1">
-                <h3 className="font-medium">Partager PartiPrism</h3>
-                <p className="text-sm text-gray-400 mt-0.5">
-                  Invite tes proches à découvrir leur positionnement.
-                </p>
-              </div>
-              <span className="text-gray-500 text-sm" aria-hidden="true">
-                {showShare ? '▲' : '▼'}
-              </span>
-            </div>
-          </button>
-
-          {showShare && (
-            <div className="mt-3 bg-gray-900 rounded-xl p-4 border border-amber-900/30">
-              <SharePanel userPosition={userPosition} parties={parties} />
-            </div>
-          )}
-        </div>
-      )}
     </div>
   );
 }

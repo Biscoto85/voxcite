@@ -13,6 +13,7 @@ import { MentionsLegales } from './components/legal/MentionsLegales';
 import { CGU } from './components/legal/CGU';
 import { NotreIntention } from './components/legal/NotreIntention';
 import { parseChallengeFromHash } from './utils/challenge';
+import { ShareButton } from './components/share/ShareButton';
 
 export type AppScreen = 'loading' | 'onboarding' | 'reveal' | 'menu' | 'prisme' | 'affiner' | 'comparaison' | 'critique' | 'exprimer' | 'mentions' | 'cgu' | 'intention';
 
@@ -163,7 +164,7 @@ export function App() {
         Aller au contenu principal
       </a>
 
-      <header className="py-4 px-4 text-center sm:py-6" role="banner">
+      <header className="relative py-4 px-4 text-center sm:py-6" role="banner">
         <button
           onClick={() => canGoHome && setScreen('menu')}
           className="inline-flex flex-col items-center gap-1 hover:opacity-80 transition-opacity focus-ring rounded-lg px-4 py-1"
@@ -173,6 +174,12 @@ export function App() {
           <h1 className="text-2xl font-bold sm:text-3xl text-amber-400 tracking-wide">PartiPrism</h1>
         </button>
         <p className="text-gray-500 mt-1 text-xs sm:text-sm tracking-widest uppercase">Voir plus clair, penser plus large</p>
+        {/* Share button — top-right, visible once the user has a result */}
+        {userPosition && screen !== 'onboarding' && screen !== 'loading' && (
+          <div className="absolute right-4 top-1/2 -translate-y-1/2">
+            <ShareButton userPosition={userPosition} parties={parties} />
+          </div>
+        )}
       </header>
 
       <main id="main-content" className="px-4 pb-8 flex-1" role="main" aria-label={SCREEN_TITLES[screen]}>
