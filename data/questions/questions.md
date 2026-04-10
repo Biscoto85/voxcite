@@ -221,6 +221,18 @@ Ces questions affinent le positionnement. Elles sont proposées après l'onboard
 - **weight** : 1.0
 - **calibration** : D'accord = libéral (responsabilité individuelle). Pas d'accord = interventionniste (filet de sécurité).
 
+#### Q51
+- **id** : `deep-travail-05`
+- **text** : "Une grande entreprise rentable annonce la fermeture d'une usine de 300 salariés pour délocaliser en Asie. Que doit faire l'État ?"
+- **type** : dilemme
+- **axis** : economic
+- **polarity** : +1
+- **domain** : travail
+- **phase** : deep
+- **weight** : 1.5
+- **options** : ["Interdire la fermeture et imposer de lourdes pénalités", "Exiger un plan social étendu et une reconversion financée par l'entreprise", "Soutenir les salariés via l'État sans contraindre l'entreprise", "Proposer des aides aux salariés licenciés et laisser l'entreprise libre", "Ne pas intervenir — c'est une décision légitime dans une économie de marché"]
+- **calibration** : Option 0 = interventionniste fort (négatif économique). Option 4 = libéral (positif économique). Scénario concret qui révèle le rapport réel au rôle de l'État dans l'économie.
+
 ---
 
 ### Domaine : Santé et protection sociale
@@ -365,6 +377,18 @@ Ces questions affinent le positionnement. Elles sont proposées après l'onboard
 - **weight** : 1.0
 - **calibration** : D'accord = libertaire (contrôle du pouvoir). Pas d'accord = autoritaire (confiance en l'institution).
 
+#### Q52
+- **id** : `deep-securite-05`
+- **text** : "Un adolescent de 15 ans est arrêté pour la troisième fois pour vol avec violence. Quelle réponse est la plus appropriée ?"
+- **type** : dilemme
+- **axis** : authority
+- **polarity** : +1
+- **domain** : securite
+- **phase** : deep
+- **weight** : 1.5
+- **options** : ["Placement en centre fermé avec régime disciplinaire strict", "Suivi judiciaire renforcé avec travaux d'intérêt général", "Médiation avec les victimes et accompagnement psychologique intensif", "Accompagnement social en profondeur (famille, école, quartier)", "Traitement uniquement par les services sociaux sans sanction judiciaire"]
+- **calibration** : Option 0 = autoritaire (négatif autorité). Option 4 = libertaire (positif autorité). Dilemme concret qui dépasse la rhétorique abstraite sur la justice.
+
 ---
 
 ### Domaine : Immigration et identité
@@ -412,6 +436,17 @@ Ces questions affinent le positionnement. Elles sont proposées après l'onboard
 - **phase** : deep
 - **weight** : 1.0
 - **calibration** : D'accord = mondialiste (solidarité internationale). Pas d'accord = souverainiste (priorité nationale).
+
+#### Q53
+- **id** : `deep-immigration-05`
+- **text** : "Les traditions culturelles et religieuses de nos ancêtres constituent un héritage précieux qu'il faut préserver et transmettre."
+- **type** : affirmation
+- **axis** : societal
+- **polarity** : -1
+- **domain** : immigration
+- **phase** : deep
+- **weight** : 1.2
+- **calibration** : D'accord = conservateur (identité, continuité culturelle). Pas d'accord = progressiste (ouverture, évolution des normes). Bonne question d'ancrage pour l'axe sociétal.
 
 ---
 
@@ -461,6 +496,18 @@ Ces questions affinent le positionnement. Elles sont proposées après l'onboard
 - **weight** : 1.0
 - **calibration** : D'accord = conservateur (traditions). Pas d'accord = progressiste (droits des animaux). Révèle bien le clivage rural/urbain sur l'axe sociétal.
 
+#### Q54
+- **id** : `deep-environnement-05`
+- **text** : "L'État doit réduire les émissions de CO₂ de 50% d'ici 2035. Quelle approche soutiens-tu en priorité ?"
+- **type** : dilemme
+- **axis** : ecology
+- **polarity** : +1
+- **domain** : environnement
+- **phase** : deep
+- **weight** : 1.5
+- **options** : ["Miser sur l'innovation technologique et le nucléaire sans restreindre les modes de vie", "Incitations fiscales (bonus-malus) pour orienter les comportements", "Réguler par la loi les secteurs industriels et les transports les plus polluants", "Limiter la publicité et encadrer les modes de consommation polluants", "Fixer des objectifs légaux de sobriété avec contrôle de la production et des importations"]
+- **calibration** : Option 0 = productiviste/techno-optimiste (négatif écologie). Option 4 = écologiste/décroissance (positif écologie). Concrétise un débat souvent abstrait.
+
 ---
 
 ### Domaine : Économie et fiscalité
@@ -508,6 +555,17 @@ Ces questions affinent le positionnement. Elles sont proposées après l'onboard
 - **phase** : deep
 - **weight** : 1.0
 - **calibration** : D'accord = interventionniste. Pas d'accord = libéral.
+
+#### Q55
+- **id** : `deep-economie-05`
+- **text** : "Il est normal qu'un PDG d'une grande entreprise gagne 100 à 200 fois le salaire de ses employés les moins payés."
+- **type** : affirmation
+- **axis** : economic
+- **polarity** : +1
+- **domain** : economie
+- **phase** : deep
+- **weight** : 1.2
+- **calibration** : D'accord = libéral (le marché fixe les salaires). Pas d'accord = interventionniste (inégalités injustifiées). Bonne question d'ancrage : les positions sont très tranchées selon l'axe économique.
 
 ---
 
@@ -631,6 +689,17 @@ Ces questions affinent le positionnement. Elles sont proposées après l'onboard
 - **weight** : 1.0
 - **calibration** : D'accord = progressiste (éthique). Pas d'accord = conservateur (intérêt national, pragmatisme).
 
+#### Q56
+- **id** : `deep-international-03`
+- **text** : "Les décisions de la Cour de justice de l'Union européenne doivent primer sur les lois françaises."
+- **type** : affirmation
+- **axis** : sovereignty
+- **polarity** : +1
+- **domain** : international
+- **phase** : deep
+- **weight** : 1.2
+- **calibration** : D'accord = mondialiste/pro-UE (positif souveraineté). Pas d'accord = souverainiste (négatif souveraineté). Bonne question d'ancrage : révèle directement le rapport à la souveraineté nationale.
+
 ---
 
 ## Statistiques de couverture
@@ -638,32 +707,32 @@ Ces questions affinent le positionnement. Elles sont proposées après l'onboard
 ### Par axe
 | Axe | Onboarding | Approfondissement | Total |
 |-----|-----------|-------------------|-------|
-| Sociétal | 3 | 9 | 12 |
-| Économique | 3 | 12 | 15 |
-| Autorité | 2 | 12 | 14 |
-| Écologie | 2 | 3 | 5 |
-| Souveraineté | 2 | 2 | 4 |
-| **Total** | **12** | **38** | **50** |
+| Sociétal | 3 | 10 | 13 |
+| Économique | 3 | 14 | 17 |
+| Autorité | 2 | 13 | 15 |
+| Écologie | 2 | 4 | 6 |
+| Souveraineté | 2 | 3 | 5 |
+| **Total** | **12** | **44** | **56** |
 
 ### Par domaine
 | Domaine | Onboarding | Approfondissement | Total |
 |---------|-----------|-------------------|-------|
-| Travail et emploi | 0 | 4 | 4 |
+| Travail et emploi | 0 | 5 | 5 |
 | Santé et protection sociale | 2 | 4 | 6 |
 | Éducation et jeunesse | 0 | 4 | 4 |
-| Sécurité et justice | 2 | 4 | 6 |
-| Immigration et identité | 1 | 4 | 5 |
-| Environnement et énergie | 2 | 4 | 6 |
-| Économie et fiscalité | 3 | 4 | 7 |
+| Sécurité et justice | 2 | 5 | 7 |
+| Immigration et identité | 1 | 5 | 6 |
+| Environnement et énergie | 2 | 5 | 7 |
+| Économie et fiscalité | 3 | 5 | 8 |
 | Numérique et libertés | 0 | 4 | 4 |
 | Démocratie et institutions | 0 | 4 | 4 |
-| International et défense | 2 | 2 | 4 |
+| International et défense | 2 | 3 | 5 |
 
 ### Par format
 | Format | Onboarding | Approfondissement | Total |
 |--------|-----------|-------------------|-------|
-| Affirmation | 12 | 38 | 50 |
-| Dilemme | 0 | 0 | 0 |
+| Affirmation | 12 | 41 | 53 |
+| Dilemme | 0 | 3 | 3 |
 
 ---
 

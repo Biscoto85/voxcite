@@ -20,6 +20,7 @@ import { proposalsRouter } from './routes/proposals.js';
 import { programRouter } from './routes/program.js';
 import { critiqueRouter } from './routes/critique.js';
 import { adminRouter } from './routes/admin.js';
+import { qgRouter } from './routes/qg.js';
 import { rateLimit, aiRateLimit, sessionRateLimit } from './middleware/rateLimit.js';
 import { adminAuth } from './middleware/adminAuth.js';
 import { startAnalysisWorker } from './services/analysis-worker.js';
@@ -38,8 +39,8 @@ app.set('trust proxy', true);
 
 app.use(cors({
   origin: process.env.ALLOWED_ORIGINS?.split(',') || ['http://localhost:5173', 'http://localhost:3000'],
-  methods: ['GET', 'POST'],
-  allowedHeaders: ['Content-Type'],
+  methods: ['GET', 'POST', 'PATCH'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
 }));
 app.use(express.json({ limit: '100kb' }));
 app.use(rateLimit);
@@ -70,8 +71,11 @@ app.use(`${API_PREFIX}/feedback`, feedbackRouter);
 // Esprit critique
 app.use(`${API_PREFIX}/critique`, critiqueRouter);
 
-// Admin QG (protégé par Basic Auth)
+// Admin QG legacy (protégé par Basic Auth)
 app.use(`${API_PREFIX}/admin`, adminAuth, adminRouter);
+
+// Board QG (token-based auth, pour le board éditorial)
+app.use(`${API_PREFIX}/qg`, qgRouter);
 
 // Health check
 app.get(`${API_PREFIX}/health`, (_req, res) => {

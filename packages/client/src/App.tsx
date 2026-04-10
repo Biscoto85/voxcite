@@ -13,10 +13,11 @@ import { MentionsLegales } from './components/legal/MentionsLegales';
 import { CGU } from './components/legal/CGU';
 import { NotreIntention } from './components/legal/NotreIntention';
 import { Methodologie } from './components/legal/Methodologie';
+import { QGPanel } from './components/qg/QGPanel';
 import { parseChallengeFromHash } from './utils/challenge';
 import { ShareButton } from './components/share/ShareButton';
 
-export type AppScreen = 'loading' | 'onboarding' | 'reveal' | 'menu' | 'prisme' | 'affiner' | 'comparaison' | 'critique' | 'exprimer' | 'mentions' | 'cgu' | 'intention' | 'methodologie';
+export type AppScreen = 'loading' | 'onboarding' | 'reveal' | 'menu' | 'prisme' | 'affiner' | 'comparaison' | 'critique' | 'exprimer' | 'mentions' | 'cgu' | 'intention' | 'methodologie' | 'qg';
 
 // ── localStorage keys ──────────────────────────────────────────────
 const LS = {
@@ -35,6 +36,11 @@ export interface UserProfile {
   perceivedBias: string;       // 'gauche' | 'droite' | 'varie' | 'difficile'
   mediaRelationship: string;   // 'trust' | 'critical' | 'independent' | 'avoid' (v2)
   infoSource?: string;         // legacy — peut exister dans le localStorage existant
+}
+
+export interface FeedbackContext {
+  questionId?: string;
+  questionText?: string;
 }
 
 function loadFromLS<T>(key: string): T | null {
@@ -58,6 +64,7 @@ const SCREEN_TITLES: Record<AppScreen, string> = {
   cgu: 'Conditions Générales d\'Utilisation',
   intention: 'Notre intention',
   methodologie: 'Méthodologie',
+  qg: 'Quartier Général',
 };
 
 export function App() {
@@ -69,16 +76,25 @@ export function App() {
   const [userPosition, setUserPosition] = useState<CompassPosition | undefined>();
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [feedbackContext, setFeedbackContext] = useState<FeedbackContext>({});
 
-  // Parse challenge URL (#defi/...) synchronously on first render — never sent to server
+  // Parse challenge URL (#defi/...) or QG access (#qg) synchronously on first render
   const [challengerPosition] = useState<CompassPosition | null>(() => {
+    const hash = window.location.hash;
+    if (hash === '#qg') {
+      // Clean hash and flag for QG screen (handled in useEffect after load)
+      window.history.replaceState(null, '', window.location.pathname + window.location.search);
+      return null;
+    }
     const pos = parseChallengeFromHash();
     if (pos) {
-      // Clean the hash from the URL so it doesn't persist on refresh
       window.history.replaceState(null, '', window.location.pathname + window.location.search);
     }
     return pos;
   });
+
+  // Detect #qg hash for admin access
+  const [isQGAccess] = useState(() => window.location.hash === '#qg' || false);
 
   // Navigate to static pages (legal + intention + methodologie)
   const navigateToLegal = useCallback((target: 'mentions' | 'cgu' | 'intention' | 'methodologie') => {
@@ -93,6 +109,13 @@ export function App() {
 
   // Load data + restore local state
   useEffect(() => {
+    // Check hash again at load time (after React hydration)
+    if (window.location.hash === '#qg') {
+      window.history.replaceState(null, '', window.location.pathname + window.location.search);
+      setScreen('qg');
+      return;
+    }
+
     Promise.all([
       fetch('/api/partis').then((r) => r.json()),
       fetch('/api/questions/onboarding').then((r) => r.json()),
@@ -123,9 +146,10 @@ export function App() {
       .catch((err) => setError(err.message));
   }, []);
 
-  const handleOnboardingComplete = useCallback((position: CompassPosition, profile: UserProfile) => {
+  const handleOnboardingComplete = useCallback((position: CompassPosition, profile: UserProfile, qualityScore: number) => {
     setUserPosition(position);
     setUserProfile(profile);
+    setFeedbackContext({});
     localStorage.setItem(LS.POSITION, JSON.stringify(position));
     localStorage.setItem(LS.PROFILE, JSON.stringify(profile));
     localStorage.setItem(LS.ONBOARDING_DONE, 'true');
@@ -142,6 +166,7 @@ export function App() {
         mediaSources: profile.mediaSources,
         infoDiversity: profile.infoDiversity,
         mediaRelationship: profile.mediaRelationship,
+        qualityScore,
       }),
     }).catch(() => {});
 
@@ -153,10 +178,14 @@ export function App() {
     localStorage.setItem(LS.POSITION, JSON.stringify(position));
   }, []);
 
+  const handleQuestionChange = useCallback((questionId: string, questionText: string) => {
+    setFeedbackContext({ questionId, questionText });
+  }, []);
+
   const isStaticPage = screen === 'mentions' || screen === 'cgu' || screen === 'intention' || screen === 'methodologie';
-  const showFeedback = screen !== 'loading' && screen !== 'onboarding' && !isStaticPage;
-  const canGoHome = screen !== 'loading' && screen !== 'onboarding' && screen !== 'reveal' && !isStaticPage;
-  const showFooter = screen !== 'loading';
+  const showFeedback = screen !== 'loading' && screen !== 'onboarding' && screen !== 'qg' && !isStaticPage;
+  const canGoHome = screen !== 'loading' && screen !== 'onboarding' && screen !== 'reveal' && screen !== 'qg' && !isStaticPage;
+  const showFooter = screen !== 'loading' && screen !== 'qg';
 
   return (
     <div className="min-h-screen bg-gray-950 text-white safe-bottom flex flex-col">
@@ -167,23 +196,25 @@ export function App() {
         Aller au contenu principal
       </a>
 
-      <header className="relative py-4 px-4 text-center sm:py-6" role="banner">
-        <button
-          onClick={() => canGoHome && setScreen('menu')}
-          className="inline-flex flex-col items-center gap-1 hover:opacity-80 transition-opacity focus-ring rounded-lg px-4 py-1"
-          aria-label="Retour au menu principal PartiPrism"
-        >
-          <img src="/logo.svg" alt="" className="h-10 sm:h-12 w-auto" aria-hidden="true" />
-          <h1 className="text-2xl font-bold sm:text-3xl text-amber-400 tracking-wide">PartiPrism</h1>
-        </button>
-        <p className="text-gray-500 mt-1 text-xs sm:text-sm tracking-widest uppercase">Voir plus clair, penser plus large</p>
-        {/* Share button — top-right, visible once the user has a result */}
-        {userPosition && screen !== 'onboarding' && screen !== 'loading' && (
-          <div className="absolute right-4 top-1/2 -translate-y-1/2">
-            <ShareButton userPosition={userPosition} parties={parties} />
-          </div>
-        )}
-      </header>
+      {screen !== 'qg' && (
+        <header className="relative py-4 px-4 text-center sm:py-6" role="banner">
+          <button
+            onClick={() => canGoHome && setScreen('menu')}
+            className="inline-flex flex-col items-center gap-1 hover:opacity-80 transition-opacity focus-ring rounded-lg px-4 py-1"
+            aria-label="Retour au menu principal PartiPrism"
+          >
+            <img src="/logo.svg" alt="" className="h-10 sm:h-12 w-auto" aria-hidden="true" />
+            <h1 className="text-2xl font-bold sm:text-3xl text-amber-400 tracking-wide">PartiPrism</h1>
+          </button>
+          <p className="text-gray-500 mt-1 text-xs sm:text-sm tracking-widest uppercase">Voir plus clair, penser plus large</p>
+          {/* Share button — top-right, visible once the user has a result */}
+          {userPosition && screen !== 'onboarding' && screen !== 'loading' && (
+            <div className="absolute right-4 top-1/2 -translate-y-1/2">
+              <ShareButton userPosition={userPosition} parties={parties} />
+            </div>
+          )}
+        </header>
+      )}
 
       <main id="main-content" className="px-4 pb-8 flex-1" role="main" aria-label={SCREEN_TITLES[screen]}>
         {screen === 'loading' && !error && (
@@ -203,6 +234,7 @@ export function App() {
             parties={parties}
             challengerPosition={challengerPosition}
             onComplete={handleOnboardingComplete}
+            onQuestionChange={handleQuestionChange}
           />
         )}
 
@@ -227,7 +259,8 @@ export function App() {
           <DeepQuestionsFlow
             currentPosition={userPosition}
             onPositionUpdate={handlePositionUpdate}
-            onBack={() => setScreen('menu')}
+            onBack={() => { setFeedbackContext({}); setScreen('menu'); }}
+            onQuestionChange={handleQuestionChange}
           />
         )}
 
@@ -271,6 +304,10 @@ export function App() {
         {screen === 'methodologie' && (
           <Methodologie onBack={navigateBackFromLegal} />
         )}
+
+        {screen === 'qg' && (
+          <QGPanel />
+        )}
       </main>
 
       {showFooter && (
@@ -298,7 +335,7 @@ export function App() {
       )}
 
       {showFeedback && (
-        <FeedbackButton screen={screen} />
+        <FeedbackButton screen={screen} context={feedbackContext} />
       )}
     </div>
   );

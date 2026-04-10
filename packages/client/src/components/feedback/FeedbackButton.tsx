@@ -1,8 +1,9 @@
 import { useState, useEffect, useRef } from 'react';
-import type { AppScreen } from '@/App';
+import type { AppScreen, FeedbackContext } from '@/App';
 
 interface FeedbackButtonProps {
   screen: AppScreen;
+  context?: FeedbackContext;
 }
 
 const FEEDBACK_TYPES = [
@@ -12,13 +13,15 @@ const FEEDBACK_TYPES = [
   { value: 'other', label: 'Autre remarque' },
 ] as const;
 
-export function FeedbackButton({ screen }: FeedbackButtonProps) {
+export function FeedbackButton({ screen, context }: FeedbackButtonProps) {
   const [open, setOpen] = useState(false);
   const [feedbackType, setFeedbackType] = useState<string>('bias');
   const [description, setDescription] = useState('');
   const [sending, setSending] = useState(false);
   const [sent, setSent] = useState(false);
   const closeRef = useRef<HTMLButtonElement>(null);
+
+  const hasQuestionContext = Boolean(context?.questionId);
 
   // Trap focus when modal opens
   useEffect(() => {
@@ -46,7 +49,8 @@ export function FeedbackButton({ screen }: FeedbackButtonProps) {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          targetType: 'general',
+          targetType: hasQuestionContext ? 'question' : 'general',
+          targetId: context?.questionId ?? null,
           feedbackType,
           description: description.trim(),
           screen,
@@ -71,7 +75,7 @@ export function FeedbackButton({ screen }: FeedbackButtonProps) {
       <button
         onClick={() => setOpen(true)}
         className="fixed bottom-4 right-4 w-12 h-12 bg-gray-800 hover:bg-gray-700 border border-gray-700 rounded-full flex items-center justify-center text-gray-400 hover:text-white transition-colors shadow-lg z-40 touch-target focus-ring"
-        aria-label="Signaler un biais ou faire une suggestion"
+        aria-label={hasQuestionContext ? 'Signaler un problème avec cette question' : 'Signaler un biais ou faire une suggestion'}
       >
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-5 h-5" aria-hidden="true">
           <path fillRule="evenodd" d="M3 3.5A1.5 1.5 0 014.5 2h6.879a1.5 1.5 0 011.06.44l4.122 4.12A1.5 1.5 0 0117 7.622V16.5a1.5 1.5 0 01-1.5 1.5h-11A1.5 1.5 0 013 16.5v-13zm10.857 5.691a.75.75 0 00-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 10-1.06 1.061l2.5 2.5a.75.75 0 001.137-.089l4-5.5z" clipRule="evenodd" />
@@ -107,9 +111,18 @@ export function FeedbackButton({ screen }: FeedbackButtonProps) {
                   </button>
                 </div>
 
+                {/* Question context badge */}
+                {hasQuestionContext && context?.questionText && (
+                  <div className="bg-indigo-950/40 border border-indigo-700/30 rounded-lg px-3 py-2 mb-4">
+                    <p className="text-xs text-indigo-400 mb-0.5">Question concernée</p>
+                    <p className="text-xs text-indigo-200 leading-snug line-clamp-2">{context.questionText}</p>
+                  </div>
+                )}
+
                 <p className="text-sm text-gray-400 mb-4">
-                  PartiPrism est un projet en amélioration continue. Aide-nous à détecter
-                  les biais, les formulations maladroites ou les thématiques oubliées.
+                  {hasQuestionContext
+                    ? 'Tu signales un problème sur cette question spécifique.'
+                    : 'PartiPrism est un projet en amélioration continue. Aide-nous à détecter les biais, les formulations maladroites ou les thématiques oubliées.'}
                 </p>
 
                 <fieldset>

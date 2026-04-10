@@ -36,6 +36,13 @@
       "when": 1744567200000,
       "tag": "0004_analysis_jobs_media_proposals",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1744653600000,
+      "tag": "0005_snapshots_quality",
+      "breakpoints": true
     }
   ]
 }

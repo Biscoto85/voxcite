@@ -8,7 +8,7 @@ export const sessionsRouter = Router();
 // POST /snapshot — enregistrer un positionnement anonyme (pour la nébuleuse)
 // Aucun identifiant de session, aucune IP stockée.
 sessionsRouter.post('/snapshot', async (req, res) => {
-  const { postalCode, position, infoSource, perceivedBias, infoFormats, mediaSources, infoDiversity, mediaRelationship, isOrphan } = req.body as {
+  const { postalCode, position, infoSource, perceivedBias, infoFormats, mediaSources, infoDiversity, mediaRelationship, isOrphan, qualityScore } = req.body as {
     postalCode?: string;
     position: { societal: number; economic: number; authority: number; ecology: number; sovereignty: number };
     infoSource?: string;
@@ -18,6 +18,7 @@ sessionsRouter.post('/snapshot', async (req, res) => {
     infoDiversity?: string;
     mediaRelationship?: string;
     isOrphan?: boolean;
+    qualityScore?: number;
   };
 
   if (!position || position.societal == null) {
@@ -52,7 +53,12 @@ sessionsRouter.post('/snapshot', async (req, res) => {
     infoDiversity: infoDiversity ?? null,
     mediaRelationship: mediaRelationship ?? null,
     isOrphan: isOrphan ?? null,
+    qualityScore: qualityScore ?? null,
   });
+
+  if (qualityScore !== undefined && qualityScore < 0.3) {
+    console.warn(`[partiprism-api] Snapshot low quality score: ${qualityScore.toFixed(2)} — possible rage-fill or robot`);
+  }
 
   res.status(201).json({ ok: true });
 });
@@ -95,14 +101,19 @@ sessionsRouter.post('/orphan-report', async (req, res) => {
 // POST /vote — enregistrer un vote anonyme individuel
 // Pas de session, pas d'IP, pas de lien entre les votes.
 sessionsRouter.post('/vote', async (req, res) => {
-  const { questionId, value } = req.body as {
+  const { questionId, value, durationMs } = req.body as {
     questionId: string;
     value: number;
+    durationMs?: number;
   };
 
   if (!questionId || value == null) {
     res.status(400).json({ error: 'questionId and value required' });
     return;
+  }
+
+  if (durationMs !== undefined && durationMs < 300) {
+    console.warn(`[partiprism-api] Vote suspiciously fast: questionId=${questionId} durationMs=${durationMs}`);
   }
 
   await db.insert(votes).values({ questionId, value });

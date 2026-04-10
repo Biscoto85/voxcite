@@ -7,6 +7,7 @@ interface DeepQuestionsFlowProps {
   currentPosition?: CompassPosition;
   onPositionUpdate: (position: CompassPosition) => void;
   onBack: () => void;
+  onQuestionChange?: (questionId: string, questionText: string) => void;
 }
 
 /** Fisher-Yates shuffle */
@@ -22,7 +23,7 @@ function shuffle<T>(arr: T[]): T[] {
 const LS_RESPONSES = 'partiprism_responses';
 
 export function DeepQuestionsFlow({
-  currentPosition, onPositionUpdate, onBack,
+  currentPosition, onPositionUpdate, onBack, onQuestionChange,
 }: DeepQuestionsFlowProps) {
   const [questions, setQuestions] = useState<Question[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -45,6 +46,13 @@ export function DeepQuestionsFlow({
   }, []);
 
   const activeQuestion = questions[currentIndex];
+
+  // Notify parent when question changes (for feedback contextualization)
+  useEffect(() => {
+    if (activeQuestion && onQuestionChange) {
+      onQuestionChange(activeQuestion.id, activeQuestion.text);
+    }
+  }, [activeQuestion, onQuestionChange]);
 
   const handleAnswer = useCallback(async (value: -2 | -1 | 0 | 1 | 2) => {
     if (!activeQuestion) return;

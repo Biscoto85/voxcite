@@ -102,6 +102,7 @@ export const snapshots = pgTable('snapshots', {
   infoDiversity: text('info_diversity'),   // 'regularly' | 'sometimes' | 'rarely' | 'never'
   mediaRelationship: text('media_relationship'), // 'trust' | 'critical' | 'independent' | 'avoid'
   isOrphan: boolean('is_orphan'),               // null = non répondu, true = orphelin, false = non
+  qualityScore: real('quality_score'),           // 0.0–1.0 — fiabilité calculée côté client (null = non calculé)
   createdAt: timestamp('created_at').notNull().defaultNow(),
 });
 

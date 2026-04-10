@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useRef, useEffect } from 'react';
 import type { Question, QuestionResponse, CompassPosition, Party } from '@partiprism/shared';
 import { calculatePosition } from '@/hooks/useCompassPosition';
 import { QuestionCard } from './QuestionCard';
@@ -11,18 +11,52 @@ interface OnboardingFlowProps {
   questions: Question[];
   parties: Party[];
   challengerPosition?: CompassPosition | null;
-  onComplete: (position: CompassPosition, profile: UserProfile) => void;
+  onComplete: (position: CompassPosition, profile: UserProfile, qualityScore: number) => void;
+  onQuestionChange?: (questionId: string, questionText: string) => void;
 }
 
-export function OnboardingFlow({ questions, parties, challengerPosition, onComplete }: OnboardingFlowProps) {
+/** Compute a 0–1 quality score from timing and response patterns. */
+function computeQualityScore(timings: number[], responses: QuestionResponse[]): number {
+  if (timings.length === 0) return 1.0;
+
+  const avgMs = timings.reduce((s, t) => s + t, 0) / timings.length;
+
+  // Speed factor: < 400ms avg = robot-like; < 1500ms = very fast; < 3000ms = fast
+  const speedFactor = avgMs < 400 ? 0.05 : avgMs < 1500 ? 0.4 : avgMs < 3000 ? 0.75 : 1.0;
+
+  // Uniformity factor: heavily penalize all-same-value patterns
+  const valueCounts = new Map<number, number>();
+  for (const r of responses) valueCounts.set(r.value, (valueCounts.get(r.value) ?? 0) + 1);
+  const maxCount = Math.max(...valueCounts.values());
+  const uniformRatio = maxCount / responses.length;
+  const uniformityFactor = uniformRatio > 0.8 ? 0.25 : uniformRatio > 0.6 ? 0.6 : 1.0;
+
+  // Extreme factor: penalize if > 85% of answers are ±2
+  const extremeCount = responses.filter((r) => Math.abs(r.value) === 2).length;
+  const extremeRatio = extremeCount / responses.length;
+  const extremeFactor = extremeRatio > 0.85 ? 0.7 : 1.0;
+
+  return Math.round(Math.min(1, speedFactor * uniformityFactor * extremeFactor) * 100) / 100;
+}
+
+export function OnboardingFlow({ questions, parties, challengerPosition, onComplete, onQuestionChange }: OnboardingFlowProps) {
   const [step, setStep] = useState<OnboardingStep>('postal');
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [responses, setResponses] = useState<QuestionResponse[]>([]);
   const [profileError, setProfileError] = useState<string | null>(null);
+  const questionStartRef = useRef<number>(Date.now());
+  const timingsRef = useRef<number[]>([]);
 
   const currentQuestion = questions[currentIndex];
   const progress = currentIndex / questions.length;
+
+  // Notify parent when question changes (for feedback contextualization)
+  useEffect(() => {
+    if (currentQuestion && step === 'questions' && onQuestionChange) {
+      onQuestionChange(currentQuestion.id, currentQuestion.text);
+    }
+  }, [currentQuestion, step, onQuestionChange]);
 
   // Validate postal code via server (checks IP distance) then move to questions
   const handleProfileSubmit = useCallback(async (data: UserProfile) => {
@@ -55,6 +89,10 @@ export function OnboardingFlow({ questions, parties, challengerPosition, onCompl
   }, []);
 
   const handleAnswer = useCallback(async (value: -2 | -1 | 0 | 1 | 2) => {
+    const durationMs = Date.now() - questionStartRef.current;
+    timingsRef.current = [...timingsRef.current, durationMs];
+    questionStartRef.current = Date.now();
+
     const newResponse: QuestionResponse = {
       questionId: currentQuestion.id,
       value,
@@ -66,7 +104,7 @@ export function OnboardingFlow({ questions, parties, challengerPosition, onCompl
     fetch('/api/sessions/vote', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ questionId: currentQuestion.id, value }),
+      body: JSON.stringify({ questionId: currentQuestion.id, value, durationMs }),
     }).catch(() => {});
 
     if (currentIndex < questions.length - 1) {
@@ -74,13 +112,14 @@ export function OnboardingFlow({ questions, parties, challengerPosition, onCompl
     } else {
       // Calculate position entirely client-side
       const pos = calculatePosition(newResponses, questions);
+      const qualityScore = computeQualityScore(timingsRef.current, newResponses);
 
       // Save responses to localStorage for analysis later
       localStorage.setItem('partiprism_responses', JSON.stringify(
         newResponses.map((r) => ({ questionId: r.questionId, value: r.value })),
       ));
 
-      if (profile) onComplete(pos, profile);
+      if (profile) onComplete(pos, profile, qualityScore);
     }
   }, [currentQuestion, responses, currentIndex, questions, profile, onComplete]);
 
