@@ -114,24 +114,34 @@ export function App() {
     localStorage.setItem(LS.POSITION, JSON.stringify(position));
     localStorage.setItem(LS.PROFILE, JSON.stringify(profile));
     localStorage.setItem(LS.ONBOARDING_DONE, 'true');
+    // Snapshot is sent after the orphelin question in handleRevealComplete
+    setScreen('reveal');
+  }, []);
+
+  const handleRevealComplete = useCallback((isOrphan: boolean) => {
+    // Read current state — position and profile are already set by handleOnboardingComplete
+    const pos = userPosition;
+    const prof = userProfile;
+    if (!pos || !prof) { setScreen('menu'); return; }
 
     // Send anonymous snapshot for nebula (fire-and-forget)
     fetch('/api/sessions/snapshot', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        postalCode: profile.postalCode,
-        position,
-        perceivedBias: profile.perceivedBias,
-        infoFormats: profile.infoFormats,
-        mediaSources: profile.mediaSources,
-        infoDiversity: profile.infoDiversity,
-        mediaRelationship: profile.mediaRelationship,
+        postalCode: prof.postalCode,
+        position: pos,
+        perceivedBias: prof.perceivedBias,
+        infoFormats: prof.infoFormats,
+        mediaSources: prof.mediaSources,
+        infoDiversity: prof.infoDiversity,
+        mediaRelationship: prof.mediaRelationship,
+        isOrphan,
       }),
     }).catch(() => {});
 
-    setScreen('reveal');
-  }, []);
+    setScreen('menu');
+  }, [userPosition, userProfile]);
 
   const handlePositionUpdate = useCallback((position: CompassPosition) => {
     setUserPosition(position);
@@ -184,7 +194,7 @@ export function App() {
         )}
 
         {screen === 'reveal' && userPosition && (
-          <CompassReveal parties={parties} userPosition={userPosition} onContinue={() => setScreen('menu')} />
+          <CompassReveal parties={parties} userPosition={userPosition} onContinue={handleRevealComplete} />
         )}
 
         {screen === 'menu' && (

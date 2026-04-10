@@ -15,6 +15,13 @@
       "when": 1744308000000,
       "tag": "0001_info_audit_v2",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1744394400000,
+      "tag": "0002_is_orphan",
+      "breakpoints": true
     }
   ]
 }

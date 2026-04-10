@@ -3,6 +3,7 @@ import type { AxisId } from '@partiprism/shared';
 interface Point2D {
   x: number;
   y: number;
+  isOrphan?: boolean | null;
 }
 
 const KDE_THRESHOLD = 100;
@@ -71,40 +72,76 @@ export function computeKDE(
 export interface NebulaData {
   mode: 'points' | 'kde';
   totalResponses: number;
-  /** Raw points (mode=points, <100 responses) */
-  points?: Point2D[];
-  /** KDE density grid (mode=kde, 100+ responses) */
+  orphanStats?: { total: number; orphanCount: number; orphanPct: number };
+  /** Raw points (mode=points, <100 responses) — includes isOrphan flag */
+  points?: Array<{ x: number; y: number; isOrphan?: boolean | null }>;
+  /** KDE density grid for all users (mode=kde) */
   grid?: number[][];
+  /** KDE density grid for orphelins only (mode=kde) */
+  gridOrphan?: number[][];
   gridSize?: number;
+}
+
+interface SnapshotPosition {
+  societal: number | null;
+  economic: number | null;
+  authority: number | null;
+  ecology: number | null;
+  sovereignty: number | null;
+  isOrphan?: boolean | null;
 }
 
 /**
  * Build nebula data from session positions.
  */
 export function buildNebulaData(
-  positions: Array<Record<AxisId, number | null>>,
+  positions: SnapshotPosition[],
   xAxis: AxisId,
   yAxis: AxisId,
 ): NebulaData {
   const points: Point2D[] = [];
 
   for (const pos of positions) {
-    const x = pos[xAxis];
-    const y = pos[yAxis];
+    const x = pos[xAxis] as number | null;
+    const y = pos[yAxis] as number | null;
     if (x != null && y != null) {
-      points.push({ x, y });
+      points.push({ x, y, isOrphan: pos.isOrphan });
     }
   }
 
+  // Compute orphan stats (only for those who answered the question)
+  const withAnswer = points.filter((p) => p.isOrphan !== null && p.isOrphan !== undefined);
+  const orphanCount = withAnswer.filter((p) => p.isOrphan === true).length;
+  const orphanStats =
+    withAnswer.length > 0
+      ? {
+          total: withAnswer.length,
+          orphanCount,
+          orphanPct: Math.round((orphanCount / withAnswer.length) * 100),
+        }
+      : undefined;
+
   if (points.length < KDE_THRESHOLD) {
-    return { mode: 'points', totalResponses: points.length, points };
+    return {
+      mode: 'points',
+      totalResponses: points.length,
+      orphanStats,
+      points: points.map((p) => ({ x: p.x, y: p.y, isOrphan: p.isOrphan })),
+    };
   }
 
   const grid = computeKDE(points);
+
+  // Separate KDE grid for orphelins
+  const orphanPoints = points.filter((p) => p.isOrphan === true);
+  const gridOrphan = orphanPoints.length >= 5 ? computeKDE(orphanPoints) : undefined;
+
   return {
     mode: 'kde',
     totalResponses: points.length,
+    orphanStats,
     grid,
+    gridOrphan,
     gridSize: GRID_SIZE,
   };
 }

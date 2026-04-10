@@ -25,9 +25,33 @@ nebulaRouter.get('/', async (req, res) => {
       authority: snapshots.positionAuthority,
       ecology: snapshots.positionEcology,
       sovereignty: snapshots.positionSovereignty,
+      isOrphan: snapshots.isOrphan,
     })
     .from(snapshots);
 
   const nebula = buildNebulaData(allSnapshots, xAxis as AxisId, yAxis as AxisId);
   res.json(nebula);
+});
+
+// GET /orphan-stats — statistiques orphelins uniquement
+nebulaRouter.get('/orphan-stats', async (_req, res) => {
+  const allSnapshots = await db
+    .select({
+      societal: snapshots.positionSocietal,
+      economic: snapshots.positionEconomic,
+      authority: snapshots.positionAuthority,
+      ecology: snapshots.positionEcology,
+      sovereignty: snapshots.positionSovereignty,
+      isOrphan: snapshots.isOrphan,
+    })
+    .from(snapshots);
+
+  const withAnswer = allSnapshots.filter((s) => s.isOrphan !== null && s.isOrphan !== undefined);
+  const orphanCount = withAnswer.filter((s) => s.isOrphan === true).length;
+
+  res.json({
+    total: withAnswer.length,
+    orphanCount,
+    orphanPct: withAnswer.length > 0 ? Math.round((orphanCount / withAnswer.length) * 100) : null,
+  });
 });

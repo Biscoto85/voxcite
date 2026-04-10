@@ -5,8 +5,10 @@ import { AXES, COMPASS_COLORS, COMPASS_SIZES } from '@partiprism/shared';
 interface NebulaData {
   mode: 'points' | 'kde';
   totalResponses: number;
-  points?: Array<{ x: number; y: number }>;
+  orphanStats?: { total: number; orphanCount: number; orphanPct: number };
+  points?: Array<{ x: number; y: number; isOrphan?: boolean | null }>;
   grid?: number[][];
+  gridOrphan?: number[][];
   gridSize?: number;
 }
 
@@ -90,14 +92,14 @@ export function CompassCanvas2D({
     ctx.fillText(yInfo.positive, center, margin - 8);
     ctx.fillText(yInfo.negative, center, size - margin + 18);
 
-    // Nebula layer
+    // Nebula layer — amber for all/non-orphelins, indigo for orphelins
     if (nebula) {
       if (nebula.mode === 'points' && nebula.points) {
         for (const pt of nebula.points) {
           const nx = toCanvas(pt.x, false);
           const ny = toCanvas(pt.y, true);
-          ctx.globalAlpha = 0.15;
-          ctx.fillStyle = COMPASS_COLORS.nebula;
+          ctx.globalAlpha = 0.18;
+          ctx.fillStyle = pt.isOrphan === true ? '#818CF8' : COMPASS_COLORS.nebula;
           ctx.beginPath();
           ctx.arc(nx, ny, 3, 0, Math.PI * 2);
           ctx.fill();
@@ -107,15 +109,30 @@ export function CompassCanvas2D({
         const gs = nebula.gridSize;
         const cellW = (extent * 2) / gs;
         const cellH = (extent * 2) / gs;
+        // Draw all-users layer (amber)
         for (let i = 0; i < gs; i++) {
           for (let j = 0; j < gs; j++) {
             const density = nebula.grid[i][j];
             if (density < 0.02) continue;
             const cx = margin + j * cellW;
             const cy = margin + (gs - 1 - i) * cellH; // flip Y
-            ctx.globalAlpha = density * 0.35;
+            ctx.globalAlpha = density * 0.3;
             ctx.fillStyle = COMPASS_COLORS.nebula;
             ctx.fillRect(cx, cy, cellW + 1, cellH + 1);
+          }
+        }
+        // Draw orphelins overlay (indigo) if available
+        if (nebula.gridOrphan) {
+          for (let i = 0; i < gs; i++) {
+            for (let j = 0; j < gs; j++) {
+              const density = nebula.gridOrphan[i][j];
+              if (density < 0.02) continue;
+              const cx = margin + j * cellW;
+              const cy = margin + (gs - 1 - i) * cellH;
+              ctx.globalAlpha = density * 0.4;
+              ctx.fillStyle = '#818CF8';
+              ctx.fillRect(cx, cy, cellW + 1, cellH + 1);
+            }
           }
         }
         ctx.globalAlpha = 1;

@@ -101,6 +101,7 @@ export const snapshots = pgTable('snapshots', {
   mediaSources: jsonb('media_sources'),    // string[] — IDs de médias spécifiques (optionnel)
   infoDiversity: text('info_diversity'),   // 'regularly' | 'sometimes' | 'rarely' | 'never'
   mediaRelationship: text('media_relationship'), // 'trust' | 'critical' | 'independent' | 'avoid'
+  isOrphan: boolean('is_orphan'),               // null = non répondu, true = orphelin, false = non
   createdAt: timestamp('created_at').notNull().defaultNow(),
 });
 

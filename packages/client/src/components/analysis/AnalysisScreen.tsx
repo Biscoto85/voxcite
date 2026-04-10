@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import type { CompassPosition, Party, AxisId } from '@partiprism/shared';
 import { AXES } from '@partiprism/shared';
 
@@ -79,6 +79,7 @@ export function AnalysisScreen({ position, parties, profile, onBack }: AnalysisS
   const [tab, setTab] = useState<Tab>('resume');
   const [selectedParty, setSelectedParty] = useState<string | null>(null);
   const [canRerun, setCanRerun] = useState(false);
+  const [summaryCopied, setSummaryCopied] = useState(false);
 
   // Load cached analysis or fetch new one
   useEffect(() => {
@@ -137,6 +138,20 @@ export function AnalysisScreen({ position, parties, profile, onBack }: AnalysisS
       })
       .catch(() => setAnalysis((prev) => ({ ...prev, loading: false, summary: 'Analyse indisponible.' })));
   };
+
+  const handleCopySummary = useCallback(() => {
+    const text = [
+      analysis.summary,
+      analysis.espritCritiquePistes.length > 0
+        ? '\nPour aller plus loin :\n' + analysis.espritCritiquePistes.map((p) => `→ ${p}`).join('\n')
+        : '',
+      '\nMon analyse complète sur partiprism.fr',
+    ].join('');
+    navigator.clipboard.writeText(text).then(() => {
+      setSummaryCopied(true);
+      setTimeout(() => setSummaryCopied(false), 2000);
+    }).catch(() => {});
+  }, [analysis.summary, analysis.espritCritiquePistes]);
 
   // Party rankings
   const rankings = parties
@@ -220,6 +235,21 @@ export function AnalysisScreen({ position, parties, profile, onBack }: AnalysisS
         <div className="space-y-4" id="panel-resume" role="tabpanel">
           <div className="bg-gray-900 rounded-xl p-4 sm:p-5 border border-gray-800">
             <p className="text-gray-200 leading-relaxed">{analysis.summary}</p>
+            {analysis.summary && (
+              <div className="mt-3 pt-3 border-t border-gray-800 flex justify-end">
+                <button
+                  onClick={handleCopySummary}
+                  className="flex items-center gap-1.5 px-3 py-1.5 bg-gray-800 hover:bg-gray-700 border border-gray-700 rounded-lg text-xs text-gray-400 hover:text-gray-200 transition-colors focus-ring"
+                  aria-label="Copier le résumé"
+                >
+                  {summaryCopied ? (
+                    <><span aria-hidden="true">✓</span> Copié !</>
+                  ) : (
+                    <><span aria-hidden="true">📋</span> Copier le résumé</>
+                  )}
+                </button>
+              </div>
+            )}
           </div>
           {analysis.espritCritiquePistes.length > 0 && (
             <div className="bg-gray-900 rounded-xl p-4 sm:p-5 border border-gray-800">

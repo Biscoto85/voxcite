@@ -8,7 +8,7 @@ export const sessionsRouter = Router();
 // POST /snapshot — enregistrer un positionnement anonyme (pour la nébuleuse)
 // Aucun identifiant de session, aucune IP stockée.
 sessionsRouter.post('/snapshot', async (req, res) => {
-  const { postalCode, position, infoSource, perceivedBias, infoFormats, mediaSources, infoDiversity, mediaRelationship } = req.body as {
+  const { postalCode, position, infoSource, perceivedBias, infoFormats, mediaSources, infoDiversity, mediaRelationship, isOrphan } = req.body as {
     postalCode?: string;
     position: { societal: number; economic: number; authority: number; ecology: number; sovereignty: number };
     infoSource?: string;
@@ -17,6 +17,7 @@ sessionsRouter.post('/snapshot', async (req, res) => {
     mediaSources?: string[];
     infoDiversity?: string;
     mediaRelationship?: string;
+    isOrphan?: boolean;
   };
 
   if (!position || position.societal == null) {
@@ -50,6 +51,7 @@ sessionsRouter.post('/snapshot', async (req, res) => {
     mediaSources: mediaSources ?? null,
     infoDiversity: infoDiversity ?? null,
     mediaRelationship: mediaRelationship ?? null,
+    isOrphan: isOrphan ?? null,
   });
 
   res.status(201).json({ ok: true });
