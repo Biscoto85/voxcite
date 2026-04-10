@@ -12,10 +12,11 @@ import { FeedbackButton } from './components/feedback/FeedbackButton';
 import { MentionsLegales } from './components/legal/MentionsLegales';
 import { CGU } from './components/legal/CGU';
 import { NotreIntention } from './components/legal/NotreIntention';
+import { Methodologie } from './components/legal/Methodologie';
 import { parseChallengeFromHash } from './utils/challenge';
 import { ShareButton } from './components/share/ShareButton';
 
-export type AppScreen = 'loading' | 'onboarding' | 'reveal' | 'menu' | 'prisme' | 'affiner' | 'comparaison' | 'critique' | 'exprimer' | 'mentions' | 'cgu' | 'intention';
+export type AppScreen = 'loading' | 'onboarding' | 'reveal' | 'menu' | 'prisme' | 'affiner' | 'comparaison' | 'critique' | 'exprimer' | 'mentions' | 'cgu' | 'intention' | 'methodologie';
 
 // ── localStorage keys ──────────────────────────────────────────────
 const LS = {
@@ -56,6 +57,7 @@ const SCREEN_TITLES: Record<AppScreen, string> = {
   mentions: 'Mentions légales',
   cgu: 'Conditions Générales d\'Utilisation',
   intention: 'Notre intention',
+  methodologie: 'Méthodologie',
 };
 
 export function App() {
@@ -78,9 +80,9 @@ export function App() {
     return pos;
   });
 
-  // Navigate to static pages (legal + intention)
-  const navigateToLegal = useCallback((target: 'mentions' | 'cgu' | 'intention') => {
-    if (screen !== 'mentions' && screen !== 'cgu' && screen !== 'intention') setPreviousScreen(screen);
+  // Navigate to static pages (legal + intention + methodologie)
+  const navigateToLegal = useCallback((target: 'mentions' | 'cgu' | 'intention' | 'methodologie') => {
+    if (screen !== 'mentions' && screen !== 'cgu' && screen !== 'intention' && screen !== 'methodologie') setPreviousScreen(screen);
     setScreen(target);
     window.scrollTo(0, 0);
   }, [screen]);
@@ -151,8 +153,9 @@ export function App() {
     localStorage.setItem(LS.POSITION, JSON.stringify(position));
   }, []);
 
-  const showFeedback = screen !== 'loading' && screen !== 'onboarding' && screen !== 'mentions' && screen !== 'cgu' && screen !== 'intention';
-  const canGoHome = screen !== 'loading' && screen !== 'onboarding' && screen !== 'reveal' && screen !== 'mentions' && screen !== 'cgu' && screen !== 'intention';
+  const isStaticPage = screen === 'mentions' || screen === 'cgu' || screen === 'intention' || screen === 'methodologie';
+  const showFeedback = screen !== 'loading' && screen !== 'onboarding' && !isStaticPage;
+  const canGoHome = screen !== 'loading' && screen !== 'onboarding' && screen !== 'reveal' && !isStaticPage;
   const showFooter = screen !== 'loading';
 
   return (
@@ -264,13 +267,21 @@ export function App() {
         {screen === 'intention' && (
           <NotreIntention onBack={navigateBackFromLegal} />
         )}
+
+        {screen === 'methodologie' && (
+          <Methodologie onBack={navigateBackFromLegal} />
+        )}
       </main>
 
       {showFooter && (
         <footer className="py-4 px-4 border-t border-gray-900 text-center" role="contentinfo">
-          <div className="flex items-center justify-center gap-3 text-xs text-gray-600">
+          <div className="flex items-center justify-center flex-wrap gap-x-3 gap-y-1 text-xs text-gray-600">
             <button onClick={() => navigateToLegal('intention')} className={`hover:text-gray-400 transition-colors focus-ring rounded px-1 ${screen === 'intention' ? 'text-amber-400' : ''}`}>
               Notre intention
+            </button>
+            <span aria-hidden="true">·</span>
+            <button onClick={() => navigateToLegal('methodologie')} className={`hover:text-gray-400 transition-colors focus-ring rounded px-1 ${screen === 'methodologie' ? 'text-amber-400' : ''}`}>
+              Méthodologie
             </button>
             <span aria-hidden="true">·</span>
             <button onClick={() => navigateToLegal('mentions')} className={`hover:text-gray-400 transition-colors focus-ring rounded px-1 ${screen === 'mentions' ? 'text-amber-400' : ''}`}>
