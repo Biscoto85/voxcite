@@ -12,6 +12,7 @@ import { FeedbackButton } from './components/feedback/FeedbackButton';
 import { MentionsLegales } from './components/legal/MentionsLegales';
 import { CGU } from './components/legal/CGU';
 import { NotreIntention } from './components/legal/NotreIntention';
+import { parseChallengeFromHash } from './utils/challenge';
 
 export type AppScreen = 'loading' | 'onboarding' | 'reveal' | 'menu' | 'prisme' | 'affiner' | 'comparaison' | 'critique' | 'exprimer' | 'mentions' | 'cgu' | 'intention';
 
@@ -66,6 +67,16 @@ export function App() {
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
   const [error, setError] = useState<string | null>(null);
 
+  // Parse challenge URL (#defi/...) synchronously on first render — never sent to server
+  const [challengerPosition] = useState<CompassPosition | null>(() => {
+    const pos = parseChallengeFromHash();
+    if (pos) {
+      // Clean the hash from the URL so it doesn't persist on refresh
+      window.history.replaceState(null, '', window.location.pathname + window.location.search);
+    }
+    return pos;
+  });
+
   // Navigate to static pages (legal + intention)
   const navigateToLegal = useCallback((target: 'mentions' | 'cgu' | 'intention') => {
     if (screen !== 'mentions' && screen !== 'cgu' && screen !== 'intention') setPreviousScreen(screen);
@@ -100,7 +111,8 @@ export function App() {
         if (onboardingDone && savedPosition) {
           setUserPosition(savedPosition);
           setUserProfile(savedProfile);
-          setScreen('menu');
+          // If arriving via a challenge link, go to reveal to show comparison
+          setScreen(challengerPosition ? 'reveal' : 'menu');
         } else {
           setScreen('onboarding');
         }
@@ -179,12 +191,18 @@ export function App() {
           <OnboardingFlow
             questions={onboardingQuestions}
             parties={parties}
+            challengerPosition={challengerPosition}
             onComplete={handleOnboardingComplete}
           />
         )}
 
         {screen === 'reveal' && userPosition && (
-          <CompassReveal parties={parties} userPosition={userPosition} onContinue={() => setScreen('menu')} />
+          <CompassReveal
+            parties={parties}
+            userPosition={userPosition}
+            challengerPosition={challengerPosition}
+            onContinue={() => setScreen('menu')}
+          />
         )}
 
         {screen === 'menu' && (

@@ -10,10 +10,11 @@ type OnboardingStep = 'postal' | 'questions';
 interface OnboardingFlowProps {
   questions: Question[];
   parties: Party[];
+  challengerPosition?: CompassPosition | null;
   onComplete: (position: CompassPosition, profile: UserProfile) => void;
 }
 
-export function OnboardingFlow({ questions, parties, onComplete }: OnboardingFlowProps) {
+export function OnboardingFlow({ questions, parties, challengerPosition, onComplete }: OnboardingFlowProps) {
   const [step, setStep] = useState<OnboardingStep>('postal');
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -91,7 +92,21 @@ export function OnboardingFlow({ questions, parties, onComplete }: OnboardingFlo
   }, [currentIndex]);
 
   if (step === 'postal') {
-    return <PostalCodeInput onSubmit={handleProfileSubmit} serverError={profileError} />;
+    return (
+      <>
+        {challengerPosition && (
+          <div className="max-w-lg mx-auto mb-4">
+            <div className="bg-indigo-950/40 border border-indigo-700/40 rounded-xl px-4 py-3 flex items-center gap-3">
+              <span className="text-xl shrink-0" aria-hidden="true">⚡</span>
+              <p className="text-sm text-indigo-200">
+                Quelqu'un t'a lancé un défi — réponds aux questions pour comparer vos positionnements.
+              </p>
+            </div>
+          </div>
+        )}
+        <PostalCodeInput onSubmit={handleProfileSubmit} serverError={profileError} />
+      </>
+    );
   }
 
   if (!currentQuestion) return null;

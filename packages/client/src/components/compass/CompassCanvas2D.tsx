@@ -15,6 +15,7 @@ interface NebulaData {
 interface CompassCanvas2DProps {
   parties: Party[];
   userPosition?: CompassPosition;
+  challengerPosition?: CompassPosition | null;
   xAxis: AxisId;
   yAxis: AxisId;
   highlightedPartyId: string | null;
@@ -22,7 +23,7 @@ interface CompassCanvas2DProps {
 }
 
 export function CompassCanvas2D({
-  parties, userPosition, xAxis, yAxis, highlightedPartyId, onPartyHover,
+  parties, userPosition, challengerPosition, xAxis, yAxis, highlightedPartyId, onPartyHover,
 }: CompassCanvas2DProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -199,7 +200,35 @@ export function CompassCanvas2D({
       ctx.textAlign = 'center';
       ctx.fillText('Toi', ux, uy - r - 8);
     }
-  }, [parties, userPosition, xAxis, yAxis, highlightedPartyId, nebula]);
+    // Challenger dot (indigo) — drawn after parties, before user dot
+    if (challengerPosition) {
+      const cx = toX(challengerPosition);
+      const cy = toY(challengerPosition);
+      const cr = COMPASS_SIZES.userDotRadius + 1;
+
+      // Indigo glow
+      const glow = ctx.createRadialGradient(cx, cy, cr, cx, cy, cr * 3);
+      glow.addColorStop(0, 'rgba(129, 140, 248, 0.35)');
+      glow.addColorStop(1, 'rgba(129, 140, 248, 0)');
+      ctx.fillStyle = glow;
+      ctx.beginPath();
+      ctx.arc(cx, cy, cr * 3, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.fillStyle = '#818CF8';
+      ctx.beginPath();
+      ctx.arc(cx, cy, cr, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.strokeStyle = 'rgba(255,255,255,0.4)';
+      ctx.lineWidth = 1.5;
+      ctx.stroke();
+
+      ctx.fillStyle = '#C7D2FE';
+      ctx.font = `bold ${COMPASS_SIZES.userLabelFontSize}px system-ui`;
+      ctx.textAlign = 'center';
+      ctx.fillText('Challenger', cx, cy - cr - 8);
+    }
+  }, [parties, userPosition, challengerPosition, xAxis, yAxis, highlightedPartyId, nebula]);
 
   useEffect(() => {
     draw();
