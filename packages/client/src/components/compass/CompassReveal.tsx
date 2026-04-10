@@ -6,6 +6,7 @@ import { CompassCanvas2D } from './CompassCanvas2D';
 import { PartyLegend } from './PartyLegend';
 import { getClosestParty } from '@/utils/scoring';
 import { buildChallengeUrl } from '@/utils/challenge';
+import { buildSharePhrase } from '@/utils/share';
 
 interface CompassRevealProps {
   parties: Party[];
@@ -41,45 +42,6 @@ function intensityLabel(intensity: number): { label: string; color: string } {
 }
 
 type AxisKey = keyof CompassPosition;
-
-const AXIS_LABEL: Record<AxisKey, (v: number) => string | null> = {
-  societal:    (v) => v > 0.2 ? 'progressiste'      : v < -0.2 ? 'conservateur·trice' : null,
-  economic:    (v) => v > 0.2 ? 'libéral·e'          : v < -0.2 ? 'interventionniste'  : null,
-  authority:   (v) => v > 0.2 ? 'libertaire'         : v < -0.2 ? 'autoritaire'         : null,
-  ecology:     (v) => v > 0.2 ? 'écologiste'         : v < -0.2 ? 'productiviste'       : null,
-  sovereignty: (v) => v > 0.2 ? 'mondialiste'        : v < -0.2 ? 'souverainiste'       : null,
-};
-
-/** Top-3 dominant axes description for the share phrase */
-function buildSharePhrase(pos: CompassPosition, closest: Party | null): string {
-  const axes: AxisKey[] = ['societal', 'economic', 'authority', 'ecology', 'sovereignty'];
-
-  // Sort by absolute value descending
-  const sorted = axes
-    .map((k) => ({ key: k, val: pos[k], abs: Math.abs(pos[k]) }))
-    .sort((a, b) => b.abs - a.abs);
-
-  // Take up to 3 with |val| > 0.2, get their labels
-  const labels = sorted
-    .slice(0, 3)
-    .map(({ key, val }) => AXIS_LABEL[key](val))
-    .filter((l): l is string => l !== null);
-
-  const descList =
-    labels.length === 0 ? 'centriste sur tous les axes'
-    : labels.length === 1 ? labels[0]
-    : labels.length === 2 ? `${labels[0]} et ${labels[1]}`
-    : `${labels[0]}, ${labels[1]} et ${labels[2]}`;
-
-  const intensity = computeIntensity(pos);
-  const tone = intensity > 0.55
-    ? 'Des convictions bien tranchées — vous aussi ?'
-    : 'Un positionnement plus nuancé qu\'il n\'y paraît.';
-
-  const partyPart = closest ? `, proche de ${closest.label} sur 5 axes` : '';
-
-  return `Je suis ${descList}${partyPart}. ${tone} Mon vrai positionnement sur partiprism.fr`;
-}
 
 /** Compute distance between two positions */
 function distance(a: CompassPosition, b: CompassPosition): number {

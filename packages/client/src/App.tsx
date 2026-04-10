@@ -206,7 +206,7 @@ export function App() {
         )}
 
         {screen === 'menu' && (
-          <MainMenu userPosition={userPosition} onNavigate={setScreen} />
+          <MainMenu userPosition={userPosition} parties={parties} onNavigate={setScreen} />
         )}
 
         {screen === 'prisme' && parties.length > 0 && (
