@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { db } from '../db/index.js';
-import { snapshots } from '../db/schema.js';
+import { snapshots, orphanReports } from '../db/schema.js';
 import { buildNebulaData } from '../services/nebula.js';
 import type { AxisId } from '@partiprism/shared';
 import { ALL_AXES } from '../utils/helpers.js';
@@ -33,25 +33,18 @@ nebulaRouter.get('/', async (req, res) => {
   res.json(nebula);
 });
 
-// GET /orphan-stats — statistiques orphelins uniquement
+// GET /orphan-stats — statistiques depuis la table orphan_reports (déclarations tardives)
 nebulaRouter.get('/orphan-stats', async (_req, res) => {
-  const allSnapshots = await db
-    .select({
-      societal: snapshots.positionSocietal,
-      economic: snapshots.positionEconomic,
-      authority: snapshots.positionAuthority,
-      ecology: snapshots.positionEcology,
-      sovereignty: snapshots.positionSovereignty,
-      isOrphan: snapshots.isOrphan,
-    })
-    .from(snapshots);
+  const reports = await db
+    .select({ isOrphan: orphanReports.isOrphan })
+    .from(orphanReports);
 
-  const withAnswer = allSnapshots.filter((s) => s.isOrphan !== null && s.isOrphan !== undefined);
-  const orphanCount = withAnswer.filter((s) => s.isOrphan === true).length;
+  const total = reports.length;
+  const orphanCount = reports.filter((r) => r.isOrphan).length;
 
   res.json({
-    total: withAnswer.length,
+    total,
     orphanCount,
-    orphanPct: withAnswer.length > 0 ? Math.round((orphanCount / withAnswer.length) * 100) : null,
+    orphanPct: total > 0 ? Math.round((orphanCount / total) * 100) : null,
   });
 });

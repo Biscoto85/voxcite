@@ -65,6 +65,7 @@ type Tab = 'resume' | 'citoyens' | 'partis' | 'biais';
 
 const LS_ANALYSIS = 'partiprism_analysis';
 const LS_RESPONSES = 'partiprism_responses';
+const LS_ORPHAN = 'partiprism_is_orphan';
 const ANALYSIS_QUESTION_THRESHOLD = 40;
 
 interface CachedAnalysis {
@@ -80,6 +81,12 @@ export function AnalysisScreen({ position, parties, profile, onBack }: AnalysisS
   const [selectedParty, setSelectedParty] = useState<string | null>(null);
   const [canRerun, setCanRerun] = useState(false);
   const [summaryCopied, setSummaryCopied] = useState(false);
+  // Orphelin
+  const [isOrphan, setIsOrphan] = useState<boolean | null>(() => {
+    const saved = localStorage.getItem(LS_ORPHAN);
+    return saved === null ? null : saved === 'true';
+  });
+  const [orphanPct, setOrphanPct] = useState<number | null>(null);
 
   // Load cached analysis or fetch new one
   useEffect(() => {
@@ -138,6 +145,24 @@ export function AnalysisScreen({ position, parties, profile, onBack }: AnalysisS
       })
       .catch(() => setAnalysis((prev) => ({ ...prev, loading: false, summary: 'Analyse indisponible.' })));
   };
+
+  // Fetch orphan stats once
+  useEffect(() => {
+    fetch('/api/nebula/orphan-stats')
+      .then((r) => r.json())
+      .then((d) => { if (d.orphanPct !== null) setOrphanPct(d.orphanPct); })
+      .catch(() => {});
+  }, []);
+
+  const handleOrphanAnswer = useCallback((answer: boolean) => {
+    setIsOrphan(answer);
+    localStorage.setItem(LS_ORPHAN, String(answer));
+    fetch('/api/sessions/orphan-report', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ isOrphan: answer }),
+    }).catch(() => {});
+  }, []);
 
   const handleCopySummary = useCallback(() => {
     const text = [
@@ -278,6 +303,64 @@ export function AnalysisScreen({ position, parties, profile, onBack }: AnalysisS
       {/* VS PARTIS */}
       {!analysis.loading && tab === 'partis' && (
         <div className="space-y-4" id="panel-partis" role="tabpanel">
+
+          {/* Bloc orphelin — question ou résultat */}
+          {isOrphan === null ? (
+            <div className="bg-indigo-950/30 rounded-xl p-4 sm:p-5 border border-indigo-800/40">
+              <p className="text-xs text-indigo-400 uppercase tracking-wider mb-1">Pour toi, après analyse</p>
+              <h3 className="text-base font-semibold text-white mb-1">Es-tu orphelin·e politique ?</h3>
+              <p className="text-xs text-indigo-300/70 mb-4">
+                Analysez vos écarts avec les différents partis avant de répondre à cette question.
+                {orphanPct !== null && (
+                  <span className="ml-1 text-indigo-400">{orphanPct}% des utilisateurs se déclarent orphelins.</span>
+                )}
+              </p>
+              <div className="flex flex-col sm:flex-row gap-2">
+                <button
+                  onClick={() => handleOrphanAnswer(true)}
+                  className="flex-1 py-3 px-4 rounded-lg border border-indigo-700/50 bg-indigo-900/30 hover:bg-indigo-800/40 text-left text-sm text-indigo-200 transition-colors focus-ring"
+                >
+                  <span className="font-medium block">Oui — orphelin·e</span>
+                  <span className="text-xs text-indigo-400/70">Aucun parti ne me représente vraiment</span>
+                </button>
+                <button
+                  onClick={() => handleOrphanAnswer(false)}
+                  className="flex-1 py-3 px-4 rounded-lg border border-gray-700 bg-gray-800/50 hover:bg-gray-800 text-left text-sm text-gray-200 transition-colors focus-ring"
+                >
+                  <span className="font-medium block">Non — je me retrouve dans un parti</span>
+                  <span className="text-xs text-gray-500">Même imparfaitement</span>
+                </button>
+              </div>
+            </div>
+          ) : (
+            <div className={`rounded-xl px-4 py-3 border flex items-center gap-3 ${
+              isOrphan
+                ? 'bg-indigo-950/30 border-indigo-800/40'
+                : 'bg-gray-900 border-gray-800'
+            }`}>
+              <span className="text-xl" aria-hidden="true">{isOrphan ? '🗳' : '✓'}</span>
+              <div>
+                <p className="text-sm font-medium text-gray-200">
+                  {isOrphan ? 'Tu te déclares orphelin·e politique' : 'Tu te retrouves dans un parti'}
+                </p>
+                {orphanPct !== null && (
+                  <p className="text-xs text-gray-500 mt-0.5">
+                    {isOrphan
+                      ? `Comme ${orphanPct}% des utilisateurs PartiPrism`
+                      : `${orphanPct}% des utilisateurs se déclarent orphelins — tu fais partie des autres`}
+                  </p>
+                )}
+              </div>
+              <button
+                onClick={() => { setIsOrphan(null); localStorage.removeItem(LS_ORPHAN); }}
+                className="ml-auto text-xs text-gray-600 hover:text-gray-400 focus-ring rounded px-1"
+                aria-label="Changer la réponse"
+              >
+                Changer
+              </button>
+            </div>
+          )}
+
           <div className="bg-gray-900 rounded-xl p-4 sm:p-5 border border-gray-800">
             <p className="text-gray-200 leading-relaxed mb-4">{analysis.vsPartis}</p>
           </div>

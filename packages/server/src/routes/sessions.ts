@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { db } from '../db/index.js';
-import { snapshots, votes } from '../db/schema.js';
+import { snapshots, votes, orphanReports } from '../db/schema.js';
 import { geolocateIP, validatePostalCode } from '../services/geolocation.js';
 
 export const sessionsRouter = Router();
@@ -77,6 +77,19 @@ sessionsRouter.post('/validate-postal', async (req, res) => {
   }
 
   res.status(200).json({ ok: true });
+});
+
+// POST /orphan-report — déclarer son statut d'orphelin politique (anonyme, séparé des snapshots)
+sessionsRouter.post('/orphan-report', async (req, res) => {
+  const { isOrphan } = req.body as { isOrphan: unknown };
+
+  if (typeof isOrphan !== 'boolean') {
+    res.status(400).json({ error: 'isOrphan (boolean) required' });
+    return;
+  }
+
+  await db.insert(orphanReports).values({ isOrphan });
+  res.status(201).json({ ok: true });
 });
 
 // POST /vote — enregistrer un vote anonyme individuel

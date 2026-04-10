@@ -246,7 +246,13 @@ export const sharedLinks = pgTable('shared_links', {
   createdAt: timestamp('created_at').notNull().defaultNow(),
 });
 
-// ── Évaluations médias (anonyme) ──
+// ── Déclarations orphelins politiques (anonyme, séparé des snapshots) ──
+
+export const orphanReports = pgTable('orphan_reports', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  isOrphan: boolean('is_orphan').notNull(),
+  createdAt: timestamp('created_at').notNull().defaultNow(),
+});
 
 export const mediaRatings = pgTable('media_ratings', {
   id: uuid('id').primaryKey().defaultRandom(),
