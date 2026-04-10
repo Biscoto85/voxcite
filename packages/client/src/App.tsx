@@ -11,8 +11,9 @@ import { CritiqueScreen } from './components/critique/CritiqueScreen';
 import { FeedbackButton } from './components/feedback/FeedbackButton';
 import { MentionsLegales } from './components/legal/MentionsLegales';
 import { CGU } from './components/legal/CGU';
+import { NotreIntention } from './components/legal/NotreIntention';
 
-export type AppScreen = 'loading' | 'onboarding' | 'reveal' | 'menu' | 'prisme' | 'affiner' | 'comparaison' | 'critique' | 'exprimer' | 'mentions' | 'cgu';
+export type AppScreen = 'loading' | 'onboarding' | 'reveal' | 'menu' | 'prisme' | 'affiner' | 'comparaison' | 'critique' | 'exprimer' | 'mentions' | 'cgu' | 'intention';
 
 // ── localStorage keys ──────────────────────────────────────────────
 const LS = {
@@ -52,6 +53,7 @@ const SCREEN_TITLES: Record<AppScreen, string> = {
   exprimer: 'M\'exprimer',
   mentions: 'Mentions légales',
   cgu: 'Conditions Générales d\'Utilisation',
+  intention: 'Notre intention',
 };
 
 export function App() {
@@ -64,9 +66,9 @@ export function App() {
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  // Navigate to legal pages
-  const navigateToLegal = useCallback((target: 'mentions' | 'cgu') => {
-    if (screen !== 'mentions' && screen !== 'cgu') setPreviousScreen(screen);
+  // Navigate to static pages (legal + intention)
+  const navigateToLegal = useCallback((target: 'mentions' | 'cgu' | 'intention') => {
+    if (screen !== 'mentions' && screen !== 'cgu' && screen !== 'intention') setPreviousScreen(screen);
     setScreen(target);
     window.scrollTo(0, 0);
   }, [screen]);
@@ -136,8 +138,8 @@ export function App() {
     localStorage.setItem(LS.POSITION, JSON.stringify(position));
   }, []);
 
-  const showFeedback = screen !== 'loading' && screen !== 'onboarding' && screen !== 'mentions' && screen !== 'cgu';
-  const canGoHome = screen !== 'loading' && screen !== 'onboarding' && screen !== 'reveal' && screen !== 'mentions' && screen !== 'cgu';
+  const showFeedback = screen !== 'loading' && screen !== 'onboarding' && screen !== 'mentions' && screen !== 'cgu' && screen !== 'intention';
+  const canGoHome = screen !== 'loading' && screen !== 'onboarding' && screen !== 'reveal' && screen !== 'mentions' && screen !== 'cgu' && screen !== 'intention';
   const showFooter = screen !== 'loading';
 
   return (
@@ -233,11 +235,19 @@ export function App() {
         {screen === 'cgu' && (
           <CGU onBack={navigateBackFromLegal} onNavigateMentions={() => navigateToLegal('mentions')} />
         )}
+
+        {screen === 'intention' && (
+          <NotreIntention onBack={navigateBackFromLegal} />
+        )}
       </main>
 
       {showFooter && (
         <footer className="py-4 px-4 border-t border-gray-900 text-center" role="contentinfo">
           <div className="flex items-center justify-center gap-3 text-xs text-gray-600">
+            <button onClick={() => navigateToLegal('intention')} className={`hover:text-gray-400 transition-colors focus-ring rounded px-1 ${screen === 'intention' ? 'text-amber-400' : ''}`}>
+              Notre intention
+            </button>
+            <span aria-hidden="true">·</span>
             <button onClick={() => navigateToLegal('mentions')} className={`hover:text-gray-400 transition-colors focus-ring rounded px-1 ${screen === 'mentions' ? 'text-amber-400' : ''}`}>
               Mentions légales
             </button>
