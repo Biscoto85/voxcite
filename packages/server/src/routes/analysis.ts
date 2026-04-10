@@ -5,7 +5,8 @@ import { runAiAnalysis } from '../services/ai-analysis.js';
 import { getPopulationStats, getUserPercentiles } from '../services/population.js';
 import { extractResponseSignals } from '../services/response-signals.js';
 import { db } from '../db/index.js';
-import { questions } from '../db/schema.js';
+import { questions, medias } from '../db/schema.js';
+import { inArray } from 'drizzle-orm';
 import { ALL_AXES } from '../utils/helpers.js';
 import fs from 'fs';
 import path from 'path';
@@ -84,11 +85,18 @@ function generateFallbackAnalysis(
 // Le serveur traite sans rien stocker. Résultat caché côté client.
 
 analysisRouter.post('/', async (req, res) => {
-  const { position, parties, infoSource, perceivedBias, responses: clientResponses } = req.body as {
+  const {
+    position, parties, infoSource, perceivedBias, responses: clientResponses,
+    infoFormats, mediaSources, infoDiversity, mediaRelationship,
+  } = req.body as {
     position: CompassPosition;
     parties: PartyInput[];
     infoSource?: string;
     perceivedBias?: string;
+    infoFormats?: string[];
+    mediaSources?: string[];
+    infoDiversity?: string;
+    mediaRelationship?: string;
     responses?: Array<{ questionId: string; value: number }>;
   };
 
@@ -97,9 +105,57 @@ analysisRouter.post('/', async (req, res) => {
     return;
   }
 
-  // Resolve media aggregate position from infoSource
+  // Résolution de la position médias :
+  // 1. Si des IDs de médias spécifiques sont déclarés → calcul précis depuis la DB
+  // 2. Sinon, si le format est connu → position agrégée par type (YAML)
   let mediaPosition: CompassPosition | undefined;
-  if (infoSource) {
+  let declaredMediaLabels: string[] = [];
+
+  if (mediaSources && mediaSources.length > 0) {
+    try {
+      const avg = (vals: number[]) => vals.reduce((s, v) => s + v, 0) / vals.length;
+      const rows = await db.select({
+        label: medias.label,
+        positionSocietal: medias.positionSocietal,
+        positionEconomic: medias.positionEconomic,
+        positionAuthority: medias.positionAuthority,
+        positionEcology: medias.positionEcology,
+        positionSovereignty: medias.positionSovereignty,
+      }).from(medias).where(inArray(medias.id, mediaSources));
+
+      if (rows.length > 0) {
+        declaredMediaLabels = rows.map((r) => r.label);
+        mediaPosition = {
+          societal: avg(rows.map((r) => r.positionSocietal)),
+          economic: avg(rows.map((r) => r.positionEconomic)),
+          authority: avg(rows.map((r) => r.positionAuthority)),
+          ecology: avg(rows.map((r) => r.positionEcology)),
+          sovereignty: avg(rows.map((r) => r.positionSovereignty)),
+        };
+      }
+    } catch (err) {
+      console.error('[analysis] Failed to compute media average from DB:', err);
+    }
+  } else if (infoFormats && infoFormats.length > 0) {
+    // Fallback: agréger les positions moyennes par format déclaré
+    const aggPositions = infoFormats
+      .map((f) => {
+        const key = SOURCE_TO_AGGREGATE[f] || f;
+        return mediaAggregates[key];
+      })
+      .filter(Boolean);
+    if (aggPositions.length > 0) {
+      const avg = (vals: number[]) => vals.reduce((s, v) => s + v, 0) / vals.length;
+      mediaPosition = {
+        societal: avg(aggPositions.map((p) => p.societal)),
+        economic: avg(aggPositions.map((p) => p.economic)),
+        authority: avg(aggPositions.map((p) => p.authority)),
+        ecology: avg(aggPositions.map((p) => p.ecology)),
+        sovereignty: avg(aggPositions.map((p) => p.sovereignty)),
+      };
+    }
+  } else if (infoSource) {
+    // Legacy: ancienne source unique
     const aggKey = SOURCE_TO_AGGREGATE[infoSource] || infoSource;
     mediaPosition = mediaAggregates[aggKey];
   }
@@ -140,6 +196,10 @@ analysisRouter.post('/', async (req, res) => {
         percentiles,
         infoSource,
         perceivedBias,
+        infoFormats,
+        mediaSources: declaredMediaLabels,
+        infoDiversity,
+        mediaRelationship,
         mediaPosition,
         responseSignals,
       });

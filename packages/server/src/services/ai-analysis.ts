@@ -18,10 +18,14 @@ export interface AnalysisInput {
   parties: PartyInput[];
   populationStats: PopulationStats;
   percentiles: UserPercentiles;
-  infoSource?: string;       // 'tv' | 'internet' | 'radio' | 'journal' | 'autre'
-  perceivedBias?: string;    // 'gauche' | 'droite' | 'neutre' | 'les_deux'
-  mediaPosition?: CompassPosition; // position agrégée de la source d'info
-  responseSignals?: ResponseSignals; // rich per-response data
+  infoSource?: string;            // legacy
+  perceivedBias?: string;         // 'gauche' | 'droite' | 'varie' | 'difficile'
+  infoFormats?: string[];         // formats multi-select (v2)
+  mediaSources?: string[];        // labels des médias déclarés (v2, résolu depuis DB)
+  infoDiversity?: string;         // 'regularly' | 'sometimes' | 'rarely' | 'never' (v2)
+  mediaRelationship?: string;     // 'trust' | 'critical' | 'independent' | 'avoid' (v2)
+  mediaPosition?: CompassPosition; // position éditoriale moyenne calculée
+  responseSignals?: ResponseSignals;
 }
 
 export interface IdentifiedBias {
@@ -42,25 +46,47 @@ export interface AiAnalysisResult {
   espritCritiquePistes: string[];
 }
 
-// ── Media source labels ─────────────────────────────────────────────
+// ── Labels lisibles pour les champs du profil info ─────────────────
 
-const SOURCE_LABELS: Record<string, string> = {
-  tv: 'la télévision',
-  internet: 'internet et les réseaux sociaux',
-  radio: 'la radio',
-  journal: 'la presse écrite/web',
-  autre: 'des sources variées',
+const FORMAT_LABELS: Record<string, string> = {
+  tv: 'Télévision',
+  radio: 'Radio',
+  presse: 'Presse écrite/web',
+  podcast: 'Podcasts & YouTube',
+  reseaux: 'Réseaux sociaux',
+  entourage: 'Entourage / bouche à oreille',
+  autre: 'Autre',
+  // legacy
+  internet: 'Internet / Réseaux sociaux',
+  journal: 'Presse écrite/web',
 };
 
 const BIAS_LABELS: Record<string, string> = {
-  gauche: 'de gauche',
-  droite: 'de droite',
-  neutre: 'neutres',
+  gauche: 'plutôt à gauche',
+  droite: 'plutôt à droite',
+  varie: 'variées (intentionnellement diversifiées)',
+  difficile: 'difficile à situer',
+  // legacy
+  neutre: 'neutres (selon lui)',
   les_deux: 'variées (gauche et droite)',
 };
 
+const DIVERSITY_LABELS: Record<string, string> = {
+  regularly: 'régulièrement (cherche activement des points de vue opposés)',
+  sometimes: 'parfois (sans en faire un principe)',
+  rarely: 'rarement (plutôt par hasard)',
+  never: 'jamais (évite les sources en désaccord)',
+};
+
+const RELATIONSHIP_LABELS: Record<string, string> = {
+  trust: 'fait confiance aux grands médias traditionnels',
+  critical: 'les lit avec recul critique',
+  independent: 'préfère les médias indépendants',
+  avoid: 'les évite (trop proches du pouvoir)',
+};
+
 function buildPrompt(input: AnalysisInput): { dataBlock: string } {
-  const { position, parties, populationStats, percentiles, infoSource, perceivedBias, mediaPosition, responseSignals } = input;
+  const { position, parties, populationStats, percentiles, infoSource, perceivedBias, infoFormats, mediaSources, infoDiversity, mediaRelationship, mediaPosition, responseSignals } = input;
 
   const ranked = parties.map((p) => {
     const dist = Math.sqrt(ALL_AXES.reduce((s, ax) => s + (position[ax] - p.position[ax]) ** 2, 0));
@@ -77,29 +103,59 @@ function buildPrompt(input: AnalysisInput): { dataBlock: string } {
     return `- ${ax} : répondant=${position[ax].toFixed(2)}, moy.pop=${s.mean.toFixed(2)}, σ=${s.stdDev.toFixed(2)}, percentile=${pct}%`;
   }).join('\n');
 
-  // Media bias section
+  // Bloc audit sources d'information
   let mediaBiasBlock = '';
-  if (infoSource && mediaPosition) {
-    const mediaDeltas = ALL_AXES.map((ax) => {
-      const delta = position[ax] - mediaPosition[ax];
-      return `${ax}: répondant=${position[ax].toFixed(2)} vs média=${mediaPosition[ax].toFixed(2)} (écart=${delta > 0 ? '+' : ''}${delta.toFixed(2)})`;
-    }).join('\n  ');
+
+  // Formats déclarés (v2) ou source legacy
+  const formatsDesc = infoFormats && infoFormats.length > 0
+    ? infoFormats.map((f) => FORMAT_LABELS[f] || f).join(', ')
+    : (infoSource ? (FORMAT_LABELS[infoSource] || infoSource) : null);
+
+  const mediaDesc = mediaSources && mediaSources.length > 0
+    ? mediaSources.join(', ')
+    : null;
+
+  if (formatsDesc || mediaPosition) {
+    const diversityDesc = infoDiversity ? DIVERSITY_LABELS[infoDiversity] : null;
+    const relationshipDesc = mediaRelationship ? RELATIONSHIP_LABELS[mediaRelationship] : null;
+    const biasDesc = perceivedBias ? BIAS_LABELS[perceivedBias] : null;
+
+    let mediaGapLines = 'Non calculable (aucun média spécifique déclaré)';
+    let anglesMorts: string[] = [];
+    if (mediaPosition) {
+      mediaGapLines = ALL_AXES.map((ax) => {
+        const delta = position[ax] - mediaPosition[ax];
+        const absDelta = Math.abs(delta);
+        const warning = absDelta > 0.5 ? ' ⚠ ANGLE MORT POTENTIEL' : (absDelta > 0.3 ? ' △ écart notable' : '');
+        return `  ${ax}: répondant=${position[ax].toFixed(2)} vs médias=${mediaPosition[ax].toFixed(2)} (${delta > 0 ? '+' : ''}${delta.toFixed(2)})${warning}`;
+      }).join('\n');
+
+      anglesMorts = ALL_AXES.filter((ax) => Math.abs(position[ax] - mediaPosition[ax]) > 0.5);
+    }
 
     mediaBiasBlock = `
 
-SOURCE D'INFORMATION PRINCIPALE : ${SOURCE_LABELS[infoSource] || infoSource}
-Le répondant pense que ses sources sont : ${BIAS_LABELS[perceivedBias || ''] || perceivedBias || 'non renseigné'}
+AUDIT SOURCES D'INFORMATION :
+Formats consommés : ${formatsDesc || 'non renseigné'}
+${mediaDesc ? `Médias déclarés spécifiques : ${mediaDesc}` : 'Médias spécifiques : non renseignés'}
+Orientation perçue de ses sources : ${biasDesc || 'non renseigné'}
+Diversification intentionnelle : ${diversityDesc || 'non renseigné'}
+Rapport aux grands médias : ${relationshipDesc || 'non renseigné'}
 
-POSITION ÉDITORIALE MOYENNE DE SA SOURCE D'INFO (sur les 5 axes) :
-  ${mediaBiasBlock ? mediaDeltas : 'Non disponible'}
+POSITION ÉDITORIALE CALCULÉE DE SES SOURCES vs SA POSITION :
+${mediaGapLines}
+${anglesMorts.length > 0 ? `
+AXES À FORT ÉCART (> 0.5) : ${anglesMorts.join(', ')}
+${infoDiversity === 'never' || infoDiversity === 'rarely'
+  ? '→ Le répondant diversifie peu ses sources. Ces axes sont des ANGLES MORTS INFORMATIONNELS probables.'
+  : '→ Le répondant déclare diversifier parfois/régulièrement. Ces écarts peuvent être intentionnels.'}` : ''}
 
-ANALYSE DU BIAIS MÉDIATIQUE :
-Compare la position du répondant à celle de sa source d'info.
-- Si les positions sont proches → la source renforce ses convictions (bulle informationnelle)
-- Si les positions divergent → le répondant a des convictions qui résistent à sa bulle info
-- Si le répondant pense que ses sources sont "neutres" mais que la source a un biais mesurable → biais de perception
-
-Note : les réseaux sociaux (internet) ont un effet miroir — ils renforcent les positions existantes via les algorithmes.`;
+INSTRUCTIONS POUR L'ANALYSE DES BIAIS MÉDIAS :
+- Si les positions sont proches ET diversification faible → bulle informationnelle confirmante
+- Si fort écart + jamais de diversification → angle mort informationnel probable
+- Si fort écart + diversification régulière → le répondant a des convictions qui résistent à ses sources
+- Si perçoit ses sources comme "${biasDesc}" mais les écarts mesurent autre chose → biais de perception à signaler
+- Les réseaux sociaux amplifient les convictions existantes via les algorithmes`;
   }
 
   // ── Response signals block ─────────────────────────────────────

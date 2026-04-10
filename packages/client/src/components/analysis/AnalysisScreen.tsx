@@ -3,6 +3,7 @@ import type { CompassPosition, Party, AxisId } from '@partiprism/shared';
 import { AXES } from '@partiprism/shared';
 
 import type { UserProfile } from '@/App';
+import { MediaSourcesPanel } from './MediaSourcesPanel';
 
 interface AnalysisScreenProps {
   position: CompassPosition;
@@ -112,8 +113,12 @@ export function AnalysisScreen({ position, parties, profile, onBack }: AnalysisS
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         position,
-        infoSource: profile?.infoSource,
+        infoSource: profile?.infoSource,         // legacy
         perceivedBias: profile?.perceivedBias,
+        infoFormats: profile?.infoFormats,
+        mediaSources: profile?.mediaSources,
+        infoDiversity: profile?.infoDiversity,
+        mediaRelationship: profile?.mediaRelationship,
         responses: savedResponses,
         parties: parties.map((p) => ({
           id: p.id, label: p.label, abbreviation: p.abbreviation, position: p.position,
@@ -181,9 +186,10 @@ export function AnalysisScreen({ position, parties, profile, onBack }: AnalysisS
             }`}
           >
             {t.label}
-            {t.id === 'biais' && analysis.biases.length > 0 && (
-              <span className="ml-1 text-xs bg-amber-400/30 rounded-full px-1.5" aria-label={`${analysis.biases.length} biais détectés`}>
-                {analysis.biases.length}
+            {t.id === 'biais' && (profile?.infoDiversity || analysis.biases.length > 0) && (
+              <span className="ml-1 text-xs bg-indigo-400/30 rounded-full px-1.5"
+                aria-label={analysis.biases.length > 0 ? `${analysis.biases.length} biais IA détectés` : 'Analyse sources disponible'}>
+                {analysis.biases.length > 0 ? analysis.biases.length : '●'}
               </span>
             )}
           </button>
@@ -301,6 +307,9 @@ export function AnalysisScreen({ position, parties, profile, onBack }: AnalysisS
       {/* BIAIS */}
       {!analysis.loading && tab === 'biais' && (
         <div className="space-y-3" id="panel-biais" role="tabpanel">
+          {/* Analyse visuelle des sources (client-side) */}
+          <MediaSourcesPanel profile={profile} userPosition={position} />
+
           {analysis.biases.length === 0 ? (
             <div className="bg-gray-900 rounded-xl p-5 border border-gray-800 text-center">
               <p className="text-gray-400">Aucun biais significatif identifié.</p>
