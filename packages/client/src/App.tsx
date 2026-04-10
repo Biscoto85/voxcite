@@ -25,8 +25,12 @@ const LS = {
 
 export interface UserProfile {
   postalCode: string;
-  infoSource: string;
-  perceivedBias: string;
+  infoFormats: string[];       // formats multi-select (v2)
+  mediaSources: string[];      // IDs de médias spécifiques, peut être vide (v2)
+  infoDiversity: string;       // 'regularly' | 'sometimes' | 'rarely' | 'never' (v2)
+  perceivedBias: string;       // 'gauche' | 'droite' | 'varie' | 'difficile'
+  mediaRelationship: string;   // 'trust' | 'critical' | 'independent' | 'avoid' (v2)
+  infoSource?: string;         // legacy — peut exister dans le localStorage existant
 }
 
 function loadFromLS<T>(key: string): T | null {
@@ -116,8 +120,11 @@ export function App() {
       body: JSON.stringify({
         postalCode: profile.postalCode,
         position,
-        infoSource: profile.infoSource,
         perceivedBias: profile.perceivedBias,
+        infoFormats: profile.infoFormats,
+        mediaSources: profile.mediaSources,
+        infoDiversity: profile.infoDiversity,
+        mediaRelationship: profile.mediaRelationship,
       }),
     }).catch(() => {});
 

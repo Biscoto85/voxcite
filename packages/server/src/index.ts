@@ -11,6 +11,7 @@ import { API_PREFIX } from '@partiprism/shared';
 import { domainsRouter } from './routes/domains.js';
 import { partisRouter } from './routes/parties.js';
 import { questionsRouter } from './routes/questions.js';
+import { mediasRouter } from './routes/medias.js';
 import { sessionsRouter } from './routes/sessions.js';
 import { nebulaRouter } from './routes/nebula.js';
 import { analysisRouter } from './routes/analysis.js';
@@ -48,6 +49,7 @@ app.use(rateLimit);
 app.use(`${API_PREFIX}/domains`, domainsRouter);
 app.use(`${API_PREFIX}/partis`, partisRouter);
 app.use(`${API_PREFIX}/questions`, questionsRouter);
+app.use(`${API_PREFIX}/medias`, mediasRouter);
 
 // Snapshots et votes anonymes (rate limited)
 app.post(`${API_PREFIX}/sessions/snapshot`, sessionRateLimit);

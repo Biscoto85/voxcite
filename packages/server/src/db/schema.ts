@@ -94,8 +94,13 @@ export const snapshots = pgTable('snapshots', {
   positionAuthority: real('position_authority').notNull(),
   positionEcology: real('position_ecology').notNull(),
   positionSovereignty: real('position_sovereignty').notNull(),
-  infoSource: text('info_source'),         // 'internet' | 'tv' | 'radio' | 'journal' | 'autre'
-  perceivedBias: text('perceived_bias'),   // 'gauche' | 'droite' | 'neutre' | 'les_deux'
+  infoSource: text('info_source'),         // legacy — conservé pour les anciens snapshots
+  perceivedBias: text('perceived_bias'),   // 'gauche' | 'droite' | 'varie' | 'difficile'
+  // Audit sources enrichi (v2)
+  infoFormats: jsonb('info_formats'),      // string[] — formats multi-select
+  mediaSources: jsonb('media_sources'),    // string[] — IDs de médias spécifiques (optionnel)
+  infoDiversity: text('info_diversity'),   // 'regularly' | 'sometimes' | 'rarely' | 'never'
+  mediaRelationship: text('media_relationship'), // 'trust' | 'critical' | 'independent' | 'avoid'
   createdAt: timestamp('created_at').notNull().defaultNow(),
 });
 
