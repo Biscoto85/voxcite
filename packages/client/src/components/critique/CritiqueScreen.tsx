@@ -61,6 +61,12 @@ const TABS: Array<{ id: Tab; label: string }> = [
 export function CritiqueScreen({ userPosition, domainLabels, onBack }: CritiqueScreenProps) {
   const DOMAIN_LABELS = domainLabels;
   const [tab, setTab] = useState<Tab>('sources');
+  const [proposeMediaUrl, setProposeMediaUrl] = useState('');
+
+  const handleSuggestMedia = (url: string) => {
+    setProposeMediaUrl(url);
+    setTab('signaler');
+  };
 
   return (
     <section className="max-w-2xl mx-auto" aria-label="Esprit critique">
@@ -98,8 +104,8 @@ export function CritiqueScreen({ userPosition, domainLabels, onBack }: CritiqueS
 
       {tab === 'sources' && <SourcesTab userPosition={userPosition} />}
       {tab === 'infos' && <InfosTab domainLabels={DOMAIN_LABELS} />}
-      {tab === 'partager' && <PartagerTab domainLabels={DOMAIN_LABELS} />}
-      {tab === 'signaler' && <SignalerMediaTab />}
+      {tab === 'partager' && <PartagerTab domainLabels={DOMAIN_LABELS} onSuggestMedia={handleSuggestMedia} />}
+      {tab === 'signaler' && <ProposeMediaTab prefillUrl={proposeMediaUrl} />}
     </section>
   );
 }
@@ -313,16 +319,20 @@ function InfosTab({ domainLabels: DOMAIN_LABELS }: { domainLabels: Record<string
 
 // ── Tab 3: Partager un lien ──────────────────────────────────────────
 
-function PartagerTab({ domainLabels: DOMAIN_LABELS }: { domainLabels: Record<string, string> }) {
+function PartagerTab({ domainLabels: DOMAIN_LABELS, onSuggestMedia }: {
+  domainLabels: Record<string, string>;
+  onSuggestMedia: (url: string) => void;
+}) {
   const [domain, setDomain] = useState(Object.keys(DOMAIN_LABELS)[0]);
   const [url, setUrl] = useState('');
   const [description, setDescription] = useState('');
   const [sending, setSending] = useState(false);
-  const [result, setResult] = useState<{ status: string; description: string } | null>(null);
+  const [result, setResult] = useState<{ status: string; description?: string; error?: string; domain?: string; message?: string } | null>(null);
 
   const handleSubmit = async () => {
     if (!url.trim() || !description.trim()) return;
     setSending(true);
+    setResult(null);
 
     try {
       const res = await fetch('/api/critique/links', {
@@ -331,10 +341,14 @@ function PartagerTab({ domainLabels: DOMAIN_LABELS }: { domainLabels: Record<str
         body: JSON.stringify({ domainId: domain, url: url.trim(), description: description.trim() }),
       });
       const data = await res.json();
-      setResult(data);
-      if (data.status === 'approved') {
-        setUrl('');
-        setDescription('');
+      if (res.status === 422 && data.error === 'domain_not_whitelisted') {
+        setResult(data);
+      } else {
+        setResult(data);
+        if (data.status === 'approved') {
+          setUrl('');
+          setDescription('');
+        }
       }
     } catch {} finally {
       setSending(false);
@@ -344,7 +358,7 @@ function PartagerTab({ domainLabels: DOMAIN_LABELS }: { domainLabels: Record<str
   return (
     <div>
       <p className="text-sm text-gray-400 mb-4">
-        Partage un article, une vidéo ou un podcast en accès libre qui t'a marqué.
+        Partage un article d'un <strong className="text-white">média référencé</strong> en accès libre qui t'a marqué.
         La description sera vérifiée pour rester factuelle.
       </p>
 
@@ -397,7 +411,20 @@ function PartagerTab({ domainLabels: DOMAIN_LABELS }: { domainLabels: Record<str
         {sending ? 'Vérification en cours...' : 'Partager'}
       </button>
 
-      {result && (
+      {result && result.error === 'domain_not_whitelisted' && (
+        <div className="mt-3 p-4 rounded-lg bg-amber-950/30 border border-amber-800/40 text-sm" role="status" aria-live="polite">
+          <p className="text-amber-300 font-medium mb-1">Domaine non référencé : {result.domain}</p>
+          <p className="text-amber-400/80 text-xs mb-3">{result.message}</p>
+          <button
+            onClick={() => onSuggestMedia(url)}
+            className="text-xs text-amber-400 underline hover:text-amber-300 focus-ring rounded"
+          >
+            → Proposer ce média au board
+          </button>
+        </div>
+      )}
+
+      {result && !result.error && (
         <div
           className={`mt-3 p-3 rounded-lg text-sm ${
             result.status === 'approved' ? 'bg-green-900/30 text-green-300' : 'bg-red-900/30 text-red-300'
@@ -415,35 +442,40 @@ function PartagerTab({ domainLabels: DOMAIN_LABELS }: { domainLabels: Record<str
   );
 }
 
-// ── Tab 4: Signaler un média manquant ────────────────────────────────
+// ── Tab 4: Proposer un nouveau média ─────────────────────────────────
 
-function SignalerMediaTab() {
-  const [mediaName, setMediaName] = useState('');
-  const [mediaUrl, setMediaUrl] = useState('');
-  const [mediaType, setMediaType] = useState('presse');
+function ProposeMediaTab({ prefillUrl = '' }: { prefillUrl?: string }) {
+  const [url, setUrl] = useState(prefillUrl);
+  const [label, setLabel] = useState('');
+  const [notes, setNotes] = useState('');
   const [sending, setSending] = useState(false);
   const [sent, setSent] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const handleSubmit = async () => {
-    if (!mediaName.trim()) return;
+    if (!url.trim() || !label.trim()) return;
     setSending(true);
+    setError(null);
 
     try {
-      await fetch('/api/feedback', {
+      const res = await fetch('/api/critique/medias/propose', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          targetType: 'missing_media',
-          feedbackType: 'missing_topic',
-          description: `Média manquant: ${mediaName.trim()} (${TYPE_LABELS[mediaType] || mediaType})${mediaUrl.trim() ? ` — ${mediaUrl.trim()}` : ''}`,
-          screen: 'critique',
-        }),
+        body: JSON.stringify({ url: url.trim(), label: label.trim(), notes: notes.trim() || undefined }),
       });
-      setSent(true);
-      setMediaName('');
-      setMediaUrl('');
-      setTimeout(() => setSent(false), 3000);
-    } catch {} finally {
+      const data = await res.json();
+      if (res.ok) {
+        setSent(true);
+        setUrl('');
+        setLabel('');
+        setNotes('');
+        setTimeout(() => setSent(false), 4000);
+      } else {
+        setError(data.error || 'Erreur lors de la soumission.');
+      }
+    } catch {
+      setError('Erreur réseau. Réessaie plus tard.');
+    } finally {
       setSending(false);
     }
   };
@@ -451,18 +483,18 @@ function SignalerMediaTab() {
   return (
     <div>
       <p className="text-sm text-gray-400 mb-4">
-        Un média que tu suis régulièrement n'est pas dans la liste ?
-        Signale-le et on l'ajoutera.
+        Un média de qualité que tu suis n'est pas dans notre liste référencée ?
+        Propose-le — notre board l'examinera pour l'ajouter.
       </p>
 
       <div className="mb-3">
-        <label htmlFor="media-name" className="text-xs text-gray-500 block mb-1">Nom du média</label>
+        <label htmlFor="propose-label" className="text-xs text-gray-500 block mb-1">Nom du média</label>
         <input
-          id="media-name"
+          id="propose-label"
           type="text"
-          value={mediaName}
-          onChange={(e) => setMediaName(e.target.value)}
-          placeholder="Ex: Le Média, QG, Hugo Décrypte..."
+          value={label}
+          onChange={(e) => setLabel(e.target.value)}
+          placeholder="Ex: Alternatives Économiques, Le Monde Diplomatique..."
           className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2.5 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-amber-400"
           aria-required="true"
           maxLength={100}
@@ -470,43 +502,47 @@ function SignalerMediaTab() {
       </div>
 
       <div className="mb-3">
-        <label htmlFor="media-url" className="text-xs text-gray-500 block mb-1">Lien (optionnel)</label>
+        <label htmlFor="propose-url" className="text-xs text-gray-500 block mb-1">Site web du média</label>
         <input
-          id="media-url"
+          id="propose-url"
           type="url"
-          value={mediaUrl}
-          onChange={(e) => setMediaUrl(e.target.value)}
+          value={url}
+          onChange={(e) => setUrl(e.target.value)}
           placeholder="https://..."
           className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2.5 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-amber-400"
+          aria-required="true"
         />
       </div>
 
       <div className="mb-4">
-        <label htmlFor="media-type" className="text-xs text-gray-500 block mb-1">Type</label>
-        <select
-          id="media-type"
-          value={mediaType}
-          onChange={(e) => setMediaType(e.target.value)}
-          className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2.5 text-sm text-white focus:outline-none focus:border-amber-400 touch-target"
-        >
-          {Object.entries(TYPE_LABELS).map(([id, label]) => (
-            <option key={id} value={id}>{label}</option>
-          ))}
-        </select>
+        <label htmlFor="propose-notes" className="text-xs text-gray-500 block mb-1">Pourquoi ce média mérite d'être référencé ? (optionnel)</label>
+        <textarea
+          id="propose-notes"
+          value={notes}
+          onChange={(e) => setNotes(e.target.value)}
+          placeholder="Ex: Media indépendant, couvre bien les questions économiques..."
+          rows={3}
+          className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2.5 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-amber-400 resize-none"
+          maxLength={500}
+        />
       </div>
 
       <button
         onClick={handleSubmit}
-        disabled={!mediaName.trim() || sending}
+        disabled={!url.trim() || !label.trim() || sending}
         className="w-full py-3 bg-amber-500 hover:bg-amber-400 disabled:bg-gray-700 disabled:text-gray-500 rounded-lg font-medium text-sm transition-colors touch-target focus-ring"
       >
-        {sending ? 'Envoi...' : 'Signaler ce média'}
+        {sending ? 'Envoi...' : 'Proposer ce média'}
       </button>
 
+      {error && (
+        <p className="text-red-400 text-sm text-center mt-3" role="alert">{error}</p>
+      )}
+
       {sent && (
-        <p className="text-green-400 text-sm text-center mt-3" role="status" aria-live="polite">
-          Merci ! On prendra en compte ta suggestion.
-        </p>
+        <div className="mt-3 p-3 rounded-lg bg-green-900/30 text-green-300 text-sm text-center" role="status" aria-live="polite">
+          Proposition envoyée ! Notre board l'examinera prochainement.
+        </div>
       )}
     </div>
   );

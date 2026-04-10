@@ -4,6 +4,7 @@ import { AXES } from '@partiprism/shared';
 
 import type { UserProfile } from '@/App';
 import { MediaSourcesPanel } from './MediaSourcesPanel';
+import { getShareCount } from '@/components/share/SharePanel';
 
 interface AnalysisScreenProps {
   position: CompassPosition;
@@ -64,9 +65,11 @@ function AxisBar({ axis, userVal, partyVal, partyColor }: {
 type Tab = 'resume' | 'citoyens' | 'partis' | 'biais';
 
 const LS_ANALYSIS = 'partiprism_analysis';
+const LS_ANALYSIS_DEEP = 'partiprism_analysis_deep';
 const LS_RESPONSES = 'partiprism_responses';
 const LS_ORPHAN = 'partiprism_is_orphan';
 const ANALYSIS_QUESTION_THRESHOLD = 40;
+const SONNET_UNLOCK_SHARE_COUNT = 5; // number of shares needed to unlock deep analysis
 
 interface CachedAnalysis {
   result: Omit<AiAnalysis, 'loading'>;
@@ -81,6 +84,11 @@ export function AnalysisScreen({ position, parties, profile, onBack }: AnalysisS
   const [selectedParty, setSelectedParty] = useState<string | null>(null);
   const [canRerun, setCanRerun] = useState(false);
   const [summaryCopied, setSummaryCopied] = useState(false);
+  const [sonnetUnlocked] = useState(() => getShareCount() >= SONNET_UNLOCK_SHARE_COUNT);
+  const [deepAnalysis, setDeepAnalysis] = useState<AiAnalysis>({
+    summary: '', vsCitoyens: '', vsPartis: '', biases: [], espritCritiquePistes: [], loading: false,
+  });
+  const [showDeep, setShowDeep] = useState(false);
   // Orphelin
   const [isOrphan, setIsOrphan] = useState<boolean | null>(() => {
     const saved = localStorage.getItem(LS_ORPHAN);
@@ -108,42 +116,103 @@ export function AnalysisScreen({ position, parties, profile, onBack }: AnalysisS
     fetchAnalysis(currentCount);
   }, []);
 
-  const fetchAnalysis = (questionCount: number) => {
-    setAnalysis((prev) => ({ ...prev, loading: true }));
-
-    // Send responses from localStorage for contradiction detection (ephemeral)
+  const buildRequestBody = (isDeep = false) => {
     const savedResponses: Array<{ questionId: string; value: number }> = JSON.parse(
       localStorage.getItem(LS_RESPONSES) || '[]',
     );
+    return {
+      position,
+      infoSource: profile?.infoSource,
+      perceivedBias: profile?.perceivedBias,
+      infoFormats: profile?.infoFormats,
+      mediaSources: profile?.mediaSources,
+      infoDiversity: profile?.infoDiversity,
+      mediaRelationship: profile?.mediaRelationship,
+      responses: savedResponses,
+      deepAnalysis: isDeep,
+      parties: parties.map((p) => ({
+        id: p.id, label: p.label, abbreviation: p.abbreviation, position: p.position,
+      })),
+    };
+  };
 
-    fetch('/api/analysis', {
+  /** Enqueue a job and poll until done. Returns the result or throws. */
+  const pollAnalysis = async (isDeep = false): Promise<Omit<AiAnalysis, 'loading'>> => {
+    const body = buildRequestBody(isDeep);
+
+    // Enqueue
+    const enqueueRes = await fetch('/api/analysis/queue', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        position,
-        infoSource: profile?.infoSource,         // legacy
-        perceivedBias: profile?.perceivedBias,
-        infoFormats: profile?.infoFormats,
-        mediaSources: profile?.mediaSources,
-        infoDiversity: profile?.infoDiversity,
-        mediaRelationship: profile?.mediaRelationship,
-        responses: savedResponses,
-        parties: parties.map((p) => ({
-          id: p.id, label: p.label, abbreviation: p.abbreviation, position: p.position,
-        })),
-      }),
-    })
-      .then((r) => r.json())
+      body: JSON.stringify(body),
+    });
+    if (!enqueueRes.ok) throw new Error(`Enqueue failed: ${enqueueRes.status}`);
+    const { jobId } = await enqueueRes.json() as { jobId: string };
+
+    // Poll every 2 seconds, timeout after 45 seconds
+    return new Promise((resolve, reject) => {
+      const start = Date.now();
+      const interval = setInterval(async () => {
+        if (Date.now() - start > 45_000) {
+          clearInterval(interval);
+          reject(new Error('Timeout'));
+          return;
+        }
+        try {
+          const r = await fetch(`/api/analysis/queue/${jobId}`);
+          const data = await r.json() as { status: string; result?: Omit<AiAnalysis, 'loading'>; error?: string };
+          if (data.status === 'done' && data.result) {
+            clearInterval(interval);
+            resolve(data.result);
+          } else if (data.status === 'failed') {
+            clearInterval(interval);
+            reject(new Error(data.error || 'Analysis failed'));
+          }
+          // else: still pending/processing — keep polling
+        } catch { /* network hiccup — keep trying */ }
+      }, 2_000);
+    });
+  };
+
+  const fetchAnalysis = (questionCount: number) => {
+    setAnalysis((prev) => ({ ...prev, loading: true }));
+
+    pollAnalysis(false)
       .then((data) => {
         setAnalysis({ ...data, loading: false });
         setCanRerun(false);
-        // Cache result with current question count
         localStorage.setItem(LS_ANALYSIS, JSON.stringify({
           result: data,
           questionCount,
         } satisfies CachedAnalysis));
       })
       .catch(() => setAnalysis((prev) => ({ ...prev, loading: false, summary: 'Analyse indisponible.' })));
+  };
+
+  const fetchDeepAnalysis = () => {
+    // Check cache first
+    try {
+      const cached: CachedAnalysis | null = JSON.parse(localStorage.getItem(LS_ANALYSIS_DEEP) || 'null');
+      if (cached?.result) {
+        setDeepAnalysis({ ...cached.result, loading: false });
+        setShowDeep(true);
+        return;
+      }
+    } catch {}
+
+    setDeepAnalysis((prev) => ({ ...prev, loading: true }));
+    setShowDeep(true);
+
+    pollAnalysis(true)
+      .then((data) => {
+        setDeepAnalysis({ ...data, loading: false });
+        const responses: Array<{ questionId: string }> = JSON.parse(localStorage.getItem(LS_RESPONSES) || '[]');
+        localStorage.setItem(LS_ANALYSIS_DEEP, JSON.stringify({
+          result: data,
+          questionCount: responses.length,
+        } satisfies CachedAnalysis));
+      })
+      .catch(() => setDeepAnalysis((prev) => ({ ...prev, loading: false, summary: 'Analyse approfondie indisponible.' })));
   };
 
   // Fetch orphan stats once
@@ -246,6 +315,18 @@ export function AnalysisScreen({ position, parties, profile, onBack }: AnalysisS
           className="mb-4 w-full py-2 bg-amber-900/30 border border-amber-800/40 text-amber-300 rounded-lg text-sm hover:bg-amber-900/50 transition-colors focus-ring"
         >
           Relancer l'analyse (tu as répondu à 40+ nouvelles questions)
+        </button>
+      )}
+
+      {/* Sonnet unlock — visible once user has shared 5+ times */}
+      {sonnetUnlocked && !showDeep && !analysis.loading && analysis.summary && (
+        <button
+          onClick={fetchDeepAnalysis}
+          className="mb-4 w-full py-3 bg-indigo-900/40 border border-indigo-700/50 text-indigo-200 rounded-xl text-sm hover:bg-indigo-900/60 transition-colors focus-ring flex items-center justify-center gap-2"
+        >
+          <span aria-hidden="true">✦</span>
+          Approfondir l'analyse avec Claude Sonnet
+          <span className="text-xs text-indigo-400">(débloqué grâce à tes partages)</span>
         </button>
       )}
 
@@ -473,6 +554,41 @@ export function AnalysisScreen({ position, parties, profile, onBack }: AnalysisS
               })}
             </>
           )}
+        </div>
+      )}
+
+      {/* Deep analysis panel (Sonnet) */}
+      {showDeep && (
+        <div className="mt-6 space-y-4">
+          <div className="flex items-center gap-2 text-indigo-300">
+            <span aria-hidden="true">✦</span>
+            <h3 className="text-sm font-semibold uppercase tracking-wider">Analyse approfondie (Claude Sonnet)</h3>
+          </div>
+
+          {deepAnalysis.loading ? (
+            <div className="bg-indigo-950/20 rounded-xl p-6 border border-indigo-800/30 text-center" role="status" aria-live="polite">
+              <p className="text-indigo-300 animate-pulse">Analyse approfondie en cours...</p>
+              <p className="text-xs text-indigo-500 mt-1">Peut prendre jusqu'à 30 secondes</p>
+            </div>
+          ) : deepAnalysis.summary ? (
+            <>
+              <div className="bg-indigo-950/20 rounded-xl p-4 sm:p-5 border border-indigo-800/30">
+                <p className="text-gray-200 leading-relaxed">{deepAnalysis.summary}</p>
+              </div>
+              {deepAnalysis.espritCritiquePistes.length > 0 && (
+                <div className="bg-indigo-950/20 rounded-xl p-4 sm:p-5 border border-indigo-800/30">
+                  <h4 className="text-sm text-indigo-400 uppercase tracking-wider mb-2">Pour aller plus loin (Sonnet)</h4>
+                  <ul className="space-y-1.5">
+                    {deepAnalysis.espritCritiquePistes.map((p, i) => (
+                      <li key={i} className="text-sm text-gray-300 flex gap-2">
+                        <span className="text-indigo-400 shrink-0" aria-hidden="true">→</span>{p}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+            </>
+          ) : null}
         </div>
       )}
     </section>

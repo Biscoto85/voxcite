@@ -30,8 +30,14 @@ export function calculatePosition(
     const q = questions.find((q) => q.id === resp.questionId);
     if (!q) continue;
 
-    const contribution = resp.value * q.polarity * q.weight;
-    const maxContrib = Math.abs(q.weight) * 2;
+    // Intensity boost: strong convictions (±2) count more than mild ones (±1).
+    // intensity 0→1 maps to a 0.7→1.0 multiplier applied only to the contribution,
+    // while maxContrib stays at the base weight so the normalization reflects the
+    // amplification (i.e. a ±2 answer drives the position further than two ±1 answers).
+    const intensity = Math.abs(resp.value) / 2;                     // 0.0 – 1.0
+    const intensityBoost = 0.7 + 0.3 * intensity;                   // 0.70 – 1.00
+    const contribution = resp.value * q.polarity * q.weight * intensityBoost;
+    const maxContrib = Math.abs(q.weight) * 2;                       // base max unchanged
     const axes = resolveAxes(q);
 
     for (const axis of axes) {

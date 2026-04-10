@@ -5,8 +5,8 @@ import { runAiAnalysis } from '../services/ai-analysis.js';
 import { getPopulationStats, getUserPercentiles } from '../services/population.js';
 import { extractResponseSignals } from '../services/response-signals.js';
 import { db } from '../db/index.js';
-import { questions, medias } from '../db/schema.js';
-import { inArray } from 'drizzle-orm';
+import { questions, medias, analysisJobs } from '../db/schema.js';
+import { eq, inArray } from 'drizzle-orm';
 import { ALL_AXES } from '../utils/helpers.js';
 import fs from 'fs';
 import path from 'path';
@@ -87,7 +87,7 @@ function generateFallbackAnalysis(
 analysisRouter.post('/', async (req, res) => {
   const {
     position, parties, infoSource, perceivedBias, responses: clientResponses,
-    infoFormats, mediaSources, infoDiversity, mediaRelationship,
+    infoFormats, mediaSources, infoDiversity, mediaRelationship, deepAnalysis,
   } = req.body as {
     position: CompassPosition;
     parties: PartyInput[];
@@ -98,6 +98,7 @@ analysisRouter.post('/', async (req, res) => {
     infoDiversity?: string;
     mediaRelationship?: string;
     responses?: Array<{ questionId: string; value: number }>;
+    deepAnalysis?: boolean;
   };
 
   if (!position || !parties) {
@@ -202,7 +203,7 @@ analysisRouter.post('/', async (req, res) => {
         mediaRelationship,
         mediaPosition,
         responseSignals,
-      });
+      }, deepAnalysis === true);
 
       res.json(result);
       return;
@@ -216,5 +217,48 @@ analysisRouter.post('/', async (req, res) => {
   } catch (err) {
     console.error('[analysis] Fallback analysis failed:', err);
     res.status(500).json({ error: 'Analysis unavailable' });
+  }
+});
+
+// ── Async queue endpoints ────────────────────────────────────────────
+// POST /api/analysis/queue — enqueue a job, return {jobId} immediately
+// GET  /api/analysis/queue/:jobId — poll for status + result
+
+analysisRouter.post('/queue', async (req, res) => {
+  const body = req.body as Record<string, unknown>;
+  if (!body.position || !body.parties) {
+    res.status(400).json({ error: 'position and parties required' });
+    return;
+  }
+
+  try {
+    const [job] = await db.insert(analysisJobs).values({
+      status: 'pending',
+      requestData: body,
+    }).returning({ id: analysisJobs.id });
+
+    res.status(202).json({ jobId: job.id });
+  } catch (err) {
+    console.error('[analysis/queue] Failed to enqueue job:', err);
+    res.status(500).json({ error: 'Failed to enqueue analysis' });
+  }
+});
+
+analysisRouter.get('/queue/:jobId', async (req, res) => {
+  const { jobId } = req.params;
+  try {
+    const [job] = await db.select().from(analysisJobs).where(eq(analysisJobs.id, jobId));
+    if (!job) { res.status(404).json({ error: 'Job not found' }); return; }
+
+    if (job.status === 'done') {
+      res.json({ status: 'done', result: job.resultData });
+    } else if (job.status === 'failed') {
+      res.json({ status: 'failed', error: job.errorMessage });
+    } else {
+      res.json({ status: job.status });
+    }
+  } catch (err) {
+    console.error('[analysis/queue] Failed to fetch job:', err);
+    res.status(500).json({ error: 'Failed to fetch job status' });
   }
 });

@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { db } from '../db/index.js';
-import { medias, mediaRatings, sharedLinks } from '../db/schema.js';
+import { medias, mediaRatings, sharedLinks, mediaProposals } from '../db/schema.js';
 import { eq, desc, and, sql } from 'drizzle-orm';
 import { clamp, isValidHttpUrl, extractClaudeText } from '../utils/helpers.js';
 import { aiRateLimit } from '../middleware/rateLimit.js';
@@ -8,6 +8,40 @@ import { trackedAiCall } from '../services/tracked-ai.js';
 import { loadPrompt, fillTemplate } from '../services/prompt-loader.js';
 
 export const critiqueRouter = Router();
+
+// ── Whitelist of allowed media domains (loaded from DB at startup) ──
+// Rebuilt every hour so newly-added medias are picked up without restart.
+let allowedDomains: Set<string> = new Set();
+let lastDomainRefresh = 0;
+const DOMAIN_REFRESH_INTERVAL_MS = 60 * 60 * 1_000; // 1 hour
+
+async function getAllowedDomains(): Promise<Set<string>> {
+  if (Date.now() - lastDomainRefresh < DOMAIN_REFRESH_INTERVAL_MS && allowedDomains.size > 0) {
+    return allowedDomains;
+  }
+  try {
+    const rows = await db.select({ url: medias.url }).from(medias);
+    const domains = new Set<string>();
+    for (const row of rows) {
+      if (!row.url) continue;
+      try {
+        const hostname = new URL(row.url).hostname.replace(/^www\./, '');
+        domains.add(hostname);
+      } catch { /* ignore invalid URLs */ }
+    }
+    allowedDomains = domains;
+    lastDomainRefresh = Date.now();
+  } catch { /* keep existing set on DB failure */ }
+  return allowedDomains;
+}
+
+function extractDomain(url: string): string | null {
+  try {
+    return new URL(url).hostname.replace(/^www\./, '');
+  } catch {
+    return null;
+  }
+}
 
 // ── GET /medias — All media sources with editorial positions ────────
 
@@ -131,6 +165,18 @@ critiqueRouter.post('/links', aiRateLimit, async (req, res) => {
     return;
   }
 
+  // Check domain whitelist
+  const urlDomain = extractDomain(url);
+  const domains = await getAllowedDomains();
+  if (urlDomain && !domains.has(urlDomain)) {
+    res.status(422).json({
+      error: 'domain_not_whitelisted',
+      domain: urlDomain,
+      message: `Le domaine "${urlDomain}" n'est pas dans notre liste de médias référencés. Tu peux proposer ce média via le formulaire "Proposer un média".`,
+    });
+    return;
+  }
+
   let validatedDescription = description;
   let status = 'approved'; // default if no API key
 
@@ -193,4 +239,38 @@ Réponds UNIQUEMENT avec le JSON.`;
     status,
     description: validatedDescription,
   });
+});
+
+// ── POST /medias/propose — Propose a new media for whitelist review ──
+
+critiqueRouter.post('/medias/propose', async (req, res) => {
+  const { url, label, notes } = req.body as { url: string; label: string; notes?: string };
+
+  if (!url || !label) {
+    res.status(400).json({ error: 'url and label required' });
+    return;
+  }
+
+  if (!isValidHttpUrl(url)) {
+    res.status(400).json({ error: 'Invalid URL' });
+    return;
+  }
+
+  if (label.trim().length < 2 || label.trim().length > 100) {
+    res.status(400).json({ error: 'label must be 2–100 characters' });
+    return;
+  }
+
+  try {
+    const [row] = await db.insert(mediaProposals).values({
+      url: url.trim(),
+      label: label.trim(),
+      notes: notes?.trim() || null,
+    }).returning({ id: mediaProposals.id });
+
+    res.status(201).json({ id: row.id, message: 'Proposition enregistrée — notre équipe la traitera prochainement.' });
+  } catch (err) {
+    console.error('[critique] Failed to insert media proposal:', err);
+    res.status(500).json({ error: 'Failed to save proposal' });
+  }
 });

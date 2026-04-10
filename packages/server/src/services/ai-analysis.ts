@@ -295,11 +295,17 @@ RÈGLES :
 
 Réponds UNIQUEMENT avec le JSON, rien d'autre.`;
 
+// Default model for analysis — Haiku is 10x cheaper and handles structured JSON well
+export const ANALYSIS_MODEL_DEFAULT = 'claude-haiku-4-5-20251001';
+// Deep model — used when the user has shared to 5+ contacts (opt-in upgrade)
+export const ANALYSIS_MODEL_DEEP = 'claude-sonnet-4-6';
+
 /**
  * Run analysis using Claude API.
  * Loads prompt template from DB if available, otherwise uses hardcoded fallback.
+ * @param deepModel - if true, uses Sonnet instead of Haiku (unlocked feature)
  */
-export async function runAiAnalysis(input: AnalysisInput): Promise<AiAnalysisResult> {
+export async function runAiAnalysis(input: AnalysisInput, deepModel = false): Promise<AiAnalysisResult> {
   if (!process.env.ANTHROPIC_API_KEY) {
     throw new Error('ANTHROPIC_API_KEY not set');
   }
@@ -311,10 +317,12 @@ export async function runAiAnalysis(input: AnalysisInput): Promise<AiAnalysisRes
   const template = dbTemplate || FALLBACK_ANALYSIS_TEMPLATE;
   const prompt = fillTemplate(template, { DATA_BLOCK: dataBlock });
 
+  const model = deepModel ? ANALYSIS_MODEL_DEEP : ANALYSIS_MODEL_DEFAULT;
+
   const response = await trackedAiCall({
-    promptKey: 'analysis',
-    model: 'claude-sonnet-4-20250514',
-    maxTokens: 3500,
+    promptKey: deepModel ? 'analysis_deep' : 'analysis',
+    model,
+    maxTokens: deepModel ? 3500 : 1800,
     messages: [{ role: 'user', content: prompt }],
   });
 

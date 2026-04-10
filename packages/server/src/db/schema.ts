@@ -264,6 +264,32 @@ export const mediaRatings = pgTable('media_ratings', {
   index('media_ratings_media_id_idx').on(table.mediaId),
 ]);
 
+// ── File d'attente analyse IA (async) ──
+
+export const analysisJobs = pgTable('analysis_jobs', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  status: text('status').notNull().default('pending'), // pending | processing | done | failed
+  requestData: jsonb('request_data').notNull(),
+  resultData: jsonb('result_data'),
+  errorMessage: text('error_message'),
+  createdAt: timestamp('created_at').notNull().defaultNow(),
+  completedAt: timestamp('completed_at'),
+}, (table) => [
+  index('analysis_jobs_status_idx').on(table.status),
+  index('analysis_jobs_created_at_idx').on(table.createdAt),
+]);
+
+// ── Propositions de nouveaux médias par les utilisateurs ──
+
+export const mediaProposals = pgTable('media_proposals', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  url: text('url').notNull(),
+  label: text('label').notNull(),
+  notes: text('notes'),
+  status: text('status').notNull().default('pending'), // pending | approved | rejected
+  createdAt: timestamp('created_at').notNull().defaultNow(),
+});
+
 // ── Feedback (anonyme) ──
 
 export const feedback = pgTable('feedback', {

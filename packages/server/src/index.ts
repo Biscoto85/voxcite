@@ -22,6 +22,7 @@ import { critiqueRouter } from './routes/critique.js';
 import { adminRouter } from './routes/admin.js';
 import { rateLimit, aiRateLimit, sessionRateLimit } from './middleware/rateLimit.js';
 import { adminAuth } from './middleware/adminAuth.js';
+import { startAnalysisWorker } from './services/analysis-worker.js';
 
 // ── Environment validation ─────────────────────────────────────────
 
@@ -87,4 +88,7 @@ app.use((err: Error, _req: express.Request, res: express.Response, _next: expres
 app.listen(port, () => {
   console.log(`[partiprism-api] Listening on http://localhost:${port}`);
   console.log(`[partiprism-api] API: http://localhost:${port}${API_PREFIX}`);
+
+  // Start background worker for async analysis jobs
+  startAnalysisWorker();
 });

@@ -19,6 +19,23 @@ interface SharePanelProps {
 
 const hasWebShare = typeof navigator !== 'undefined' && typeof navigator.share === 'function';
 
+const LS_SHARE_COUNT = 'partiprism_share_count';
+
+export function incrementShareCount(): void {
+  try {
+    const current = parseInt(localStorage.getItem(LS_SHARE_COUNT) || '0', 10);
+    localStorage.setItem(LS_SHARE_COUNT, String(current + 1));
+  } catch { /* ignore */ }
+}
+
+export function getShareCount(): number {
+  try {
+    return parseInt(localStorage.getItem(LS_SHARE_COUNT) || '0', 10);
+  } catch {
+    return 0;
+  }
+}
+
 export function SharePanel({ userPosition, parties }: SharePanelProps) {
   const [copied, setCopied] = useState(false);
   const [shared, setShared] = useState(false);
@@ -34,6 +51,7 @@ export function SharePanel({ userPosition, parties }: SharePanelProps) {
       title: 'Mon positionnement PartiPrism',
       text: message,
     }).then(() => {
+      incrementShareCount();
       setShared(true);
       setTimeout(() => setShared(false), 3000);
     }).catch(() => {});
@@ -41,6 +59,7 @@ export function SharePanel({ userPosition, parties }: SharePanelProps) {
 
   const handleCopy = useCallback(() => {
     navigator.clipboard.writeText(message).then(() => {
+      incrementShareCount();
       setCopied(true);
       setTimeout(() => setCopied(false), 2500);
     }).catch(() => {});
@@ -77,6 +96,7 @@ export function SharePanel({ userPosition, parties }: SharePanelProps) {
             href={whatsappUrl(message)}
             target="_blank"
             rel="noopener noreferrer"
+            onClick={incrementShareCount}
             className="flex items-center gap-2 px-3 py-3 bg-gray-800 hover:bg-gray-700 border border-gray-700 rounded-xl text-sm text-gray-200 transition-colors focus-ring"
           >
             <span className="text-lg" aria-hidden="true">💬</span>
@@ -88,6 +108,7 @@ export function SharePanel({ userPosition, parties }: SharePanelProps) {
             href={telegramUrl(message)}
             target="_blank"
             rel="noopener noreferrer"
+            onClick={incrementShareCount}
             className="flex items-center gap-2 px-3 py-3 bg-gray-800 hover:bg-gray-700 border border-gray-700 rounded-xl text-sm text-gray-200 transition-colors focus-ring"
           >
             <span className="text-lg" aria-hidden="true">✈️</span>
@@ -97,6 +118,7 @@ export function SharePanel({ userPosition, parties }: SharePanelProps) {
           {/* SMS */}
           <a
             href={smsUrl(message)}
+            onClick={incrementShareCount}
             className="flex items-center gap-2 px-3 py-3 bg-gray-800 hover:bg-gray-700 border border-gray-700 rounded-xl text-sm text-gray-200 transition-colors focus-ring"
           >
             <span className="text-lg" aria-hidden="true">💌</span>
@@ -106,6 +128,7 @@ export function SharePanel({ userPosition, parties }: SharePanelProps) {
           {/* Email */}
           <a
             href={emailUrl(emailData.subject, emailData.body)}
+            onClick={incrementShareCount}
             className="flex items-center gap-2 px-3 py-3 bg-gray-800 hover:bg-gray-700 border border-gray-700 rounded-xl text-sm text-gray-200 transition-colors focus-ring"
           >
             <span className="text-lg" aria-hidden="true">📧</span>
@@ -117,6 +140,7 @@ export function SharePanel({ userPosition, parties }: SharePanelProps) {
             href={twitterUrl(shortPhrase)}
             target="_blank"
             rel="noopener noreferrer"
+            onClick={incrementShareCount}
             className="flex items-center gap-2 px-3 py-3 bg-gray-800 hover:bg-gray-700 border border-gray-700 rounded-xl text-sm text-gray-200 transition-colors focus-ring"
           >
             <span className="text-base font-bold" aria-hidden="true">𝕏</span>
