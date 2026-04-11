@@ -7,9 +7,24 @@ export function clamp(val: number, min = -1, max = 1): number {
   return Math.max(min, Math.min(max, val));
 }
 
-/** Strip markdown code fences from Claude responses */
+/** Strip markdown code fences from Claude responses, then extract the outermost JSON object.
+ *  Handles: bare JSON, ```json...```, text before/after JSON, mixed preambles. */
 export function extractJSON(raw: string): string {
-  return raw.replace(/^```(?:json)?\s*\n?/i, '').replace(/\n?```\s*$/i, '').trim();
+  // 1. Strip markdown code fences (handles the common ```json\n...\n``` case)
+  const stripped = raw
+    .replace(/^```(?:json)?\s*\n?/i, '')
+    .replace(/\n?```\s*$/i, '')
+    .trim();
+
+  // 2. Extract by outermost { } boundaries — handles any text before or after the JSON
+  const firstBrace = stripped.indexOf('{');
+  const lastBrace  = stripped.lastIndexOf('}');
+
+  if (firstBrace !== -1 && lastBrace > firstBrace) {
+    return stripped.slice(firstBrace, lastBrace + 1);
+  }
+
+  return stripped;
 }
 
 /** Validate UUID v4 format */
