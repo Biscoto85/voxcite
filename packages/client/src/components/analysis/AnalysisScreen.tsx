@@ -105,10 +105,17 @@ export function AnalysisScreen({ position, parties, profile, onBack }: AnalysisS
     try {
       const cached: CachedAnalysis | null = JSON.parse(localStorage.getItem(LS_ANALYSIS) || 'null');
       if (cached && cached.result) {
-        setAnalysis({ ...cached.result, loading: false });
-        // Can re-run if answered 40+ more questions since last analysis
-        setCanRerun(currentCount - cached.questionCount >= ANALYSIS_QUESTION_THRESHOLD);
-        return;
+        // Guard: reject broken caches where summary looks like raw JSON (from old extractJSON bug)
+        const s = cached.result.summary?.trim() ?? '';
+        const isBroken = s.startsWith('{') || s.startsWith('[') || s.includes('"summary"') || s.includes('"vsPartis"');
+        if (isBroken) {
+          localStorage.removeItem(LS_ANALYSIS);
+        } else {
+          setAnalysis({ ...cached.result, loading: false });
+          // Can re-run if answered 40+ more questions since last analysis
+          setCanRerun(currentCount - cached.questionCount >= ANALYSIS_QUESTION_THRESHOLD);
+          return;
+        }
       }
     } catch {}
 
@@ -205,9 +212,15 @@ export function AnalysisScreen({ position, parties, profile, onBack }: AnalysisS
     try {
       const cached: CachedAnalysis | null = JSON.parse(localStorage.getItem(LS_ANALYSIS_DEEP) || 'null');
       if (cached?.result) {
-        setDeepAnalysis({ ...cached.result, loading: false });
-        setShowDeep(true);
-        return;
+        const s = cached.result.summary?.trim() ?? '';
+        const isBroken = s.startsWith('{') || s.startsWith('[') || s.includes('"summary"') || s.includes('"vsPartis"');
+        if (isBroken) {
+          localStorage.removeItem(LS_ANALYSIS_DEEP);
+        } else {
+          setDeepAnalysis({ ...cached.result, loading: false });
+          setShowDeep(true);
+          return;
+        }
       }
     } catch {}
 
