@@ -14,10 +14,11 @@ import { CGU } from './components/legal/CGU';
 import { NotreIntention } from './components/legal/NotreIntention';
 import { Methodologie } from './components/legal/Methodologie';
 import { QGPanel } from './components/qg/QGPanel';
+import { MobiliserScreen } from './components/mobiliser/MobiliserScreen';
 import { parseChallengeFromHash } from './utils/challenge';
 import { ShareButton } from './components/share/ShareButton';
 
-export type AppScreen = 'loading' | 'onboarding' | 'reveal' | 'menu' | 'prisme' | 'affiner' | 'comparaison' | 'critique' | 'exprimer' | 'mentions' | 'cgu' | 'intention' | 'methodologie' | 'qg';
+export type AppScreen = 'loading' | 'onboarding' | 'reveal' | 'menu' | 'prisme' | 'affiner' | 'comparaison' | 'critique' | 'exprimer' | 'mobiliser' | 'mentions' | 'cgu' | 'intention' | 'methodologie' | 'qg';
 
 // ── localStorage keys ──────────────────────────────────────────────
 const LS = {
@@ -61,6 +62,7 @@ const SCREEN_TITLES: Record<AppScreen, string> = {
   comparaison: 'Comparaison',
   critique: 'Esprit critique',
   exprimer: 'M\'exprimer',
+  mobiliser: 'Me mobiliser',
   mentions: 'Mentions légales',
   cgu: 'Conditions Générales d\'Utilisation',
   intention: 'Notre intention',
@@ -181,7 +183,7 @@ export function App() {
     setFeedbackContext({ questionId, questionText });
   }, []);
 
-  const isStaticPage = screen === 'mentions' || screen === 'cgu' || screen === 'intention' || screen === 'methodologie';
+  const isStaticPage = screen === 'mentions' || screen === 'cgu' || screen === 'intention' || screen === 'methodologie' || screen === 'mobiliser';
   const showFeedback = screen !== 'loading' && screen !== 'onboarding' && screen !== 'qg' && !isStaticPage;
   const canGoHome = screen !== 'loading' && screen !== 'onboarding' && screen !== 'reveal' && screen !== 'qg' && !isStaticPage;
   const showFooter = screen !== 'loading' && screen !== 'qg';
@@ -286,6 +288,10 @@ export function App() {
             domainLabels={domainLabels}
             onBack={() => setScreen('menu')}
           />
+        )}
+
+        {screen === 'mobiliser' && (
+          <MobiliserScreen onBack={() => setScreen('menu')} />
         )}
 
         {screen === 'mentions' && (

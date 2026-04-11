@@ -19,6 +19,7 @@ import { feedbackRouter } from './routes/feedback.js';
 import { proposalsRouter } from './routes/proposals.js';
 import { programRouter } from './routes/program.js';
 import { critiqueRouter } from './routes/critique.js';
+import { mobiliserRouter } from './routes/mobiliser.js';
 import { adminRouter } from './routes/admin.js';
 import { qgRouter } from './routes/qg.js';
 import { rateLimit, aiRateLimit, sessionRateLimit } from './middleware/rateLimit.js';
@@ -91,6 +92,9 @@ app.use(`${API_PREFIX}/feedback`, feedbackRouter);
 
 // Esprit critique
 app.use(`${API_PREFIX}/critique`, critiqueRouter);
+
+// Me mobiliser — événements citoyens + newsletter
+app.use(`${API_PREFIX}/mobiliser`, mobiliserRouter);
 
 // Admin QG legacy (protégé par Basic Auth)
 app.use(`${API_PREFIX}/admin`, adminAuth, adminRouter);

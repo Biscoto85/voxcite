@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { db } from '../db/index.js';
-import { feedback, mediaProposals } from '../db/schema.js';
+import { feedback, mediaProposals, civicEvents, eventProposals, newsletterSubscriptions } from '../db/schema.js';
 import { eq, desc, and, sql } from 'drizzle-orm';
 import { qgAuth, verifyAndIssueToken, isQGConfigured } from '../middleware/qgAuth.js';
 
@@ -101,4 +101,102 @@ qgRouter.patch('/media-proposals/:id', async (req, res) => {
     .set({ status })
     .where(eq(mediaProposals.id, req.params.id));
   res.json({ ok: true });
+});
+
+// ── Événements citoyens ──────────────────────────────────────────────
+
+// GET /qg/event-proposals — liste des propositions (filtrables par status)
+qgRouter.get('/event-proposals', async (req, res) => {
+  const { status } = req.query as { status?: string };
+  const rows = await db.select().from(eventProposals)
+    .where(status ? eq(eventProposals.status, status) : undefined)
+    .orderBy(desc(eventProposals.createdAt));
+  res.json(rows);
+});
+
+// PATCH /qg/event-proposals/:id — approuver / rejeter
+qgRouter.patch('/event-proposals/:id', async (req, res) => {
+  const { status, rejectionReason } = req.body as { status?: string; rejectionReason?: string };
+  if (!status || !['approved', 'rejected', 'pending'].includes(status)) {
+    res.status(400).json({ error: 'status doit être approved | rejected | pending' });
+    return;
+  }
+  await db.update(eventProposals)
+    .set({ status, rejectionReason: rejectionReason ?? null })
+    .where(eq(eventProposals.id, req.params.id));
+  res.json({ ok: true });
+});
+
+// GET /qg/events — liste tous les événements (y compris inactifs)
+qgRouter.get('/events', async (_req, res) => {
+  const rows = await db.select().from(civicEvents).orderBy(desc(civicEvents.createdAt));
+  res.json(rows);
+});
+
+// POST /qg/events — créer un événement directement (admin)
+qgRouter.post('/events', async (req, res) => {
+  const { title, description, url, eventDate, location, organizer, category, isActive } = req.body as Record<string, unknown>;
+  if (!title || !description || !organizer || !category) {
+    res.status(400).json({ error: 'title, description, organizer, category requis' });
+    return;
+  }
+  await db.insert(civicEvents).values({
+    title: String(title).slice(0, 120),
+    description: String(description).slice(0, 1000),
+    url: url ? String(url).slice(0, 500) : null,
+    eventDate: eventDate ? new Date(String(eventDate)) : null,
+    location: location ? String(location).slice(0, 200) : null,
+    organizer: String(organizer).slice(0, 200),
+    category: String(category).slice(0, 30),
+    isActive: isActive !== false,
+  });
+  res.status(201).json({ ok: true });
+});
+
+// PATCH /qg/events/:id — modifier / activer / désactiver
+qgRouter.patch('/events/:id', async (req, res) => {
+  const { isActive, title, description, url, eventDate, location, organizer, category } = req.body as Record<string, unknown>;
+  const updates: Record<string, unknown> = {};
+  if (typeof isActive === 'boolean') updates.isActive = isActive;
+  if (title)       updates.title       = String(title).slice(0, 120);
+  if (description) updates.description = String(description).slice(0, 1000);
+  if (url !== undefined)       updates.url      = url ? String(url).slice(0, 500) : null;
+  if (location !== undefined)  updates.location = location ? String(location).slice(0, 200) : null;
+  if (organizer)   updates.organizer   = String(organizer).slice(0, 200);
+  if (category)    updates.category    = String(category).slice(0, 30);
+  if (eventDate !== undefined) updates.eventDate = eventDate ? new Date(String(eventDate)) : null;
+
+  if (Object.keys(updates).length === 0) {
+    res.status(400).json({ error: 'Aucun champ à mettre à jour' }); return;
+  }
+  await db.update(civicEvents).set(updates as any).where(eq(civicEvents.id, req.params.id));
+  res.json({ ok: true });
+});
+
+// ── Newsletter (stats + export) ──────────────────────────────────────
+
+// GET /qg/newsletter/stats
+qgRouter.get('/newsletter/stats', async (_req, res) => {
+  const [active, total] = await Promise.all([
+    db.select({ count: sql<number>`cast(count(*) as int)` }).from(newsletterSubscriptions).where(eq(newsletterSubscriptions.isActive, true)),
+    db.select({ count: sql<number>`cast(count(*) as int)` }).from(newsletterSubscriptions),
+  ]);
+  res.json({ active: active[0].count, total: total[0].count });
+});
+
+// GET /qg/newsletter/export — CSV des abonnés actifs (emails uniquement)
+qgRouter.get('/newsletter/export', async (_req, res) => {
+  const rows = await db
+    .select({ email: newsletterSubscriptions.email, domains: newsletterSubscriptions.domains, createdAt: newsletterSubscriptions.createdAt })
+    .from(newsletterSubscriptions)
+    .where(eq(newsletterSubscriptions.isActive, true))
+    .orderBy(desc(newsletterSubscriptions.createdAt));
+
+  const csv = ['email,domains,created_at',
+    ...rows.map((r) => `${r.email},"${(r.domains as string[] | null)?.join(';') ?? ''}",${r.createdAt.toISOString()}`)
+  ].join('\n');
+
+  res.setHeader('Content-Type', 'text/csv');
+  res.setHeader('Content-Disposition', `attachment; filename="newsletter-${new Date().toISOString().slice(0, 10)}.csv"`);
+  res.send(csv);
 });

@@ -350,6 +350,62 @@ export const rateLimits = pgTable('rate_limits', {
   index('rate_limits_reset_at_idx').on(table.resetAt),
 ]);
 
+// ══════════════════════════════════════════════════════════════════════
+// Me mobiliser — newsletter + événements citoyens
+//
+// Les emails ne sont JAMAIS liés aux scores politiques.
+// C'est définitif, affirmatif, engagé, promis, juré.
+// ══════════════════════════════════════════════════════════════════════
+
+// ── Abonnements newsletter (consentement explicite, art. 6.1.a RGPD) ──
+// Le token de désinscription est envoyé à l'utilisateur pour se désinscrire sans compte.
+
+export const newsletterSubscriptions = pgTable('newsletter_subscriptions', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  email: text('email').notNull(),
+  domains: jsonb('domains'),            // string[] — centres d'intérêt thématiques
+  unsubscribeToken: uuid('unsubscribe_token').notNull().defaultRandom(),
+  createdAt: timestamp('created_at').notNull().defaultNow(),
+  isActive: boolean('is_active').notNull().default(true),
+});
+
+// ── Événements citoyens validés (non-partisans — approuvés par le bureau) ──
+
+export const civicEvents = pgTable('civic_events', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  title: text('title').notNull(),
+  description: text('description').notNull(),
+  url: text('url'),
+  eventDate: timestamp('event_date'),
+  location: text('location'),
+  organizer: text('organizer').notNull(),
+  category: text('category').notNull(),  // 'petition' | 'atelier' | 'rencontre' | 'formation' | 'manifestation' | 'autre'
+  isActive: boolean('is_active').notNull().default(true),
+  createdAt: timestamp('created_at').notNull().defaultNow(),
+}, (table) => [
+  index('civic_events_active_idx').on(table.isActive, table.createdAt),
+]);
+
+// ── Propositions d'événements (en attente de validation) ──
+
+export const eventProposals = pgTable('event_proposals', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  title: text('title').notNull(),
+  description: text('description').notNull(),
+  url: text('url'),
+  eventDate: timestamp('event_date'),
+  location: text('location'),
+  organizer: text('organizer').notNull(),
+  category: text('category').notNull(),
+  proposerEmail: text('proposer_email'),
+  nonPartisanAcknowledged: boolean('non_partisan_acknowledged').notNull().default(false),
+  status: text('status').notNull().default('pending'),  // 'pending' | 'approved' | 'rejected'
+  rejectionReason: text('rejection_reason'),
+  createdAt: timestamp('created_at').notNull().defaultNow(),
+}, (table) => [
+  index('event_proposals_status_idx').on(table.status, table.createdAt),
+]);
+
 // ── Journal des appels API IA ──
 
 export const apiCalls = pgTable('api_calls', {

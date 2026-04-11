@@ -56,6 +56,14 @@ const MENU_ITEMS: Array<{
     iconColor: 'text-amber-400',
     ready: true,
   },
+  {
+    screen: 'mobiliser',
+    title: 'Me mobiliser',
+    description: 'Découvre des initiatives citoyennes non-partisanes et reste informé·e.',
+    icon: '◉',
+    iconColor: 'text-green-400',
+    ready: true,
+  },
 ];
 
 export function MainMenu({ userPosition, parties, onNavigate }: MainMenuProps) {

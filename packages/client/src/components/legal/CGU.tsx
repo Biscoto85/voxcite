@@ -297,7 +297,69 @@ export function CGU({ onBack, onNavigateMentions }: CGUProps) {
 
         {/* Article 10 */}
         <article className="bg-gray-900 rounded-xl p-5 border border-gray-800">
-          <h3 className="text-base font-semibold text-white mb-3">Article 10 — Contact et suggestions</h3>
+          <h3 className="text-base font-semibold text-white mb-3">Article 10 — Newsletter et mobilisation citoyenne</h3>
+          <p className="mb-3">
+            La section <em>Me mobiliser</em> permet à l'utilisateur de s'inscrire à une liste de diffusion
+            pour recevoir des informations sur des initiatives citoyennes non-partisanes et les actualités
+            de PartiPrism.
+          </p>
+          <h4 className="font-medium text-white mt-4 mb-1">10.1 — Séparation absolue des données</h4>
+          <p className="mb-2">
+            L'adresse email collectée dans ce cadre est <strong>strictement et définitivement séparée</strong> du
+            positionnement politique, du profil ou de toute autre donnée liée à l'utilisation de la Plateforme.
+            Aucun lien n'est établi, ni ne sera jamais établi, entre une adresse email et un score ou une
+            réponse politique. Cette séparation est technique (tables de base de données indépendantes),
+            organisationnelle (traitements distincts) et contractuelle (engagement de l'éditeur).
+          </p>
+          <h4 className="font-medium text-white mt-4 mb-1">10.2 — Base légale et consentement</h4>
+          <p className="mb-2">
+            La collecte repose sur le <strong>consentement explicite</strong> de l'utilisateur (art. 6.1.a RGPD),
+            recueilli via une case à cocher obligatoire dont le texte décrit précisément l'usage.
+            Le consentement peut être retiré à tout moment, sans condition et sans préjudice.
+          </p>
+          <h4 className="font-medium text-white mt-4 mb-1">10.3 — Désinscription</h4>
+          <p className="mb-2">
+            Chaque abonné dispose d'un lien de désinscription unique, utilisable sans compte ni mot de passe.
+            La désinscription est immédiate et définitive. Aucune relance n'est effectuée après désinscription.
+          </p>
+          <h4 className="font-medium text-white mt-4 mb-1">10.4 — Usage</h4>
+          <p>
+            La liste de diffusion est utilisée exclusivement pour communiquer sur des initiatives citoyennes
+            non-partisanes et des actualités de PartiPrism. Elle n'est jamais cédée, vendue ou partagée
+            avec des tiers, y compris des partis politiques ou des structures qui leur sont liées.
+          </p>
+        </article>
+
+        {/* Article 11 */}
+        <article className="bg-gray-900 rounded-xl p-5 border border-gray-800">
+          <h3 className="text-base font-semibold text-white mb-3">Article 11 — Événements citoyens et charte non-partisane</h3>
+          <p className="mb-3">
+            La section <em>Me mobiliser</em> présente un carrousel d'initiatives citoyennes sélectionnées
+            par le bureau de l'association. Les utilisateurs peuvent proposer des initiatives via un formulaire.
+          </p>
+          <h4 className="font-medium text-white mt-4 mb-1">11.1 — Charte non-partisane</h4>
+          <p className="mb-2">
+            Ce canal est réservé aux initiatives <strong>sans affiliation partisane directe ou indirecte</strong>.
+            Une initiative est considérée comme partisane si elle est portée, financée, relayée ou associée
+            à un parti politique, à une liste électorale ou à une organisation qui leur est structurellement liée.
+          </p>
+          <p className="mb-2 text-gray-400 text-sm">
+            Cette restriction ne constitue pas un jugement sur la légitimité des initiatives partisanes,
+            qui sont pleinement légitimes dans un système démocratique. Elle reflète uniquement la volonté
+            de PartiPrism de maintenir ce canal profondément apartisan.
+          </p>
+          <h4 className="font-medium text-white mt-4 mb-1">11.2 — Modération</h4>
+          <p>
+            Toute proposition est soumise à validation par le bureau avant publication.
+            Le bureau peut refuser une proposition sans avoir à s'en justifier au-delà du respect
+            de la présente charte. Les propositions approuvées peuvent être retirées à tout moment
+            si leur nature partisane est constatée ultérieurement.
+          </p>
+        </article>
+
+        {/* Article 12 (ex-10) */}
+        <article className="bg-gray-900 rounded-xl p-5 border border-gray-800">
+          <h3 className="text-base font-semibold text-white mb-3">Article 12 — Contact et suggestions</h3>
           <p>
             La Plateforme est un projet collaboratif en amélioration continue. Toute suggestion
             ou signalement peut être adressé à :{' '}
@@ -307,9 +369,9 @@ export function CGU({ onBack, onNavigateMentions }: CGUProps) {
           </p>
         </article>
 
-        {/* Article 11 */}
+        {/* Article 13 */}
         <article className="bg-gray-900 rounded-xl p-5 border border-gray-800">
-          <h3 className="text-base font-semibold text-white mb-3">Article 11 — Mentions légales</h3>
+          <h3 className="text-base font-semibold text-white mb-3">Article 13 — Mentions légales</h3>
           <p>
             Les mentions légales, incluant l'identification de l'éditeur et de l'hébergeur (LCEN),
             sont consultables sur la{' '}

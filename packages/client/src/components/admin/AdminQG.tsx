@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 
-type Tab = 'dashboard' | 'snapshots' | 'prompts' | 'questions' | 'parties' | 'medias' | 'feedbacks' | 'proposals' | 'api-calls';
+type Tab = 'dashboard' | 'snapshots' | 'prompts' | 'questions' | 'parties' | 'medias' | 'feedbacks' | 'proposals' | 'api-calls' | 'mobiliser';
 
 const TABS: Array<{ id: Tab; label: string }> = [
   { id: 'dashboard', label: 'Dashboard' },
@@ -12,6 +12,7 @@ const TABS: Array<{ id: Tab; label: string }> = [
   { id: 'feedbacks', label: 'Feedbacks' },
   { id: 'proposals', label: 'Propositions' },
   { id: 'api-calls', label: 'API Calls' },
+  { id: 'mobiliser', label: 'Mobiliser' },
 ];
 
 // ── Auth helper ─────────────────────────────────────────────────────
@@ -131,6 +132,7 @@ export function AdminQG() {
         {tab === 'feedbacks' && <FeedbacksTab />}
         {tab === 'proposals' && <ProposalsTab />}
         {tab === 'api-calls' && <ApiCallsTab />}
+        {tab === 'mobiliser' && <MobiliserTab />}
       </div>
     </div>
   );
@@ -1041,6 +1043,212 @@ function MediasTab() {
           )}
         </div>
       ))}
+    </div>
+  );
+}
+
+// ── MobiliserTab ────────────────────────────────────────────────────
+
+function qgFetch(path: string, options?: RequestInit) {
+  const token = localStorage.getItem('qg_token');
+  return fetch(`/api/qg${path}`, {
+    ...options,
+    headers: { 'Content-Type': 'application/json', ...(token ? { Authorization: `Bearer ${token}` } : {}), ...(options?.headers ?? {}) },
+  });
+}
+
+interface EventProposal {
+  id: string; title: string; description: string; url: string | null;
+  eventDate: string | null; location: string | null; organizer: string;
+  category: string; proposerEmail: string | null; status: string;
+  rejectionReason: string | null; createdAt: string;
+}
+
+interface CivicEventAdmin {
+  id: string; title: string; description: string; url: string | null;
+  eventDate: string | null; location: string | null; organizer: string;
+  category: string; isActive: boolean; createdAt: string;
+}
+
+const CATEGORY_LABELS_ADMIN: Record<string, string> = {
+  petition: 'Pétition', atelier: 'Atelier', rencontre: 'Rencontre',
+  formation: 'Formation', manifestation: 'Manifestation', autre: 'Autre',
+};
+
+function MobiliserTab() {
+  const [proposals, setProposals] = useState<EventProposal[]>([]);
+  const [events, setEvents] = useState<CivicEventAdmin[]>([]);
+  const [newsletterStats, setNewsletterStats] = useState<{ active: number; total: number } | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [view, setView] = useState<'proposals' | 'events'>('proposals');
+  const [showCreateForm, setShowCreateForm] = useState(false);
+  const [newEvent, setNewEvent] = useState({ title: '', description: '', url: '', eventDate: '', location: '', organizer: '', category: 'autre', isActive: true });
+
+  const load = useCallback(async () => {
+    setLoading(true);
+    const [p, e, n] = await Promise.all([
+      qgFetch('/event-proposals?status=pending').then((r) => r.json()),
+      qgFetch('/events').then((r) => r.json()),
+      qgFetch('/newsletter/stats').then((r) => r.json()),
+    ]);
+    setProposals(Array.isArray(p) ? p : []);
+    setEvents(Array.isArray(e) ? e : []);
+    setNewsletterStats(n.active != null ? n : null);
+    setLoading(false);
+  }, []);
+
+  useEffect(() => { load(); }, [load]);
+
+  const handleProposal = async (id: string, status: 'approved' | 'rejected', rejectionReason?: string) => {
+    await qgFetch(`/event-proposals/${id}`, { method: 'PATCH', body: JSON.stringify({ status, rejectionReason: rejectionReason ?? null }) });
+    if (status === 'approved') {
+      const p = proposals.find((x) => x.id === id);
+      if (p) {
+        await qgFetch('/events', { method: 'POST', body: JSON.stringify({ title: p.title, description: p.description, url: p.url, eventDate: p.eventDate, location: p.location, organizer: p.organizer, category: p.category, isActive: true }) });
+      }
+    }
+    load();
+  };
+
+  const toggleEvent = async (id: string, isActive: boolean) => {
+    await qgFetch(`/events/${id}`, { method: 'PATCH', body: JSON.stringify({ isActive: !isActive }) });
+    load();
+  };
+
+  const createEvent = async (e: React.FormEvent) => {
+    e.preventDefault();
+    await qgFetch('/events', { method: 'POST', body: JSON.stringify(newEvent) });
+    setShowCreateForm(false);
+    setNewEvent({ title: '', description: '', url: '', eventDate: '', location: '', organizer: '', category: 'autre', isActive: true });
+    load();
+  };
+
+  const exportNewsletter = () => {
+    const token = localStorage.getItem('qg_token');
+    const url = `/api/qg/newsletter/export`;
+    const a = document.createElement('a');
+    a.href = url;
+    if (token) a.href += `?token=${encodeURIComponent(token)}`;
+    a.click();
+  };
+
+  if (loading) return <p className="text-gray-500 text-sm">Chargement…</p>;
+
+  return (
+    <div className="space-y-6">
+      {/* Newsletter stats */}
+      <div className="bg-gray-900 rounded-xl border border-gray-800 p-4">
+        <div className="flex items-center justify-between mb-2">
+          <h3 className="font-semibold text-white">Newsletter</h3>
+          <button onClick={exportNewsletter} className="text-xs text-amber-400 hover:text-amber-300 px-2 py-1 rounded focus-ring">
+            Exporter CSV
+          </button>
+        </div>
+        {newsletterStats && (
+          <p className="text-sm text-gray-400">
+            <span className="text-white font-medium">{newsletterStats.active}</span> abonnés actifs
+            {' '}/ {newsletterStats.total} total
+          </p>
+        )}
+      </div>
+
+      {/* Tab switcher */}
+      <div className="flex gap-2">
+        <button onClick={() => setView('proposals')} className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${view === 'proposals' ? 'bg-amber-500 text-black' : 'bg-gray-800 text-gray-300 hover:bg-gray-700'}`}>
+          Propositions ({proposals.length})
+        </button>
+        <button onClick={() => setView('events')} className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${view === 'events' ? 'bg-amber-500 text-black' : 'bg-gray-800 text-gray-300 hover:bg-gray-700'}`}>
+          Événements ({events.length})
+        </button>
+      </div>
+
+      {/* Proposals */}
+      {view === 'proposals' && (
+        <div className="space-y-3">
+          {proposals.length === 0 && <p className="text-gray-500 text-sm">Aucune proposition en attente.</p>}
+          {proposals.map((p) => (
+            <div key={p.id} className="bg-gray-900 rounded-xl border border-gray-800 p-4">
+              <div className="flex items-start justify-between gap-2 mb-2">
+                <div>
+                  <span className="text-xs text-gray-500 uppercase">{CATEGORY_LABELS_ADMIN[p.category] ?? p.category}</span>
+                  <h4 className="font-medium text-white">{p.title}</h4>
+                  <p className="text-sm text-gray-400">{p.organizer}</p>
+                </div>
+                <span className="text-xs text-gray-600">{new Date(p.createdAt).toLocaleDateString('fr-FR')}</span>
+              </div>
+              <p className="text-xs text-gray-400 mb-3 leading-relaxed">{p.description}</p>
+              {p.url && <p className="text-xs text-amber-400 mb-2 truncate">{p.url}</p>}
+              {p.proposerEmail && <p className="text-xs text-gray-500 mb-3">Contact : {p.proposerEmail}</p>}
+              <div className="flex gap-2">
+                <button onClick={() => handleProposal(p.id, 'approved')} className="px-3 py-1.5 bg-green-700 hover:bg-green-600 rounded text-xs font-medium text-white">
+                  ✓ Approuver et publier
+                </button>
+                <button onClick={() => handleProposal(p.id, 'rejected', 'Initiative partisane ou non conforme à la charte.')} className="px-3 py-1.5 bg-gray-700 hover:bg-gray-600 rounded text-xs font-medium text-gray-300">
+                  ✕ Rejeter
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Events */}
+      {view === 'events' && (
+        <div className="space-y-3">
+          <button onClick={() => setShowCreateForm(!showCreateForm)} className="px-4 py-2 bg-amber-500 hover:bg-amber-400 rounded-lg text-sm font-medium text-black">
+            + Créer un événement
+          </button>
+
+          {showCreateForm && (
+            <form onSubmit={createEvent} className="bg-gray-900 rounded-xl border border-amber-900/30 p-4 space-y-3">
+              <h4 className="font-semibold text-white">Nouvel événement</h4>
+              {[
+                { key: 'title', label: 'Titre *', placeholder: '', required: true },
+                { key: 'description', label: 'Description *', placeholder: '', required: true },
+                { key: 'organizer', label: 'Organisateur *', placeholder: '', required: true },
+                { key: 'url', label: 'URL', placeholder: 'https://…', required: false },
+                { key: 'location', label: 'Lieu', placeholder: '', required: false },
+              ].map(({ key, label, placeholder, required }) => (
+                <div key={key}>
+                  <label className="text-xs text-gray-400 block mb-1">{label}</label>
+                  <input type="text" value={(newEvent as any)[key]} required={required} placeholder={placeholder}
+                    onChange={(e) => setNewEvent((p) => ({ ...p, [key]: e.target.value }))}
+                    className="w-full bg-gray-800 border border-gray-700 rounded px-2 py-1.5 text-sm text-white"
+                  />
+                </div>
+              ))}
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="text-xs text-gray-400 block mb-1">Date</label>
+                  <input type="date" value={newEvent.eventDate} onChange={(e) => setNewEvent((p) => ({ ...p, eventDate: e.target.value }))} className="w-full bg-gray-800 border border-gray-700 rounded px-2 py-1.5 text-sm text-white" />
+                </div>
+                <div>
+                  <label className="text-xs text-gray-400 block mb-1">Catégorie</label>
+                  <select value={newEvent.category} onChange={(e) => setNewEvent((p) => ({ ...p, category: e.target.value }))} className="w-full bg-gray-800 border border-gray-700 rounded px-2 py-1.5 text-sm text-white">
+                    {Object.entries(CATEGORY_LABELS_ADMIN).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
+                  </select>
+                </div>
+              </div>
+              <button type="submit" className="px-4 py-2 bg-green-700 hover:bg-green-600 rounded text-sm font-medium text-white">Créer</button>
+            </form>
+          )}
+
+          {events.map((ev) => (
+            <div key={ev.id} className={`bg-gray-900 rounded-xl border p-4 ${ev.isActive ? 'border-gray-800' : 'border-gray-800/40 opacity-60'}`}>
+              <div className="flex items-start justify-between gap-2">
+                <div>
+                  <span className="text-xs text-gray-500">{CATEGORY_LABELS_ADMIN[ev.category] ?? ev.category}</span>
+                  <h4 className="font-medium text-white">{ev.title}</h4>
+                  <p className="text-xs text-gray-400">{ev.organizer}</p>
+                </div>
+                <button onClick={() => toggleEvent(ev.id, ev.isActive)} className={`text-xs px-2 py-1 rounded focus-ring ${ev.isActive ? 'text-green-400 hover:text-red-400' : 'text-gray-600 hover:text-green-400'}`}>
+                  {ev.isActive ? 'Actif' : 'Inactif'}
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }

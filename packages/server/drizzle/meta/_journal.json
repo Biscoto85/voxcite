@@ -50,6 +50,13 @@
       "when": 1744740000000,
       "tag": "0006_rate_limits",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1744826400000,
+      "tag": "0007_mobiliser",
+      "breakpoints": true
     }
   ]
 }
