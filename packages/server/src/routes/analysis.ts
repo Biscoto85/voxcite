@@ -108,16 +108,16 @@ analysisRouter.post('/', async (req, res) => {
 
   // Validate position axes are in [-1, 1]
   const axes = ['societal', 'economic', 'authority', 'ecology', 'sovereignty'] as const;
-  const pos = position as Record<string, unknown>;
+  const pos = position as unknown as Record<string, unknown>;
   if (!axes.every((a) => typeof pos[a] === 'number' && (pos[a] as number) >= -1.001 && (pos[a] as number) <= 1.001)) {
     res.status(400).json({ error: 'Position axis values must be in [-1, 1]' });
     return;
   }
 
   // Clamp mediaSources size to prevent inArray explosion
-  if (mediaSources && mediaSources.length > 20) {
-    mediaSources = mediaSources.slice(0, 20);
-  }
+  const effectiveMediaSources = mediaSources && mediaSources.length > 20
+    ? mediaSources.slice(0, 20)
+    : mediaSources;
 
   // Résolution de la position médias :
   // 1. Si des IDs de médias spécifiques sont déclarés → calcul précis depuis la DB
@@ -125,7 +125,7 @@ analysisRouter.post('/', async (req, res) => {
   let mediaPosition: CompassPosition | undefined;
   let declaredMediaLabels: string[] = [];
 
-  if (mediaSources && mediaSources.length > 0) {
+  if (effectiveMediaSources && effectiveMediaSources.length > 0) {
     try {
       const avg = (vals: number[]) => vals.reduce((s, v) => s + v, 0) / vals.length;
       const rows = await db.select({
@@ -135,7 +135,7 @@ analysisRouter.post('/', async (req, res) => {
         positionAuthority: medias.positionAuthority,
         positionEcology: medias.positionEcology,
         positionSovereignty: medias.positionSovereignty,
-      }).from(medias).where(inArray(medias.id, mediaSources));
+      }).from(medias).where(inArray(medias.id, effectiveMediaSources));
 
       if (rows.length > 0) {
         declaredMediaLabels = rows.map((r) => r.label);
