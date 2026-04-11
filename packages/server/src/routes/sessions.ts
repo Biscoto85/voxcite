@@ -3,6 +3,16 @@ import { db } from '../db/index.js';
 import { snapshots, votes, orphanReports } from '../db/schema.js';
 import { geolocateIP, validatePostalCode } from '../services/geolocation.js';
 
+type AxisMap = { societal: number; economic: number; authority: number; ecology: number; sovereignty: number };
+
+/** Validates that a compass position has all 5 axes in [-1, 1]. */
+function isValidPosition(pos: unknown): pos is AxisMap {
+  if (!pos || typeof pos !== 'object') return false;
+  const p = pos as Record<string, unknown>;
+  const axes: (keyof AxisMap)[] = ['societal', 'economic', 'authority', 'ecology', 'sovereignty'];
+  return axes.every((a) => typeof p[a] === 'number' && p[a] >= -1.001 && p[a] <= 1.001);
+}
+
 export const sessionsRouter = Router();
 
 // POST /snapshot — enregistrer un positionnement anonyme (pour la nébuleuse)
@@ -21,8 +31,8 @@ sessionsRouter.post('/snapshot', async (req, res) => {
     qualityScore?: number;
   };
 
-  if (!position || position.societal == null) {
-    res.status(400).json({ error: 'position required' });
+  if (!position || !isValidPosition(position)) {
+    res.status(400).json({ error: 'position required with all 5 axes in [-1, 1]' });
     return;
   }
 

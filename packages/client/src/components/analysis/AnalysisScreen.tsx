@@ -149,12 +149,16 @@ export function AnalysisScreen({ position, parties, profile, onBack }: AnalysisS
     if (!enqueueRes.ok) throw new Error(`Enqueue failed: ${enqueueRes.status}`);
     const { jobId } = await enqueueRes.json() as { jobId: string };
 
-    // Poll every 2 seconds, timeout after 45 seconds
+    // Poll with exponential backoff — 2s→3s→5s→8s→10s (cap), timeout 60s
+    const POLL_INTERVALS = [2_000, 3_000, 5_000, 8_000, 10_000];
+    const MAX_WAIT_MS = 60_000;
+
     return new Promise((resolve, reject) => {
       const start = Date.now();
-      const interval = setInterval(async () => {
-        if (Date.now() - start > 45_000) {
-          clearInterval(interval);
+      let attempt = 0;
+
+      const poll = async () => {
+        if (Date.now() - start > MAX_WAIT_MS) {
           reject(new Error('Timeout'));
           return;
         }
@@ -162,15 +166,22 @@ export function AnalysisScreen({ position, parties, profile, onBack }: AnalysisS
           const r = await fetch(`/api/analysis/queue/${jobId}`);
           const data = await r.json() as { status: string; result?: Omit<AiAnalysis, 'loading'>; error?: string };
           if (data.status === 'done' && data.result) {
-            clearInterval(interval);
             resolve(data.result);
+            return;
           } else if (data.status === 'failed') {
-            clearInterval(interval);
             reject(new Error(data.error || 'Analysis failed'));
+            return;
           }
           // else: still pending/processing — keep polling
         } catch { /* network hiccup — keep trying */ }
-      }, 2_000);
+
+        const delay = POLL_INTERVALS[Math.min(attempt, POLL_INTERVALS.length - 1)];
+        attempt++;
+        setTimeout(poll, delay);
+      };
+
+      setTimeout(poll, POLL_INTERVALS[0]);
+      attempt = 1;
     });
   };
 

@@ -78,23 +78,16 @@ export function App() {
   const [error, setError] = useState<string | null>(null);
   const [feedbackContext, setFeedbackContext] = useState<FeedbackContext>({});
 
-  // Parse challenge URL (#defi/...) or QG access (#qg) synchronously on first render
+  // Parse challenge URL (#defi/...) synchronously on first render
   const [challengerPosition] = useState<CompassPosition | null>(() => {
     const hash = window.location.hash;
-    if (hash === '#qg') {
-      // Clean hash and flag for QG screen (handled in useEffect after load)
-      window.history.replaceState(null, '', window.location.pathname + window.location.search);
-      return null;
-    }
+    if (hash === '#qg') return null; // handled by useEffect below
     const pos = parseChallengeFromHash();
     if (pos) {
       window.history.replaceState(null, '', window.location.pathname + window.location.search);
     }
     return pos;
   });
-
-  // Detect #qg hash for admin access
-  const [isQGAccess] = useState(() => window.location.hash === '#qg' || false);
 
   // Navigate to static pages (legal + intention + methodologie)
   const navigateToLegal = useCallback((target: 'mentions' | 'cgu' | 'intention' | 'methodologie') => {

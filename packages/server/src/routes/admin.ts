@@ -290,16 +290,25 @@ adminRouter.get('/proposals', async (req, res) => {
 
 adminRouter.post('/batch/program', async (_req, res) => {
   try {
-    const { execSync } = await import('child_process');
-    const output = execSync('npx tsx src/batch/generate-program.ts', {
-      cwd: new URL('../../', import.meta.url).pathname,
-      timeout: 120_000,
-      encoding: 'utf-8',
+    const { spawn } = await import('child_process');
+    const cwd = new URL('../../', import.meta.url).pathname;
+    let stderr = '';
+    await new Promise<void>((resolve, reject) => {
+      // Use spawn (non-blocking) with a fixed args array — no shell injection possible
+      const proc = spawn('node', ['--import=tsx/esm', 'src/batch/generate-program.ts'], {
+        cwd,
+        timeout: 120_000,
+        env: { ...process.env },
+        stdio: ['ignore', 'ignore', 'pipe'],
+      });
+      proc.stderr.on('data', (chunk: Buffer) => { stderr += chunk.toString(); });
+      proc.on('close', (code) => { code === 0 ? resolve() : reject(new Error(stderr.slice(-500) || `Exit ${code}`)); });
+      proc.on('error', reject);
     });
-    res.json({ ok: true, message: 'Batch terminé', output: output.slice(-500) });
+    res.json({ ok: true, message: 'Batch terminé' });
   } catch (err: any) {
     console.error('[admin] Batch error:', err);
-    res.status(500).json({ error: err.stderr?.slice(-500) || err.message });
+    res.status(500).json({ error: err.message });
   }
 });
 

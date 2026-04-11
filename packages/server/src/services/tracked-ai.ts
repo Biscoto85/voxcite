@@ -22,9 +22,10 @@ interface TrackedCallOptions {
   model: string;
   messages: Anthropic.MessageParam[];
   maxTokens: number;
+  system?: string;
 }
 
-export async function trackedAiCall({ promptKey, model, messages, maxTokens }: TrackedCallOptions): Promise<Anthropic.Message> {
+export async function trackedAiCall({ promptKey, model, messages, maxTokens, system }: TrackedCallOptions): Promise<Anthropic.Message> {
   const apiKey = process.env.ANTHROPIC_API_KEY;
   if (!apiKey) throw new Error('ANTHROPIC_API_KEY not set');
 
@@ -35,6 +36,7 @@ export async function trackedAiCall({ promptKey, model, messages, maxTokens }: T
     const response = await client.messages.create({
       model,
       max_tokens: maxTokens,
+      ...(system ? { system } : {}),
       messages,
     });
 

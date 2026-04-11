@@ -13,7 +13,7 @@ import { inArray } from 'drizzle-orm';
 import type { CompassPosition } from '@partiprism/shared';
 
 const WORKER_INTERVAL_MS = 3_000;   // poll every 3 seconds
-const MAX_JOBS_PER_TICK = 3;         // process at most 3 jobs per tick
+const MAX_JOBS_PER_TICK = 10;        // process up to 10 jobs per tick (burst-friendly)
 const JOB_TIMEOUT_MS = 60_000;       // mark stuck "processing" jobs as failed after 60s
 const JOB_TTL_MS = 7 * 24 * 60 * 60 * 1_000; // delete done/failed jobs after 7 days
 

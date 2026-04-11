@@ -106,6 +106,19 @@ analysisRouter.post('/', async (req, res) => {
     return;
   }
 
+  // Validate position axes are in [-1, 1]
+  const axes = ['societal', 'economic', 'authority', 'ecology', 'sovereignty'] as const;
+  const pos = position as Record<string, unknown>;
+  if (!axes.every((a) => typeof pos[a] === 'number' && (pos[a] as number) >= -1.001 && (pos[a] as number) <= 1.001)) {
+    res.status(400).json({ error: 'Position axis values must be in [-1, 1]' });
+    return;
+  }
+
+  // Clamp mediaSources size to prevent inArray explosion
+  if (mediaSources && mediaSources.length > 20) {
+    mediaSources = mediaSources.slice(0, 20);
+  }
+
   // Résolution de la position médias :
   // 1. Si des IDs de médias spécifiques sont déclarés → calcul précis depuis la DB
   // 2. Sinon, si le format est connu → position agrégée par type (YAML)

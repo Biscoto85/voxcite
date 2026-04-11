@@ -43,6 +43,27 @@ app.use(cors({
   allowedHeaders: ['Content-Type', 'Authorization'],
 }));
 app.use(express.json({ limit: '100kb' }));
+
+// ── Security headers ────────────────────────────────────────────────
+app.use((_req, res, next) => {
+  res.removeHeader('X-Powered-By');
+  res.setHeader('X-Content-Type-Options', 'nosniff');
+  res.setHeader('X-Frame-Options', 'DENY');
+  res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
+  res.setHeader('X-XSS-Protection', '0');
+  res.setHeader('Permissions-Policy', 'camera=(), microphone=(), geolocation=()');
+  next();
+});
+
+// ── HTTP cache on stable public endpoints ───────────────────────────
+const CACHED_PREFIXES = [`${API_PREFIX}/domains`, `${API_PREFIX}/partis`, `${API_PREFIX}/questions`, `${API_PREFIX}/medias`, `${API_PREFIX}/program`];
+app.use((req, res, next) => {
+  if (req.method === 'GET' && CACHED_PREFIXES.some((p) => req.path.startsWith(p))) {
+    res.setHeader('Cache-Control', 'public, max-age=300, stale-while-revalidate=3600');
+  }
+  next();
+});
+
 app.use(rateLimit);
 
 // ── Routes ─────────────────────────────────────────────────────────
@@ -63,8 +84,8 @@ app.use(`${API_PREFIX}/nebula`, nebulaRouter);
 // Analyse IA (rate limited: 5 calls/h/IP — consomme des tokens)
 app.use(`${API_PREFIX}/analysis`, aiRateLimit, analysisRouter);
 
-// Programme citoyen et propositions
-app.use(`${API_PREFIX}/proposals`, proposalsRouter);
+// Programme citoyen et propositions (rate limited: anti-spam)
+app.use(`${API_PREFIX}/proposals`, aiRateLimit, proposalsRouter);
 app.use(`${API_PREFIX}/program`, programRouter);
 app.use(`${API_PREFIX}/feedback`, feedbackRouter);
 
