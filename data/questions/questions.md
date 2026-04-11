@@ -51,14 +51,14 @@ Ces 12 questions produisent la première image du positionnement. Elles sont pos
 
 ### Q3
 - **id** : `onb-03`
-- **text** : "Chacun devrait pouvoir choisir librement sa fin de vie, y compris l'euthanasie."
+- **text** : "La réussite d'une personne dépend avant tout de son mérite et de ses efforts, pas de son milieu social d'origine."
 - **type** : affirmation
 - **axis** : societal
-- **polarity** : +1
-- **domain** : sante
+- **polarity** : -1
+- **domain** : education
 - **phase** : onboarding
 - **weight** : 1.0
-- **calibration** : D'accord = progressiste. Pas d'accord = conservateur. Touche à la liberté individuelle vs valeurs morales collectives.
+- **calibration** : D'accord = conservateur (méritocrate, mobilité individuelle possible). Pas d'accord = progressiste (inégalités structurelles, déterminisme social). Couvre une dimension sociétale complémentaire aux mœurs (Q1) et à l'identité (Q2) : la vision de la reproduction sociale et de l'égalité des chances.
 
 ### Axe économique
 
@@ -110,14 +110,14 @@ Ces 12 questions produisent la première image du positionnement. Elles sont pos
 
 ### Q8
 - **id** : `onb-08`
-- **text** : "La justice est trop laxiste en France : il faut des peines plus sévères."
+- **text** : "Le droit de grève dans les services publics devrait être encadré pour garantir un service minimum à la population."
 - **type** : affirmation
 - **axis** : authority
 - **polarity** : -1
-- **domain** : securite
+- **domain** : travail
 - **phase** : onboarding
 - **weight** : 1.0
-- **calibration** : D'accord = autoritaire. Pas d'accord = libertaire. Formulation populaire, les deux camps se reconnaissent.
+- **calibration** : D'accord = autoritaire (l'ordre public et l'usager priment sur le droit de grève). Pas d'accord = libertaire (le droit de grève est fondamental, même dans les services publics). Complémente Q7 (sécurité) en testant l'axe autorité dans un contexte social/travail plutôt que sécuritaire.
 
 ### Axe écologie
 
@@ -702,6 +702,126 @@ Ces questions affinent le positionnement. Elles sont proposées après l'onboard
 
 ---
 
+### Domaine : Environnement et énergie (suite)
+
+#### Q57
+- **id** : `deep-ecologie-01`
+- **text** : "Les pesticides de synthèse devraient être progressivement interdits dans l'agriculture, même si cela augmente les prix alimentaires."
+- **type** : affirmation
+- **axis** : ecology
+- **polarity** : +1
+- **domain** : environnement
+- **phase** : deep
+- **weight** : 1.0
+- **calibration** : D'accord = écologiste (accepte le coût). Pas d'accord = productiviste (économie prime). Le "même si" force à assumer le coût réel de la position.
+
+#### Q58
+- **id** : `deep-ecologie-02`
+- **text** : "Les voitures thermiques devraient être interdites dans les centres-villes d'ici 2030."
+- **type** : affirmation
+- **axis** : ecology
+- **polarity** : +1
+- **domain** : environnement
+- **phase** : deep
+- **weight** : 1.0
+- **calibration** : D'accord = écologiste (contrainte acceptée). Pas d'accord = productiviste (liberté de circulation, coût économique). Question concrète et datée, très discriminante.
+
+#### Q59
+- **id** : `deep-ecologie-03`
+- **text** : "La protection des écosystèmes naturels (forêts, zones humides, espèces menacées) devrait prendre le dessus sur les projets économiques qui les menacent."
+- **type** : affirmation
+- **axis** : ecology
+- **polarity** : +1
+- **domain** : environnement
+- **phase** : deep
+- **weight** : 1.0
+- **calibration** : D'accord = écologiste (biodiversité avant économie). Pas d'accord = productiviste (développement prime). Révèle le rapport à la valeur intrinsèque du vivant.
+
+#### Q60
+- **id** : `deep-ecologie-04`
+- **text** : "L'élevage intensif devrait être fortement réduit d'ici 2040 pour des raisons environnementales et éthiques, même si cela fragilise la filière agricole."
+- **type** : affirmation
+- **axis** : ecology
+- **polarity** : +1
+- **domain** : environnement
+- **phase** : deep
+- **weight** : 1.2
+- **calibration** : D'accord = écologiste (souffrance animale + environnement > emplois). Pas d'accord = productiviste (souveraineté alimentaire, emplois ruraux). Excellent ancrage : la mention "filière agricole" force à assumer le coût social.
+
+#### Q61
+- **id** : `deep-ecologie-05`
+- **text** : "Face à la crise climatique, quel levier prioritaire l'État doit-il actionner pour changer nos modes de vie ?"
+- **type** : dilemme
+- **axis** : ecology
+- **polarity** : +1
+- **domain** : environnement
+- **phase** : deep
+- **weight** : 1.5
+- **options** : ["Miser sur la R&D et les technologies vertes sans restreindre les modes de vie", "Inciter par des avantages fiscaux (bonus-malus) sans imposer", "Réguler les entreprises et secteurs polluants en laissant les individus libres", "Encadrer à la fois les entreprises et certains comportements de consommation", "Imposer des limites collectives contraignantes (quotas carbone, restrictions de production)"]
+- **calibration** : Option 0 = productiviste/techno-optimiste. Option 4 = écologiste de la sobriété imposée. Révèle la vision du rapport individu-société sur l'écologie, au-delà des déclarations d'intention.
+
+---
+
+### Domaine : Souveraineté et relations internationales
+
+#### Q62
+- **id** : `deep-souverainete-01`
+- **text** : "La France devrait protéger ses agriculteurs et ses industries avec des taxes à l'importation, même si cela fait monter les prix pour les consommateurs."
+- **type** : affirmation
+- **axis** : sovereignty
+- **polarity** : -1
+- **domain** : international
+- **phase** : deep
+- **weight** : 1.0
+- **calibration** : D'accord = souverainiste/protectionniste. Pas d'accord = mondialiste (libre-échange, prix bas). Le "même si" révèle la disposition réelle à payer le coût du protectionnisme.
+
+#### Q63
+- **id** : `deep-souverainete-02`
+- **text** : "L'Union européenne devrait avoir davantage de pouvoirs communs sur les décisions économiques, sociales et de défense."
+- **type** : affirmation
+- **axis** : sovereignty
+- **polarity** : +1
+- **domain** : international
+- **phase** : deep
+- **weight** : 1.0
+- **calibration** : D'accord = mondialiste/fédéraliste européen. Pas d'accord = souverainiste (déléguer moins). Question clé pour distinguer pro-européen de souverainiste.
+
+#### Q64
+- **id** : `deep-souverainete-03`
+- **text** : "La France devrait développer une défense européenne autonome plutôt que de rester dépendante de l'OTAN et des États-Unis."
+- **type** : affirmation
+- **axis** : sovereignty
+- **polarity** : -1
+- **domain** : international
+- **phase** : deep
+- **weight** : 1.0
+- **calibration** : D'accord = souverainiste (autonomie stratégique, anti-dépendance US). Pas d'accord = atlantiste/mondialiste (alliance avec les démocraties). Question utile car elle crée une tension : les gaullistes et les eurosceptiques peuvent être d'accord pour des raisons opposées.
+
+#### Q65
+- **id** : `deep-souverainete-04`
+- **text** : "Les plateformes numériques étrangères (Netflix, YouTube, TikTok) devraient être obligées de financer des productions culturelles françaises pour opérer en France."
+- **type** : affirmation
+- **axis** : sovereignty
+- **polarity** : -1
+- **domain** : numerique
+- **phase** : deep
+- **weight** : 1.0
+- **calibration** : D'accord = souverainiste (protection culturelle, exception culturelle française). Pas d'accord = mondialiste (libre marché numérique). Très actuel, révèle le rapport à la souveraineté culturelle.
+
+#### Q66
+- **id** : `deep-souverainete-05`
+- **text** : "Face aux grandes crises mondiales (sanitaires, climatiques, alimentaires), quel rôle la France devrait-elle jouer ?"
+- **type** : dilemme
+- **axis** : sovereignty
+- **polarity** : +1
+- **domain** : international
+- **phase** : deep
+- **weight** : 1.5
+- **options** : ["Priorité absolue à la France — chaque nation gère ses propres crises", "Coopération ponctuelle avec quelques alliés proches si nécessaire", "Alliance européenne renforcée pour répondre ensemble aux crises continentales", "Coalition des démocraties à l'échelle mondiale pour les crises globales", "Renforcement des institutions internationales (ONU, OMS) avec de vrais pouvoirs contraignants"]
+- **calibration** : Option 0 = souverainiste pur. Option 4 = mondialiste pur. Révèle la vision du rapport France/monde sur les enjeux qui dépassent les frontières.
+
+---
+
 ## Statistiques de couverture
 
 ### Par axe
@@ -710,9 +830,9 @@ Ces questions affinent le positionnement. Elles sont proposées après l'onboard
 | Sociétal | 3 | 10 | 13 |
 | Économique | 3 | 14 | 17 |
 | Autorité | 2 | 13 | 15 |
-| Écologie | 2 | 4 | 6 |
-| Souveraineté | 2 | 3 | 5 |
-| **Total** | **12** | **44** | **56** |
+| Écologie | 2 | 9 | 11 |
+| Souveraineté | 2 | 8 | 10 |
+| **Total** | **12** | **54** | **66** |
 
 ### Par domaine
 | Domaine | Onboarding | Approfondissement | Total |
@@ -722,17 +842,17 @@ Ces questions affinent le positionnement. Elles sont proposées après l'onboard
 | Éducation et jeunesse | 0 | 4 | 4 |
 | Sécurité et justice | 2 | 5 | 7 |
 | Immigration et identité | 1 | 5 | 6 |
-| Environnement et énergie | 2 | 5 | 7 |
+| Environnement et énergie | 2 | 10 | 12 |
 | Économie et fiscalité | 3 | 5 | 8 |
-| Numérique et libertés | 0 | 4 | 4 |
+| Numérique et libertés | 0 | 5 | 5 |
 | Démocratie et institutions | 0 | 4 | 4 |
-| International et défense | 2 | 3 | 5 |
+| International et défense | 2 | 7 | 9 |
 
 ### Par format
 | Format | Onboarding | Approfondissement | Total |
 |--------|-----------|-------------------|-------|
-| Affirmation | 12 | 41 | 53 |
-| Dilemme | 0 | 3 | 3 |
+| Affirmation | 12 | 49 | 61 |
+| Dilemme | 0 | 5 | 5 |
 
 ---
 
