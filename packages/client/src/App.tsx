@@ -26,6 +26,7 @@ const LS = {
   RESPONSES: 'partiprism_responses',
   ONBOARDING_DONE: 'partiprism_onboarding_done',
   ANALYSIS: 'partiprism_analysis',
+  SNAPSHOT_TOKEN: 'partiprism_snapshot_token',
 } as const;
 
 export interface UserProfile {
@@ -147,7 +148,7 @@ export function App() {
     localStorage.setItem(LS.PROFILE, JSON.stringify(profile));
     localStorage.setItem(LS.ONBOARDING_DONE, 'true');
 
-    // Send anonymous snapshot for nebula (fire-and-forget)
+    // Send anonymous snapshot for nebula; store token to allow position refinement later
     fetch('/api/sessions/snapshot', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -161,7 +162,12 @@ export function App() {
         mediaRelationship: profile.mediaRelationship,
         qualityScore,
       }),
-    }).catch(() => {});
+    })
+      .then((r) => r.ok ? r.json() : null)
+      .then((data: { ok: boolean; token?: string } | null) => {
+        if (data?.token) localStorage.setItem(LS.SNAPSHOT_TOKEN, data.token);
+      })
+      .catch(() => {});
 
     setScreen('reveal');
   }, []);

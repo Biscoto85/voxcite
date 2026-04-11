@@ -21,9 +21,9 @@ Toutes les questions utilisent une échelle à 5 niveaux :
 
 ---
 
-## Questions d'onboarding (12)
+## Questions d'onboarding (15)
 
-Ces 12 questions produisent la première image du positionnement. Elles sont posées à tous les utilisateurs lors du parcours "révélation". Deux questions par axe.
+Ces 15 questions produisent la première image du positionnement. Elles sont posées à tous les utilisateurs lors du parcours "révélation". Trois questions par axe.
 
 ### Axe sociétal
 
@@ -167,9 +167,42 @@ Ces 12 questions produisent la première image du positionnement. Elles sont pos
 - **weight** : 1.0
 - **calibration** : D'accord = mondialiste. Pas d'accord = souverainiste. Question simple, directe, réponse rapide.
 
+### Q13
+- **id** : `onb-13`
+- **text** : "En cas d'épidémie grave, l'État devrait pouvoir imposer des restrictions (confinement, pass sanitaire) sans attendre un vote du Parlement."
+- **type** : affirmation
+- **axis** : authority
+- **polarity** : -1
+- **domain** : sante
+- **phase** : onboarding
+- **weight** : 1.0
+- **calibration** : D'accord = autoritaire (efficacité de l'exécutif en crise, urgence sanitaire). Pas d'accord = libertaire (contrôle démocratique, droits fondamentaux). Complémente Q7 (surveillance numérique) et Q8 (droit de grève) sur l'axe autorité : mesure la disposition à accepter la contrainte étatique dans un contexte de crise sanitaire.
+
+### Q14
+- **id** : `onb-14`
+- **text** : "Les vols intérieurs devraient être interdits quand un trajet en train de moins de 4 heures existe."
+- **type** : affirmation
+- **axis** : ecology
+- **polarity** : +1
+- **domain** : environnement
+- **phase** : onboarding
+- **weight** : 1.0
+- **calibration** : D'accord = écologiste (sobriété imposée, réduction carbone). Pas d'accord = productiviste (liberté de déplacement, concurrence). Mesure la disposition à accepter une contrainte concrète et personnelle pour des raisons écologiques — complémente Q9 (priorité environnement) et Q10 (technologie vs sobriété).
+
+### Q15
+- **id** : `onb-15`
+- **text** : "Les accords commerciaux négociés par l'Union européenne au nom de la France devraient être soumis à un référendum avant d'être signés."
+- **type** : affirmation
+- **axis** : sovereignty
+- **polarity** : -1
+- **domain** : international
+- **phase** : onboarding
+- **weight** : 1.0
+- **calibration** : D'accord = souverainiste (contrôle démocratique national, méfiance UE). Pas d'accord = mondialiste/pro-UE (délégation assumée, efficacité). Complémente Q11 (France vs règles européennes) et Q12 (mondialisation) : mesure le rapport à la délégation de souveraineté économique à l'UE.
+
 ---
 
-## Questions d'approfondissement (38)
+## Questions d'approfondissement (54)
 
 Ces questions affinent le positionnement. Elles sont proposées après l'onboarding, regroupées par domaine. L'utilisateur peut choisir les domaines qui l'intéressent.
 
@@ -829,29 +862,29 @@ Ces questions affinent le positionnement. Elles sont proposées après l'onboard
 |-----|-----------|-------------------|-------|
 | Sociétal | 3 | 10 | 13 |
 | Économique | 3 | 14 | 17 |
-| Autorité | 2 | 13 | 15 |
-| Écologie | 2 | 9 | 11 |
-| Souveraineté | 2 | 8 | 10 |
-| **Total** | **12** | **54** | **66** |
+| Autorité | 3 | 13 | 16 |
+| Écologie | 3 | 9 | 12 |
+| Souveraineté | 3 | 8 | 11 |
+| **Total** | **15** | **54** | **69** |
 
 ### Par domaine
 | Domaine | Onboarding | Approfondissement | Total |
 |---------|-----------|-------------------|-------|
 | Travail et emploi | 0 | 5 | 5 |
-| Santé et protection sociale | 2 | 4 | 6 |
+| Santé et protection sociale | 3 | 4 | 7 |
 | Éducation et jeunesse | 0 | 4 | 4 |
 | Sécurité et justice | 2 | 5 | 7 |
 | Immigration et identité | 1 | 5 | 6 |
-| Environnement et énergie | 2 | 10 | 12 |
+| Environnement et énergie | 3 | 10 | 13 |
 | Économie et fiscalité | 3 | 5 | 8 |
 | Numérique et libertés | 0 | 5 | 5 |
 | Démocratie et institutions | 0 | 4 | 4 |
-| International et défense | 2 | 7 | 9 |
+| International et défense | 3 | 7 | 10 |
 
 ### Par format
 | Format | Onboarding | Approfondissement | Total |
 |--------|-----------|-------------------|-------|
-| Affirmation | 12 | 49 | 61 |
+| Affirmation | 15 | 49 | 64 |
 | Dilemme | 0 | 5 | 5 |
 
 ---

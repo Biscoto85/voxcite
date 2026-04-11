@@ -80,6 +80,16 @@ export function DeepQuestionsFlow({
       const allResponses = saved.map((r) => ({ questionId: r.questionId, value: r.value as -2 | -1 | 0 | 1 | 2 }));
       const newPosition = calculatePosition(allResponses, allQuestions);
       onPositionUpdate(newPosition);
+
+      // Patch the anonymous snapshot so the nebula reflects the refined position (fire-and-forget)
+      const snapshotToken = localStorage.getItem('partiprism_snapshot_token');
+      if (snapshotToken) {
+        fetch(`/api/sessions/snapshot/${snapshotToken}`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ position: newPosition }),
+        }).catch(() => {});
+      }
     } catch {
       // Offline — position will be recalculated next time
     }

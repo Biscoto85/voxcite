@@ -1,4 +1,5 @@
 import { Router } from 'express';
+import { eq } from 'drizzle-orm';
 import { db } from '../db/index.js';
 import { snapshots, votes, orphanReports } from '../db/schema.js';
 import { geolocateIP, validatePostalCode } from '../services/geolocation.js';
@@ -49,7 +50,7 @@ sessionsRouter.post('/snapshot', async (req, res) => {
     }
   }
 
-  await db.insert(snapshots).values({
+  const [row] = await db.insert(snapshots).values({
     postalCode: postalCode ?? null,
     positionSocietal: position.societal,
     positionEconomic: position.economic,
@@ -64,13 +65,14 @@ sessionsRouter.post('/snapshot', async (req, res) => {
     mediaRelationship: mediaRelationship ?? null,
     isOrphan: isOrphan ?? null,
     qualityScore: qualityScore ?? null,
-  });
+  }).returning({ id: snapshots.id });
 
   if (qualityScore !== undefined && qualityScore < 0.3) {
     console.warn(`[partiprism-api] Snapshot low quality score: ${qualityScore.toFixed(2)} — possible rage-fill or robot`);
   }
 
-  res.status(201).json({ ok: true });
+  // Return token so the client can PATCH the position after deep question refinement
+  res.status(201).json({ ok: true, token: row.id });
 });
 
 // POST /validate-postal — valider le code postal vs IP sans créer de snapshot
@@ -106,6 +108,44 @@ sessionsRouter.post('/orphan-report', async (req, res) => {
 
   await db.insert(orphanReports).values({ isOrphan });
   res.status(201).json({ ok: true });
+});
+
+// PATCH /snapshot/:token — affiner le positionnement après les questions approfondies
+// Le token est un UUID retourné par POST /snapshot et stocké dans localStorage (jamais côté serveur).
+// Seul le propriétaire du token (qui le détient dans son navigateur) peut mettre à jour son snapshot.
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+sessionsRouter.patch('/snapshot/:token', async (req, res) => {
+  const { token } = req.params;
+  const { position } = req.body as { position: unknown };
+
+  if (!UUID_RE.test(token)) {
+    res.status(400).json({ error: 'invalid token' });
+    return;
+  }
+
+  if (!isValidPosition(position)) {
+    res.status(400).json({ error: 'position required with all 5 axes in [-1, 1]' });
+    return;
+  }
+
+  const updated = await db.update(snapshots)
+    .set({
+      positionSocietal: position.societal,
+      positionEconomic: position.economic,
+      positionAuthority: position.authority,
+      positionEcology: position.ecology,
+      positionSovereignty: position.sovereignty,
+    })
+    .where(eq(snapshots.id, token))
+    .returning({ id: snapshots.id });
+
+  if (updated.length === 0) {
+    res.status(404).json({ error: 'snapshot not found' });
+    return;
+  }
+
+  res.status(200).json({ ok: true });
 });
 
 // POST /vote — enregistrer un vote anonyme individuel
