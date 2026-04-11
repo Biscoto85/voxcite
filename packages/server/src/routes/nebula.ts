@@ -4,6 +4,7 @@ import { snapshots, orphanReports } from '../db/schema.js';
 import { buildNebulaData } from '../services/nebula.js';
 import type { AxisId } from '@partiprism/shared';
 import { ALL_AXES } from '../utils/helpers.js';
+import { sql } from 'drizzle-orm';
 
 export const nebulaRouter = Router();
 
@@ -18,6 +19,8 @@ nebulaRouter.get('/', async (req, res) => {
     return;
   }
 
+  // Cap at 10 000 random rows — statistically representative for KDE,
+  // prevents full-table load at scale (100k+ users).
   const allSnapshots = await db
     .select({
       societal: snapshots.positionSocietal,
@@ -27,7 +30,9 @@ nebulaRouter.get('/', async (req, res) => {
       sovereignty: snapshots.positionSovereignty,
       isOrphan: snapshots.isOrphan,
     })
-    .from(snapshots);
+    .from(snapshots)
+    .orderBy(sql`RANDOM()`)
+    .limit(10_000);
 
   const nebula = buildNebulaData(allSnapshots, xAxis as AxisId, yAxis as AxisId);
   res.json(nebula);
@@ -35,12 +40,13 @@ nebulaRouter.get('/', async (req, res) => {
 
 // GET /orphan-stats — statistiques depuis la table orphan_reports (déclarations tardives)
 nebulaRouter.get('/orphan-stats', async (_req, res) => {
-  const reports = await db
-    .select({ isOrphan: orphanReports.isOrphan })
-    .from(orphanReports);
+  const [stats] = await db.select({
+    total: sql<number>`COUNT(*)::int`,
+    orphanCount: sql<number>`SUM(CASE WHEN ${orphanReports.isOrphan} THEN 1 ELSE 0 END)::int`,
+  }).from(orphanReports);
 
-  const total = reports.length;
-  const orphanCount = reports.filter((r) => r.isOrphan).length;
+  const total = stats?.total ?? 0;
+  const orphanCount = stats?.orphanCount ?? 0;
 
   res.json({
     total,

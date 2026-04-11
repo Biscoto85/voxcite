@@ -43,6 +43,13 @@
       "when": 1744653600000,
       "tag": "0005_snapshots_quality",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1744740000000,
+      "tag": "0006_rate_limits",
+      "breakpoints": true
     }
   ]
 }

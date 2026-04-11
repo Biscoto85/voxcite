@@ -1,4 +1,4 @@
-import { pgTable, uuid, text, real, timestamp, integer, boolean, jsonb, index } from 'drizzle-orm/pg-core';
+import { pgTable, uuid, text, real, timestamp, integer, boolean, jsonb, index, primaryKey } from 'drizzle-orm/pg-core';
 
 // ── Domaines thématiques (10 entrées, seed depuis data/domains.yaml) ──
 
@@ -335,6 +335,19 @@ export const prompts = pgTable('prompts', {
   createdBy: text('created_by'),            // username de l'admin
 }, (table) => [
   index('prompts_key_active_idx').on(table.key, table.isActive),
+]);
+
+// ── Rate limiting cross-process (PM2 cluster) ──
+// Atomic upsert ensures correct counting across multiple Node.js workers.
+
+export const rateLimits = pgTable('rate_limits', {
+  ip: text('ip').notNull(),
+  limiter: text('limiter').notNull(),
+  count: integer('count').notNull().default(1),
+  resetAt: timestamp('reset_at').notNull(),
+}, (table) => [
+  primaryKey({ columns: [table.ip, table.limiter] }),
+  index('rate_limits_reset_at_idx').on(table.resetAt),
 ]);
 
 // ── Journal des appels API IA ──

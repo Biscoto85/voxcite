@@ -5,11 +5,11 @@
  */
 import { eq, and, lt, sql } from 'drizzle-orm';
 import { db } from '../db/index.js';
-import { analysisJobs, questions, medias } from '../db/schema.js';
+import { analysisJobs, questions } from '../db/schema.js';
 import { runAiAnalysis, type AnalysisInput } from './ai-analysis.js';
 import { getPopulationStats, getUserPercentiles } from './population.js';
 import { extractResponseSignals } from './response-signals.js';
-import { inArray } from 'drizzle-orm';
+import { resolveMediaPosition } from './media-position.js';
 import type { CompassPosition } from '@partiprism/shared';
 
 const WORKER_INTERVAL_MS = 3_000;   // poll every 3 seconds
@@ -49,28 +49,9 @@ async function processJob(jobId: string, requestData: AnalysisJobRequest): Promi
   let declaredMediaLabels: string[] = [];
 
   if (mediaSources && mediaSources.length > 0) {
-    try {
-      const rows = await db.select({
-        label: medias.label,
-        positionSocietal: medias.positionSocietal,
-        positionEconomic: medias.positionEconomic,
-        positionAuthority: medias.positionAuthority,
-        positionEcology: medias.positionEcology,
-        positionSovereignty: medias.positionSovereignty,
-      }).from(medias).where(inArray(medias.id, mediaSources));
-
-      if (rows.length > 0) {
-        declaredMediaLabels = rows.map((r) => r.label);
-        const avg = (vals: number[]) => vals.reduce((s, v) => s + v, 0) / vals.length;
-        mediaPosition = {
-          societal: avg(rows.map((r) => r.positionSocietal)),
-          economic: avg(rows.map((r) => r.positionEconomic)),
-          authority: avg(rows.map((r) => r.positionAuthority)),
-          ecology: avg(rows.map((r) => r.positionEcology)),
-          sovereignty: avg(rows.map((r) => r.positionSovereignty)),
-        };
-      }
-    } catch { /* best-effort */ }
+    const resolved = await resolveMediaPosition(mediaSources);
+    declaredMediaLabels = resolved.labels;
+    if (resolved.position) mediaPosition = resolved.position;
   }
 
   // Extract response signals for contradiction detection
@@ -170,10 +151,11 @@ async function tick(): Promise<void> {
     }
   }
 
-  // 4. Cleanup old done/failed jobs (run occasionally — every ~100 ticks)
+  // 4. Cleanup old done/failed jobs + expired rate_limits (run occasionally — every ~100 ticks)
   if (Math.random() < 0.01) {
     const cutoff = new Date(Date.now() - JOB_TTL_MS);
     db.delete(analysisJobs).where(lt(analysisJobs.createdAt, cutoff)).catch(() => {});
+    db.execute(sql`DELETE FROM rate_limits WHERE reset_at < NOW()`).catch(() => {});
   }
 }
 

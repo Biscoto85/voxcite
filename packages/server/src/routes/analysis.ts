@@ -5,8 +5,9 @@ import { runAiAnalysis } from '../services/ai-analysis.js';
 import { getPopulationStats, getUserPercentiles } from '../services/population.js';
 import { extractResponseSignals } from '../services/response-signals.js';
 import { db } from '../db/index.js';
-import { questions, medias, analysisJobs } from '../db/schema.js';
-import { eq, inArray } from 'drizzle-orm';
+import { questions, analysisJobs } from '../db/schema.js';
+import { eq } from 'drizzle-orm';
+import { resolveMediaPosition } from '../services/media-position.js';
 import { ALL_AXES } from '../utils/helpers.js';
 import fs from 'fs';
 import path from 'path';
@@ -126,30 +127,9 @@ analysisRouter.post('/', async (req, res) => {
   let declaredMediaLabels: string[] = [];
 
   if (effectiveMediaSources && effectiveMediaSources.length > 0) {
-    try {
-      const avg = (vals: number[]) => vals.reduce((s, v) => s + v, 0) / vals.length;
-      const rows = await db.select({
-        label: medias.label,
-        positionSocietal: medias.positionSocietal,
-        positionEconomic: medias.positionEconomic,
-        positionAuthority: medias.positionAuthority,
-        positionEcology: medias.positionEcology,
-        positionSovereignty: medias.positionSovereignty,
-      }).from(medias).where(inArray(medias.id, effectiveMediaSources));
-
-      if (rows.length > 0) {
-        declaredMediaLabels = rows.map((r) => r.label);
-        mediaPosition = {
-          societal: avg(rows.map((r) => r.positionSocietal)),
-          economic: avg(rows.map((r) => r.positionEconomic)),
-          authority: avg(rows.map((r) => r.positionAuthority)),
-          ecology: avg(rows.map((r) => r.positionEcology)),
-          sovereignty: avg(rows.map((r) => r.positionSovereignty)),
-        };
-      }
-    } catch (err) {
-      console.error('[analysis] Failed to compute media average from DB:', err);
-    }
+    const resolved = await resolveMediaPosition(effectiveMediaSources);
+    declaredMediaLabels = resolved.labels;
+    if (resolved.position) mediaPosition = resolved.position;
   } else if (infoFormats && infoFormats.length > 0) {
     // Fallback: agréger les positions moyennes par format déclaré
     const aggPositions = infoFormats
