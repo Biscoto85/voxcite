@@ -384,25 +384,30 @@ export async function runAiAnalysis(input: AnalysisInput, deepModel = false): Pr
   const dbKey = deepModel ? 'analysis_deep' : 'analysis';
   const fallback = deepModel ? DEEP_ANALYSIS_TEMPLATE : FALLBACK_ANALYSIS_TEMPLATE;
   const dbTemplate = await loadPrompt(dbKey);
+  const promptSource = dbTemplate ? `db:${dbKey}` : `hardcoded:${dbKey}`;
   const template = dbTemplate || fallback;
   const prompt = fillTemplate(template, { DATA_BLOCK: dataBlock });
 
   const model = deepModel ? ANALYSIS_MODEL_DEEP : ANALYSIS_MODEL_DEFAULT;
 
+  // System-level JSON enforcement — prevents Haiku from adding markdown/preamble
+  const SYSTEM_JSON = 'Tu es un analyseur politique. Tu réponds TOUJOURS et UNIQUEMENT avec du JSON valide, sans aucun texte avant ou après, sans balises markdown.';
+
   const response = await trackedAiCall({
     promptKey: dbKey,
     model,
     maxTokens: deepModel ? 4000 : 3000,
+    system: SYSTEM_JSON,
     messages: [{ role: 'user', content: prompt }],
   });
 
   const text = extractClaudeText(response);
+  console.log(`[ai-analysis] source=${promptSource} model=${model} stop=${response.stop_reason} in=${response.usage.input_tokens} out=${response.usage.output_tokens}`);
 
   try {
     return JSON.parse(extractJSON(text)) as AiAnalysisResult;
   } catch (err) {
-    const stopReason = response.stop_reason ?? 'unknown';
-    console.error(`[ai-analysis] JSON.parse failed (model=${model}, stop_reason=${stopReason}, text_len=${text.length}):`, (err as Error).message);
+    console.error(`[ai-analysis] JSON.parse failed (text_len=${text.length}):`, (err as Error).message);
     console.error('[ai-analysis] Raw text (first 300 chars):', text.slice(0, 300));
     return {
       summary: 'Analyse temporairement indisponible. Revenez dans quelques instants.',
