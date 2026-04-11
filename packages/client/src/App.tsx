@@ -328,7 +328,7 @@ export function App() {
               CGU
             </button>
             <span aria-hidden="true">·</span>
-            <a href="mailto:contact@partiprism.fr" className="hover:text-gray-400 transition-colors">Contact</a>
+            <a href="mailto:partiprism@proton.me" className="hover:text-gray-400 transition-colors">Contact</a>
           </div>
         </footer>
       )}

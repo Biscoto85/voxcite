@@ -25,8 +25,8 @@ export function MentionsLegales({ onBack, onNavigateCGU }: MentionsLegalesProps)
             <li><span className="text-gray-500">Président :</span> Parti Prism</li>
             <li><span className="text-gray-500">Siège social :</span> France</li>
             <li><span className="text-gray-500">Contact :</span>{' '}
-              <a href="mailto:contact@partiprism.fr" className="text-amber-400 hover:text-amber-300 underline">
-                contact@partiprism.fr
+              <a href="mailto:partiprism@proton.me" className="text-amber-400 hover:text-amber-300 underline">
+                partiprism@proton.me
               </a>
             </li>
           </ul>
@@ -82,8 +82,8 @@ export function MentionsLegales({ onBack, onNavigateCGU }: MentionsLegalesProps)
           </p>
           <p className="mt-2">
             Contact :{' '}
-            <a href="mailto:contact@partiprism.fr" className="text-amber-400 hover:text-amber-300 underline">
-              contact@partiprism.fr
+            <a href="mailto:partiprism@proton.me" className="text-amber-400 hover:text-amber-300 underline">
+              partiprism@proton.me
             </a>
           </p>
         </div>

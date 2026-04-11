@@ -214,8 +214,8 @@ export function CGU({ onBack, onNavigateMentions }: CGUProps) {
           <h4 className="font-medium text-white mt-4 mb-1">4.7 — Contact</h4>
           <p>
             Pour toute question relative au traitement des données :{' '}
-            <a href="mailto:contact@partiprism.fr" className="text-amber-400 hover:text-amber-300 underline">
-              contact@partiprism.fr
+            <a href="mailto:partiprism@proton.me" className="text-amber-400 hover:text-amber-300 underline">
+              partiprism@proton.me
             </a>
           </p>
         </article>
@@ -301,8 +301,8 @@ export function CGU({ onBack, onNavigateMentions }: CGUProps) {
           <p>
             La Plateforme est un projet collaboratif en amélioration continue. Toute suggestion
             ou signalement peut être adressé à :{' '}
-            <a href="mailto:contact@partiprism.fr" className="text-amber-400 hover:text-amber-300 underline font-medium">
-              contact@partiprism.fr
+            <a href="mailto:partiprism@proton.me" className="text-amber-400 hover:text-amber-300 underline font-medium">
+              partiprism@proton.me
             </a>
           </p>
         </article>

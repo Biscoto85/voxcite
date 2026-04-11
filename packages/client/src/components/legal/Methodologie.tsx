@@ -101,9 +101,9 @@ export function Methodologie({ onBack }: MethodologieProps) {
           <h3 className="text-base font-semibold text-white mb-3">Les questions et le calcul du score</h3>
 
           <p className="mb-3">
-            L'onboarding comporte <strong className="text-white">12 questions</strong> — exactement 2 par axe.
+            L'onboarding comporte <strong className="text-white">15 questions</strong> — exactement 3 par axe.
             Elles produisent un premier positionnement. Le module <em>Affiner</em> propose ensuite
-            38 questions d'approfondissement thématique pour plus de précision.
+            54 questions d'approfondissement thématique pour plus de précision.
           </p>
 
           <p className="mb-3">
@@ -277,7 +277,7 @@ export function Methodologie({ onBack }: MethodologieProps) {
 
           <div className="space-y-3">
             {[
-              ['Biais du concepteur', 'Les positions initiales des partis et des médias ont été estimées par l\'équipe fondatrice. Malgré l\'effort de rigueur, des biais inconscients existent. C\'est pourquoi la correction citoyenne et les feedbacks existent.'],
+              ['Biais du concepteur', 'Les scores initiaux des partis et des médias ont été estimés par le modèle Claude Sonnet 4.6 (Anthropic), sollicité sans instruction susceptible d\'orienter ses réponses. Les prompts utilisés n\'ont pas tous été archivés, mais l\'éditeur s\'attend à ce qu\'ils soient reproductibles. Tout écart significatif peut être signalé à partiprism@proton.me et sera examiné par le bureau en assemblée ordinaire ; une correction sera apportée dès que possible si l\'écart avec un avis neutre de l\'IA est avéré.'],
               ['Biais de réduction', '5 axes ne capturent pas tout. Le rapport au progrès technique, à la religion, à l\'histoire — ces dimensions sont partiellement présentes mais pas pleinement. Aucun compas politique ne peut être exhaustif.'],
               ['Biais de fixité', 'Les positions sont des instantanés. Un parti peut changer de ligne rapidement (ex : le RN sur l\'économie entre 2017 et 2024). Des mises à jour régulières sont nécessaires.'],
               ['Biais de représentation', 'Les utilisateurs de PartiPrism ne sont pas un échantillon représentatif de la population française. Les statistiques collectives reflètent la communauté de l\'app, pas un sondage.'],
@@ -304,7 +304,7 @@ export function Methodologie({ onBack }: MethodologieProps) {
               ['Bouton feedback', 'disponible sur tous les écrans — signale un biais ou une erreur de positionnement. Un feedback sourcé ("Le Figaro n\'est pas à -0,3 sur le sociétal, voici pourquoi") est infiniment plus utile qu\'un simple désaccord.'],
               ['Évaluation des médias', 'dans l\'onglet Esprit critique — contribue à la perception citoyenne sur les axes sociétal et économique.'],
               ['Proposition de médias', 'si un média de qualité n\'est pas dans notre liste référencée, propose-le via le formulaire "Média manquant".'],
-              ['Contact direct', 'contact@partiprism.fr pour les signalements complexes ou les contestations argumentées.'],
+              ['Contact direct', 'partiprism@proton.me pour les signalements complexes ou les contestations argumentées.'],
             ].map(([action, desc], i) => (
               <li key={i} className="flex gap-2">
                 <span className="text-amber-400 shrink-0 font-medium">→</span>
