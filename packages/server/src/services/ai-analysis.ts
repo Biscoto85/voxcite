@@ -392,7 +392,7 @@ export async function runAiAnalysis(input: AnalysisInput, deepModel = false): Pr
   const response = await trackedAiCall({
     promptKey: dbKey,
     model,
-    maxTokens: deepModel ? 4000 : 1800,
+    maxTokens: deepModel ? 4000 : 3000,
     messages: [{ role: 'user', content: prompt }],
   });
 
@@ -400,9 +400,12 @@ export async function runAiAnalysis(input: AnalysisInput, deepModel = false): Pr
 
   try {
     return JSON.parse(extractJSON(text)) as AiAnalysisResult;
-  } catch {
+  } catch (err) {
+    const stopReason = response.stop_reason ?? 'unknown';
+    console.error(`[ai-analysis] JSON.parse failed (model=${model}, stop_reason=${stopReason}, text_len=${text.length}):`, (err as Error).message);
+    console.error('[ai-analysis] Raw text (first 300 chars):', text.slice(0, 300));
     return {
-      summary: text.slice(0, 500),
+      summary: 'Analyse temporairement indisponible. Revenez dans quelques instants.',
       vsCitoyens: '',
       vsPartis: '',
       biases: [],
