@@ -7,7 +7,6 @@ import {
 import { eq, desc, asc, sql, and, count } from 'drizzle-orm';
 import { trackedAiCall } from '../services/tracked-ai.js';
 import { invalidatePromptCache } from '../services/prompt-loader.js';
-import { FALLBACK_ANALYSIS_TEMPLATE, DEEP_ANALYSIS_TEMPLATE } from '../services/ai-analysis.js';
 import { extractClaudeText } from '../utils/helpers.js';
 
 export const adminRouter = Router();
@@ -92,14 +91,6 @@ adminRouter.get('/dashboard', async (_req, res) => {
 // ══════════════════════════════════════════════════════════════════════
 // PROMPTS
 // ══════════════════════════════════════════════════════════════════════
-
-// GET /prompts/defaults — hardcoded fallback templates (for admin display)
-adminRouter.get('/prompts/defaults', (_req, res) => {
-  res.json({
-    analysis: { content: FALLBACK_ANALYSIS_TEMPLATE, model: 'claude-haiku-4-5-20251001', label: 'Analyse Haiku (fallback)' },
-    analysis_deep: { content: DEEP_ANALYSIS_TEMPLATE, model: 'claude-sonnet-4-6', label: 'Analyse Sonnet (fallback)' },
-  });
-});
 
 // GET /prompts — all prompts grouped by key
 adminRouter.get('/prompts', async (_req, res) => {

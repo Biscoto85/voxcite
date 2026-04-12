@@ -326,11 +326,8 @@ const PROMPT_CONFIGS = [
 ] as const;
 type PromptKey = typeof PROMPT_CONFIGS[number]['key'];
 
-interface PromptDefault { content: string; model: string; label: string; }
-
 function PromptsTab() {
   const [allPrompts, setAllPrompts] = useState<any[]>([]);
-  const [defaults, setDefaults] = useState<Record<string, PromptDefault>>({});
   const [editKey, setEditKey] = useState<PromptKey | null>(null);
   const [editContent, setEditContent] = useState('');
   const [editLabel, setEditLabel] = useState('');
@@ -343,10 +340,7 @@ function PromptsTab() {
     adminFetch('/prompts').then((r) => r.json()).then(setAllPrompts).catch(() => {});
   }, []);
 
-  useEffect(() => {
-    load();
-    adminFetch('/prompts/defaults').then((r) => r.json()).then(setDefaults).catch(() => {});
-  }, [load]);
+  useEffect(() => { load(); }, [load]);
 
   const grouped = new Map<string, any[]>();
   for (const p of allPrompts) {
@@ -403,11 +397,10 @@ function PromptsTab() {
       {PROMPT_CONFIGS.map(({ key, label, model }) => {
         const versions: any[] = grouped.get(key) ?? [];
         const active = versions.find((v) => v.isActive);
-        const fallback = defaults[key];
-        const usingFallback = !active;
+        const missing = !active;
 
         return (
-          <div key={key} className={`bg-gray-900 rounded-xl border ${usingFallback ? 'border-orange-900/50' : 'border-gray-800'}`}>
+          <div key={key} className={`bg-gray-900 rounded-xl border ${missing ? 'border-red-900/60' : 'border-gray-800'}`}>
             {/* Header */}
             <div className="flex items-center justify-between px-4 py-3 border-b border-gray-800">
               <div>
@@ -415,9 +408,9 @@ function PromptsTab() {
                 <span className="ml-2 text-[10px] text-gray-500 font-mono">{key}</span>
               </div>
               <div className="flex items-center gap-2">
-                {usingFallback ? (
-                  <span className="text-[10px] bg-orange-900/40 text-orange-300 border border-orange-800/40 px-2 py-0.5 rounded">
-                    FALLBACK HARDCODÉ
+                {missing ? (
+                  <span className="text-[10px] bg-red-900/50 text-red-300 border border-red-800/50 px-2 py-0.5 rounded">
+                    NON CONFIGURÉ — ERREUR EN PROD
                   </span>
                 ) : (
                   <span className="text-[10px] bg-amber-900/30 text-amber-300 border border-amber-800/30 px-2 py-0.5 rounded">
@@ -428,30 +421,23 @@ function PromptsTab() {
               </div>
             </div>
 
-            {/* Active source preview (first 120 chars) */}
+            {/* Active content preview */}
             <div className="px-4 py-2">
-              <p className="text-[11px] text-gray-500 font-mono truncate">
-                {(active?.content ?? fallback?.content ?? '').slice(0, 140)}…
-              </p>
+              {missing ? (
+                <p className="text-xs text-red-400/70 italic">Aucun prompt en DB — l'appel à l'IA échouera tant que ce prompt n'est pas configuré.</p>
+              ) : (
+                <p className="text-[11px] text-gray-500 font-mono truncate">{active.content.slice(0, 140)}…</p>
+              )}
             </div>
 
             {/* Actions */}
             <div className="px-4 pb-3 flex items-center gap-2 flex-wrap">
               <button
-                onClick={() => {
-                  const content = active?.content ?? fallback?.content ?? '';
-                  const lbl = active?.label ?? fallback?.label ?? label;
-                  openEditor(key, content, lbl);
-                }}
+                onClick={() => openEditor(key, active?.content ?? '', active?.label ?? label)}
                 className="px-3 py-1.5 bg-amber-600 hover:bg-amber-500 text-black rounded text-xs font-medium"
               >
-                {usingFallback ? 'Inspecter / Modifier le fallback' : 'Modifier (nouvelle version)'}
+                {missing ? 'Créer la première version' : 'Modifier (nouvelle version)'}
               </button>
-              {usingFallback && fallback && (
-                <span className="text-[10px] text-orange-400/70 italic">
-                  Aucune version en DB — le prompt ci-dessous est celui réellement exécuté
-                </span>
-              )}
             </div>
 
             {/* DB versions history */}
