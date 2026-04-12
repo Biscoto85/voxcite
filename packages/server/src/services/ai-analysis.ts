@@ -238,7 +238,7 @@ ${signalsBlock}`;
 }
 
 // Fallback hardcoded template — Haiku (used when no prompt in DB)
-const FALLBACK_ANALYSIS_TEMPLATE = `Tu es l'analyste politique de PartiPrism, une application citoyenne française.
+export const FALLBACK_ANALYSIS_TEMPLATE = `Tu es l'analyste politique de PartiPrism, une application citoyenne française.
 Tu analyses le profil d'un répondant sur 5 axes politiques (échelle -1 à +1).
 
 AXES :
@@ -300,7 +300,7 @@ RÈGLES :
 Réponds UNIQUEMENT avec le JSON, rien d'autre.`;
 
 // Dedicated deep template for Sonnet — more ambitious, more nuanced than Haiku version
-const DEEP_ANALYSIS_TEMPLATE = `Tu es l'analyste politique senior de PartiPrism, une application citoyenne française.
+export const DEEP_ANALYSIS_TEMPLATE = `Tu es l'analyste politique senior de PartiPrism, une application citoyenne française.
 Tu analyses le profil d'un répondant sur 5 axes politiques (échelle -1 à +1) avec une profondeur et une précision maximales.
 
 AXES :

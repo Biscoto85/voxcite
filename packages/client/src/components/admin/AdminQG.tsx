@@ -317,31 +317,59 @@ function SnapshotsTab() {
 
 // ── Prompts ──────────────────────────────────────────────────────────
 
+// Configured prompt keys with their natural test model
+const PROMPT_CONFIGS = [
+  { key: 'analysis',       label: 'Analyse — Haiku',              model: 'claude-haiku-4-5-20251001' },
+  { key: 'analysis_deep',  label: 'Analyse approfondie — Sonnet', model: 'claude-sonnet-4-6'          },
+  { key: 'program',        label: 'Programme citoyen',            model: 'claude-sonnet-4-6'          },
+  { key: 'link_validation',label: 'Validation lien',              model: 'claude-haiku-4-5-20251001' },
+] as const;
+type PromptKey = typeof PROMPT_CONFIGS[number]['key'];
+
+interface PromptDefault { content: string; model: string; label: string; }
+
 function PromptsTab() {
   const [allPrompts, setAllPrompts] = useState<any[]>([]);
-  const [editKey, setEditKey] = useState<string | null>(null);
+  const [defaults, setDefaults] = useState<Record<string, PromptDefault>>({});
+  const [editKey, setEditKey] = useState<PromptKey | null>(null);
   const [editContent, setEditContent] = useState('');
   const [editLabel, setEditLabel] = useState('');
+  const [editModel, setEditModel] = useState('claude-sonnet-4-6');
   const [testOutput, setTestOutput] = useState('');
   const [testing, setTesting] = useState(false);
-  const [testModel, setTestModel] = useState('claude-sonnet-4-6');
+  const [saving, setSaving] = useState(false);
 
-  const load = () => adminFetch('/prompts').then((r) => r.json()).then(setAllPrompts).catch(() => {});
-  useEffect(() => { load(); }, []);
+  const load = useCallback(() => {
+    adminFetch('/prompts').then((r) => r.json()).then(setAllPrompts).catch(() => {});
+  }, []);
+
+  useEffect(() => {
+    load();
+    adminFetch('/prompts/defaults').then((r) => r.json()).then(setDefaults).catch(() => {});
+  }, [load]);
 
   const grouped = new Map<string, any[]>();
   for (const p of allPrompts) {
-    const list = grouped.get(p.key) || [];
-    list.push(p);
-    grouped.set(p.key, list);
+    grouped.set(p.key, [...(grouped.get(p.key) ?? []), p]);
   }
+
+  const openEditor = (key: PromptKey, content: string, label: string) => {
+    const cfg = PROMPT_CONFIGS.find((c) => c.key === key)!;
+    setEditKey(key);
+    setEditContent(content);
+    setEditLabel(label);
+    setEditModel(cfg.model);
+    setTestOutput('');
+  };
 
   const handleSave = async () => {
     if (!editKey || !editContent) return;
+    setSaving(true);
     await adminFetch('/prompts', {
       method: 'POST',
       body: JSON.stringify({ key: editKey, label: editLabel, content: editContent }),
     });
+    setSaving(false);
     setEditKey(null);
     load();
   };
@@ -352,7 +380,7 @@ function PromptsTab() {
     try {
       const res = await adminFetch('/prompts/test', {
         method: 'POST',
-        body: JSON.stringify({ content: editContent, model: testModel }),
+        body: JSON.stringify({ content: editContent, model: editModel }),
       });
       const data = await res.json();
       setTestOutput(data.output || data.error || 'No output');
@@ -369,106 +397,146 @@ function PromptsTab() {
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <h2 className="text-lg font-bold">Prompts IA</h2>
-        <div className="flex gap-2">
-          {([
-            { key: 'analysis', label: '+ Analyse Haiku' },
-            { key: 'analysis_deep', label: '+ Analyse Sonnet' },
-            { key: 'program', label: '+ Programme' },
-            { key: 'link_validation', label: '+ Validation' },
-          ] as const).map(({ key, label }) => (
-            <button
-              key={key}
-              onClick={() => {
-                const active = allPrompts.find((p) => p.key === key && p.isActive);
-                setEditKey(key);
-                setEditLabel(active?.label || key);
-                setEditContent(active?.content || '');
-                setTestOutput('');
-              }}
-              className="px-3 py-1.5 bg-gray-800 text-gray-300 rounded text-xs hover:bg-gray-700"
-            >
-              {label}
-            </button>
-          ))}
-        </div>
-      </div>
+      <h2 className="text-lg font-bold">Prompts IA</h2>
+
+      {/* One card per configured key */}
+      {PROMPT_CONFIGS.map(({ key, label, model }) => {
+        const versions: any[] = grouped.get(key) ?? [];
+        const active = versions.find((v) => v.isActive);
+        const fallback = defaults[key];
+        const usingFallback = !active;
+
+        return (
+          <div key={key} className={`bg-gray-900 rounded-xl border ${usingFallback ? 'border-orange-900/50' : 'border-gray-800'}`}>
+            {/* Header */}
+            <div className="flex items-center justify-between px-4 py-3 border-b border-gray-800">
+              <div>
+                <span className="font-medium text-white text-sm">{label}</span>
+                <span className="ml-2 text-[10px] text-gray-500 font-mono">{key}</span>
+              </div>
+              <div className="flex items-center gap-2">
+                {usingFallback ? (
+                  <span className="text-[10px] bg-orange-900/40 text-orange-300 border border-orange-800/40 px-2 py-0.5 rounded">
+                    FALLBACK HARDCODÉ
+                  </span>
+                ) : (
+                  <span className="text-[10px] bg-amber-900/30 text-amber-300 border border-amber-800/30 px-2 py-0.5 rounded">
+                    DB v{active.version} actif
+                  </span>
+                )}
+                <span className="text-[10px] text-gray-600 font-mono">{model.replace('claude-', '')}</span>
+              </div>
+            </div>
+
+            {/* Active source preview (first 120 chars) */}
+            <div className="px-4 py-2">
+              <p className="text-[11px] text-gray-500 font-mono truncate">
+                {(active?.content ?? fallback?.content ?? '').slice(0, 140)}…
+              </p>
+            </div>
+
+            {/* Actions */}
+            <div className="px-4 pb-3 flex items-center gap-2 flex-wrap">
+              <button
+                onClick={() => {
+                  const content = active?.content ?? fallback?.content ?? '';
+                  const lbl = active?.label ?? fallback?.label ?? label;
+                  openEditor(key, content, lbl);
+                }}
+                className="px-3 py-1.5 bg-amber-600 hover:bg-amber-500 text-black rounded text-xs font-medium"
+              >
+                {usingFallback ? 'Inspecter / Modifier le fallback' : 'Modifier (nouvelle version)'}
+              </button>
+              {usingFallback && fallback && (
+                <span className="text-[10px] text-orange-400/70 italic">
+                  Aucune version en DB — le prompt ci-dessous est celui réellement exécuté
+                </span>
+              )}
+            </div>
+
+            {/* DB versions history */}
+            {versions.length > 0 && (
+              <div className="border-t border-gray-800 px-4 py-2 space-y-1">
+                <p className="text-[10px] text-gray-600 uppercase tracking-wider mb-1">Historique DB</p>
+                {versions.map((p) => (
+                  <div key={p.id} className={`flex items-center justify-between text-xs py-1 px-2 rounded ${p.isActive ? 'bg-amber-900/20 border border-amber-800/30' : ''}`}>
+                    <span className="text-gray-400">
+                      v{p.version} — {p.label} — {new Date(p.createdAt).toLocaleDateString('fr-FR')}
+                      {p.createdBy && ` par ${p.createdBy}`}
+                    </span>
+                    <div className="flex items-center gap-2">
+                      {p.isActive ? (
+                        <span className="text-amber-400 text-[10px]">ACTIF</span>
+                      ) : (
+                        <button onClick={() => handleActivate(p.id)} className="text-gray-500 hover:text-amber-400 text-[10px]">
+                          Activer
+                        </button>
+                      )}
+                      <button
+                        onClick={() => openEditor(key, p.content, p.label)}
+                        className="text-gray-500 hover:text-white text-[10px]"
+                      >
+                        Éditer
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        );
+      })}
 
       {/* Editor */}
       {editKey && (
         <div className="bg-gray-900 rounded-xl p-4 border border-amber-800/40 space-y-3">
           <div className="flex items-center justify-between">
-            <h3 className="font-medium text-amber-400">Éditer: {editKey}</h3>
-            <button onClick={() => setEditKey(null)} className="text-gray-500 hover:text-white text-sm">✕</button>
+            <h3 className="font-medium text-amber-400">
+              {PROMPT_CONFIGS.find((c) => c.key === editKey)?.label} — éditeur
+            </h3>
+            <button onClick={() => { setEditKey(null); setTestOutput(''); }} className="text-gray-500 hover:text-white text-sm">✕</button>
           </div>
           <input
             value={editLabel}
             onChange={(e) => setEditLabel(e.target.value)}
-            placeholder="Label"
+            placeholder="Label de version (ex: v2 — refonte biais)"
             className="w-full bg-gray-800 border border-gray-700 rounded px-3 py-1.5 text-sm text-white"
           />
           <textarea
             value={editContent}
             onChange={(e) => setEditContent(e.target.value)}
-            className="w-full bg-gray-800 border border-gray-700 rounded px-3 py-2 text-xs text-white font-mono min-h-[300px] resize-y"
+            className="w-full bg-gray-800 border border-gray-700 rounded px-3 py-2 text-xs text-white font-mono min-h-[400px] resize-y"
           />
-          <div className="flex gap-2">
-            <button onClick={handleSave} className="px-4 py-2 bg-amber-500 hover:bg-amber-400 rounded text-sm font-medium text-black">
-              Sauvegarder (nouvelle version)
-            </button>
-            <select
-              value={testModel}
-              onChange={(e) => setTestModel(e.target.value)}
-              className="bg-gray-800 border border-gray-700 rounded px-2 py-2 text-xs text-white"
+          <div className="flex gap-2 flex-wrap">
+            <button
+              onClick={handleSave}
+              disabled={saving || !editContent}
+              className="px-4 py-2 bg-amber-500 hover:bg-amber-400 disabled:bg-gray-700 disabled:text-gray-500 rounded text-sm font-medium text-black"
             >
-              <option value="claude-sonnet-4-6">Sonnet (~2¢)</option>
-              <option value="claude-haiku-4-5-20251001">Haiku (~0.5¢)</option>
-            </select>
-            <button onClick={handleTest} disabled={testing} className="px-4 py-2 bg-gray-700 hover:bg-gray-600 rounded text-sm">
-              {testing ? 'Test en cours...' : 'Tester'}
+              {saving ? 'Sauvegarde…' : 'Sauvegarder en DB (nouvelle version active)'}
             </button>
+            <div className="flex items-center gap-1">
+              <select
+                value={editModel}
+                onChange={(e) => setEditModel(e.target.value)}
+                className="bg-gray-800 border border-gray-700 rounded px-2 py-2 text-xs text-white"
+              >
+                <option value="claude-sonnet-4-6">Sonnet (~2¢)</option>
+                <option value="claude-haiku-4-5-20251001">Haiku (~0.5¢)</option>
+              </select>
+              <button
+                onClick={handleTest}
+                disabled={testing || !editContent}
+                className="px-4 py-2 bg-gray-700 hover:bg-gray-600 disabled:opacity-50 rounded text-sm"
+              >
+                {testing ? 'Test en cours…' : 'Tester'}
+              </button>
+            </div>
           </div>
           {testOutput && (
-            <pre className="bg-gray-800 rounded p-3 text-xs text-gray-300 overflow-auto max-h-60 whitespace-pre-wrap">{testOutput}</pre>
+            <pre className="bg-gray-800 rounded p-3 text-xs text-gray-300 overflow-auto max-h-72 whitespace-pre-wrap">{testOutput}</pre>
           )}
         </div>
-      )}
-
-      {/* Versions list */}
-      {[...grouped.entries()].map(([key, versions]) => (
-        <div key={key} className="bg-gray-900 rounded-xl p-4 border border-gray-800">
-          <h3 className="font-medium text-white mb-2">{key}</h3>
-          <div className="space-y-1">
-            {versions.map((p) => (
-              <div key={p.id} className={`flex items-center justify-between text-xs py-1 px-2 rounded ${p.isActive ? 'bg-amber-900/20 border border-amber-800/30' : ''}`}>
-                <span className="text-gray-400">
-                  v{p.version} — {p.label} — {new Date(p.createdAt).toLocaleDateString('fr-FR')}
-                  {p.createdBy && ` par ${p.createdBy}`}
-                </span>
-                <div className="flex items-center gap-2">
-                  {p.isActive ? (
-                    <span className="text-amber-400 text-[10px]">ACTIF</span>
-                  ) : (
-                    <button onClick={() => handleActivate(p.id)} className="text-gray-500 hover:text-amber-400 text-[10px]">
-                      Activer
-                    </button>
-                  )}
-                  <button
-                    onClick={() => { setEditKey(key); setEditLabel(p.label); setEditContent(p.content); setTestOutput(''); }}
-                    className="text-gray-500 hover:text-white text-[10px]"
-                  >
-                    Éditer
-                  </button>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      ))}
-
-      {allPrompts.length === 0 && (
-        <p className="text-gray-500 text-center py-8">Aucun prompt enregistré. Utilisez les boutons ci-dessus pour créer le premier.</p>
       )}
     </div>
   );
