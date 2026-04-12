@@ -17,6 +17,7 @@ import { QGPanel } from './components/qg/QGPanel';
 import { MobiliserScreen } from './components/mobiliser/MobiliserScreen';
 import { parseChallengeFromHash } from './utils/challenge';
 import { ShareButton } from './components/share/ShareButton';
+import { ChallengeButton } from './components/share/ChallengeButton';
 
 export type AppScreen = 'loading' | 'onboarding' | 'reveal' | 'menu' | 'prisme' | 'affiner' | 'situer' | 'critique' | 'exprimer' | 'mobiliser' | 'mentions' | 'cgu' | 'intention' | 'methodologie' | 'qg';
 
@@ -239,7 +240,8 @@ export function App() {
           <p className="text-gray-500 mt-1 text-xs sm:text-sm tracking-widest uppercase">Voir plus clair, penser plus large</p>
           {/* Share button — top-right, visible once the user has a result */}
           {userPosition && screen !== 'onboarding' && screen !== 'loading' && (
-            <div className="absolute right-4 top-1/2 -translate-y-1/2">
+            <div className="absolute right-4 top-1/2 -translate-y-1/2 flex items-center gap-2">
+              <ChallengeButton userPosition={userPosition} />
               <ShareButton userPosition={userPosition} parties={parties} />
             </div>
           )}
