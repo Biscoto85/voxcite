@@ -84,6 +84,7 @@ export function AnalysisScreen({ position, parties, profile, onBack }: AnalysisS
   const [selectedParty, setSelectedParty] = useState<string | null>(null);
   const [canRerun, setCanRerun] = useState(false);
   const [summaryCopied, setSummaryCopied] = useState(false);
+  const [shareCount] = useState(() => getShareCount());
   const [sonnetUnlocked] = useState(() => getShareCount() >= SONNET_UNLOCK_SHARE_COUNT);
   const [deepAnalysis, setDeepAnalysis] = useState<AiAnalysis>({
     summary: '', vsCitoyens: '', vsPartis: '', biases: [], espritCritiquePistes: [], loading: false,
@@ -351,6 +352,34 @@ export function AnalysisScreen({ position, parties, profile, onBack }: AnalysisS
         >
           Relancer l'analyse (tu as répondu à 40+ nouvelles questions)
         </button>
+      )}
+
+      {/* Sonnet — locked teaser (not yet 5 shares) */}
+      {!sonnetUnlocked && !analysis.loading && analysis.summary && !showDeep && (
+        <div className="mb-4 p-4 bg-indigo-950/40 border border-indigo-900/50 rounded-xl">
+          <div className="flex items-start gap-3">
+            <span className="text-indigo-400 mt-0.5" aria-hidden="true">✦</span>
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-medium text-indigo-300">Analyse approfondie — Claude Sonnet</p>
+              <p className="text-xs text-indigo-400/70 mt-0.5 leading-relaxed">
+                Plus nuancée, plus interprétative, davantage de biais identifiés. Débloquée en partageant ton positionnement.
+              </p>
+            </div>
+          </div>
+          <div className="mt-3">
+            <div className="flex items-center justify-between text-xs text-indigo-400/60 mb-1">
+              <span>{SONNET_UNLOCK_SHARE_COUNT - shareCount} partage{SONNET_UNLOCK_SHARE_COUNT - shareCount > 1 ? 's' : ''} restant{SONNET_UNLOCK_SHARE_COUNT - shareCount > 1 ? 's' : ''}</span>
+              <span>{shareCount}/{SONNET_UNLOCK_SHARE_COUNT}</span>
+            </div>
+            <div className="h-1.5 bg-indigo-950 rounded-full overflow-hidden" role="progressbar" aria-valuenow={shareCount} aria-valuemax={SONNET_UNLOCK_SHARE_COUNT}>
+              <div
+                className="h-full bg-indigo-500/60 rounded-full transition-all"
+                style={{ width: `${Math.min((shareCount / SONNET_UNLOCK_SHARE_COUNT) * 100, 100)}%` }}
+              />
+            </div>
+            <p className="text-xs text-indigo-400/40 mt-1.5">Utilise le bouton de partage en haut de l'écran</p>
+          </div>
+        </div>
       )}
 
       {/* Sonnet unlock — visible once user has shared 5+ times */}

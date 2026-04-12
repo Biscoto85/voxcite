@@ -324,7 +324,7 @@ function PromptsTab() {
   const [editLabel, setEditLabel] = useState('');
   const [testOutput, setTestOutput] = useState('');
   const [testing, setTesting] = useState(false);
-  const [testModel, setTestModel] = useState('claude-sonnet-4-20250514');
+  const [testModel, setTestModel] = useState('claude-sonnet-4-6');
 
   const load = () => adminFetch('/prompts').then((r) => r.json()).then(setAllPrompts).catch(() => {});
   useEffect(() => { load(); }, []);
@@ -372,7 +372,12 @@ function PromptsTab() {
       <div className="flex items-center justify-between">
         <h2 className="text-lg font-bold">Prompts IA</h2>
         <div className="flex gap-2">
-          {['analysis', 'program', 'link_validation'].map((key) => (
+          {([
+            { key: 'analysis', label: '+ Analyse Haiku' },
+            { key: 'analysis_deep', label: '+ Analyse Sonnet' },
+            { key: 'program', label: '+ Programme' },
+            { key: 'link_validation', label: '+ Validation' },
+          ] as const).map(({ key, label }) => (
             <button
               key={key}
               onClick={() => {
@@ -384,7 +389,7 @@ function PromptsTab() {
               }}
               className="px-3 py-1.5 bg-gray-800 text-gray-300 rounded text-xs hover:bg-gray-700"
             >
-              {key === 'analysis' ? '+ Analyse' : key === 'program' ? '+ Programme' : '+ Validation'}
+              {label}
             </button>
           ))}
         </div>
@@ -417,7 +422,7 @@ function PromptsTab() {
               onChange={(e) => setTestModel(e.target.value)}
               className="bg-gray-800 border border-gray-700 rounded px-2 py-2 text-xs text-white"
             >
-              <option value="claude-sonnet-4-20250514">Sonnet (~2¢)</option>
+              <option value="claude-sonnet-4-6">Sonnet (~2¢)</option>
               <option value="claude-haiku-4-5-20251001">Haiku (~0.5¢)</option>
             </select>
             <button onClick={handleTest} disabled={testing} className="px-4 py-2 bg-gray-700 hover:bg-gray-600 rounded text-sm">

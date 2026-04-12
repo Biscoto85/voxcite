@@ -37,10 +37,18 @@ export function getShareCount(): number {
   }
 }
 
+const SONNET_SHARE_THRESHOLD = 5;
+
 export function SharePanel({ userPosition, parties }: SharePanelProps) {
   const [copied, setCopied] = useState(false);
   const [shared, setShared] = useState(false);
   const [challengeCopied, setChallengeCopied] = useState(false);
+  const [localShareCount, setLocalShareCount] = useState(() => getShareCount());
+
+  const doIncrement = useCallback(() => {
+    incrementShareCount();
+    setLocalShareCount(getShareCount());
+  }, []);
 
   const closest = useMemo(() => getClosestParty(userPosition, parties), [userPosition, parties]);
   const message = useMemo(() => buildFullShareMessage(userPosition, parties), [userPosition, parties]);
@@ -53,19 +61,19 @@ export function SharePanel({ userPosition, parties }: SharePanelProps) {
       title: 'Mon positionnement PartiPrism',
       text: message,
     }).then(() => {
-      incrementShareCount();
+      doIncrement();
       setShared(true);
       setTimeout(() => setShared(false), 3000);
     }).catch(() => {});
-  }, [message]);
+  }, [message, doIncrement]);
 
   const handleCopy = useCallback(() => {
     navigator.clipboard.writeText(message).then(() => {
-      incrementShareCount();
+      doIncrement();
       setCopied(true);
       setTimeout(() => setCopied(false), 2500);
     }).catch(() => {});
-  }, [message]);
+  }, [message, doIncrement]);
 
   const handleChallenge = useCallback(() => {
     const url = buildChallengeUrl(userPosition);
@@ -111,7 +119,7 @@ export function SharePanel({ userPosition, parties }: SharePanelProps) {
             href={whatsappUrl(message)}
             target="_blank"
             rel="noopener noreferrer"
-            onClick={incrementShareCount}
+            onClick={doIncrement}
             className="flex items-center gap-2 px-3 py-3 bg-gray-800 hover:bg-gray-700 border border-gray-700 rounded-xl text-sm text-gray-200 transition-colors focus-ring"
           >
             <span className="text-lg" aria-hidden="true">💬</span>
@@ -123,7 +131,7 @@ export function SharePanel({ userPosition, parties }: SharePanelProps) {
             href={telegramUrl(message)}
             target="_blank"
             rel="noopener noreferrer"
-            onClick={incrementShareCount}
+            onClick={doIncrement}
             className="flex items-center gap-2 px-3 py-3 bg-gray-800 hover:bg-gray-700 border border-gray-700 rounded-xl text-sm text-gray-200 transition-colors focus-ring"
           >
             <span className="text-lg" aria-hidden="true">✈️</span>
@@ -133,7 +141,7 @@ export function SharePanel({ userPosition, parties }: SharePanelProps) {
           {/* SMS */}
           <a
             href={smsUrl(message)}
-            onClick={incrementShareCount}
+            onClick={doIncrement}
             className="flex items-center gap-2 px-3 py-3 bg-gray-800 hover:bg-gray-700 border border-gray-700 rounded-xl text-sm text-gray-200 transition-colors focus-ring"
           >
             <span className="text-lg" aria-hidden="true">💌</span>
@@ -143,7 +151,7 @@ export function SharePanel({ userPosition, parties }: SharePanelProps) {
           {/* Email */}
           <a
             href={emailUrl(emailData.subject, emailData.body)}
-            onClick={incrementShareCount}
+            onClick={doIncrement}
             className="flex items-center gap-2 px-3 py-3 bg-gray-800 hover:bg-gray-700 border border-gray-700 rounded-xl text-sm text-gray-200 transition-colors focus-ring"
           >
             <span className="text-lg" aria-hidden="true">📧</span>
@@ -155,7 +163,7 @@ export function SharePanel({ userPosition, parties }: SharePanelProps) {
             href={twitterUrl(shortPhrase)}
             target="_blank"
             rel="noopener noreferrer"
-            onClick={incrementShareCount}
+            onClick={doIncrement}
             className="flex items-center gap-2 px-3 py-3 bg-gray-800 hover:bg-gray-700 border border-gray-700 rounded-xl text-sm text-gray-200 transition-colors focus-ring"
           >
             <span className="text-base font-bold" aria-hidden="true">𝕏</span>
@@ -178,6 +186,30 @@ export function SharePanel({ userPosition, parties }: SharePanelProps) {
         <p className="text-xs text-gray-600 text-center">
           Sur téléphone, le bouton "Partager" propose aussi Signal, WhatsApp et tous tes contacts.
         </p>
+      )}
+
+      {/* Sonnet unlock progress */}
+      {localShareCount < SONNET_SHARE_THRESHOLD ? (
+        <div className="bg-indigo-950/40 border border-indigo-900/40 rounded-xl p-3">
+          <div className="flex items-center justify-between text-xs text-indigo-400/70 mb-1.5">
+            <span>Analyse Claude Sonnet</span>
+            <span>{localShareCount}/{SONNET_SHARE_THRESHOLD} partages</span>
+          </div>
+          <div className="h-1.5 bg-indigo-950 rounded-full overflow-hidden" role="progressbar" aria-valuenow={localShareCount} aria-valuemax={SONNET_SHARE_THRESHOLD}>
+            <div
+              className="h-full bg-indigo-500/60 rounded-full transition-all"
+              style={{ width: `${(localShareCount / SONNET_SHARE_THRESHOLD) * 100}%` }}
+            />
+          </div>
+          <p className="text-xs text-indigo-400/50 mt-1.5">
+            {SONNET_SHARE_THRESHOLD - localShareCount} partage{SONNET_SHARE_THRESHOLD - localShareCount > 1 ? 's' : ''} de plus pour débloquer l'analyse approfondie
+          </p>
+        </div>
+      ) : (
+        <div className="bg-indigo-950/40 border border-indigo-700/40 rounded-xl p-3 text-center">
+          <p className="text-sm font-medium text-indigo-300">✦ Analyse Claude Sonnet débloquée !</p>
+          <p className="text-xs text-indigo-400/60 mt-0.5">Disponible dans la section "Me situer"</p>
+        </div>
       )}
 
       {/* Défi */}
