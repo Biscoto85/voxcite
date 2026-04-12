@@ -259,8 +259,8 @@ INSTRUCTIONS :
 
 {
   "summary": "2-3 phrases d'accroche. Commence par la CONTRADICTION ou TENSION la plus révélatrice du profil. Puis le trait le plus marqué. Puis une surprise. Ne liste pas les axes — raconte quelque chose d'inhabituel sur cette personne.",
-  "vsCitoyens": "3-4 phrases avec les percentiles. Formule : 'Tu es plus X que Y% des répondants.' Identifie 1-2 positions atypiques (percentile >80 ou <20) et 1 position dans la norme. Donne un contexte concret à l'atypicité.",
-  "vsPartis": "3-4 phrases. Parti le plus proche et sur quels axes précisément. Désaccord le plus fort avec ce même parti (surprise). Parti le plus éloigné et pourquoi. Évite les généralités — nomme les axes précis de convergence et divergence.",
+  "vsCitoyens": "3-4 phrases narratives. Mentionne 1-2 positions atypiques (percentile >80 ou <20) avec des formulations comme 'tu te situes parmi les plus X' ou 'rares sont ceux qui'. Identifie 1 position dans la norme. Donne un contexte concret sans citer de valeurs numériques brutes.",
+  "vsPartis": "3-4 phrases narratives. Nomme le parti le plus proche et sur quels axes précisément ils convergent. Mentionne le désaccord le plus fort avec ce même parti. Évite les généralités — nomme les axes de divergence sans citer de scores ou distances numériques.",
   "biases": [
     {
       "category": "media ou values",
@@ -322,8 +322,8 @@ INSTRUCTIONS :
 
 {
   "summary": "3-4 phrases. Commence par la TENSION ou STRUCTURE DE PENSÉE la plus révélatrice — pas par les axes dominants. Formule une hypothèse interprétative sur ce qui unit (ou oppose) les différentes facettes du profil. Termine par ce qui rend ce profil singulier parmi la population des répondants.",
-  "vsCitoyens": "4-5 phrases. Les 2-3 positions les plus atypiques (percentile >85 ou <15) avec interprétation : qu'est-ce que ça signifie de se situer là ? Les positions dans la norme avec contexte. Formule une question : 'Est-ce que tu réalises que sur [axe], tu es parmi les X% les plus [position] en France ?'",
-  "vsPartis": "4-5 phrases. Parti le plus proche et axes de convergence précis. Le désaccord le plus fort avec ce même parti — et ce que ça dit des limites du spectre partisan. Un parti inattendu avec lequel tu converges sur un axe spécifique. Ce que le spectre partisan actuel ne parvient pas à représenter dans ce profil.",
+  "vsCitoyens": "4-5 phrases narratives. Les 2-3 positions les plus atypiques avec interprétation : qu'est-ce que ça signifie de se situer là ? Formule comme 'Tu fais partie des rares personnes qui…' ou 'Sur cet axe, tu te distingues nettement de la majorité'. Les positions dans la norme avec contexte. Pose une question : 'Est-ce que tu réalises que sur [axe], tu te situes parmi les plus [position] ?'. Pas de valeurs numériques brutes dans le texte.",
+  "vsPartis": "4-5 phrases narratives. Parti le plus proche et axes de convergence précis. Le désaccord le plus fort avec ce même parti — et ce que ça dit des limites du spectre partisan. Un parti inattendu avec lequel il y a convergence sur un axe spécifique. Ce que le spectre partisan actuel ne parvient pas à représenter dans ce profil. Pas de scores ou distances numériques dans le texte.",
   "biases": [
     {
       "category": "media ou values",

@@ -50,8 +50,13 @@ export function CompassContainer({ parties, userPosition, initialView = '2d', on
       {/* Header with back button */}
       {onBack && (
         <div className="flex items-center justify-between">
-          <h2 className="text-xl font-bold">Prisme</h2>
-          <button onClick={onBack} className="text-sm text-amber-400 hover:text-amber-300 focus-ring rounded py-1 px-2">← Menu</button>
+          <div>
+            <h2 className="text-xl font-bold">Prisme</h2>
+            <p className="text-xs text-gray-500 mt-0.5">
+              Passe la souris sur les pôles pour en découvrir la définition — change de vue pour explorer d'autres dimensions.
+            </p>
+          </div>
+          <button onClick={onBack} className="text-sm text-amber-400 hover:text-amber-300 focus-ring rounded py-1 px-2 shrink-0 ml-4">← Menu</button>
         </div>
       )}
 

@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo, useCallback } from 'react';
-import type { Party, CompassPosition } from '@partiprism/shared';
-import { AXES } from '@partiprism/shared';
+import type { Party, CompassPosition, AxisId } from '@partiprism/shared';
+import { AXES, SUGGESTED_VIEWS } from '@partiprism/shared';
 import { CompassCanvas1D } from './CompassCanvas1D';
 import { CompassCanvas2D } from './CompassCanvas2D';
 import { PartyLegend } from './PartyLegend';
@@ -59,6 +59,8 @@ export function CompassReveal({ parties, userPosition, challengerPosition, onCon
   const [opacity2D, setOpacity2D] = useState(0);
   const [copied, setCopied] = useState(false);
   const [challengeLinkCopied, setChallengeLinkCopied] = useState(false);
+  const [xAxis, setXAxis] = useState<AxisId>('societal');
+  const [yAxis, setYAxis] = useState<AxisId>('economic');
 
   const closest1D = useMemo(() => getClosestParty1D(userPosition, parties), [userPosition, parties]);
   const closest2D = useMemo(() => getClosestParty(userPosition, parties), [userPosition, parties]);
@@ -78,8 +80,8 @@ export function CompassReveal({ parties, userPosition, challengerPosition, onCon
       setPhase('transition');
       setOpacity2D(0);
       requestAnimationFrame(() => { setOpacity1D(0); setOpacity2D(1); });
-    }, 3000);
-    const t2 = setTimeout(() => setPhase('2d'), 3800);
+    }, 6000);
+    const t2 = setTimeout(() => setPhase('2d'), 6800);
     return () => { clearTimeout(t1); clearTimeout(t2); };
   }, []);
 
@@ -169,17 +171,36 @@ export function CompassReveal({ parties, userPosition, challengerPosition, onCon
             </div>
             <div className="transition-opacity duration-700" style={{ opacity: opacity2D }}>
               <CompassCanvas2D parties={parties} userPosition={userPosition} challengerPosition={challengerPosition}
-                xAxis="societal" yAxis="economic"
+                xAxis={xAxis} yAxis={yAxis}
                 highlightedPartyId={highlightedPartyId} onPartyHover={setHighlightedPartyId} />
             </div>
           </div>
         )}
         {phase === '2d' && (
           <CompassCanvas2D parties={parties} userPosition={userPosition} challengerPosition={challengerPosition}
-            xAxis="societal" yAxis="economic"
+            xAxis={xAxis} yAxis={yAxis}
             highlightedPartyId={highlightedPartyId} onPartyHover={setHighlightedPartyId} />
         )}
       </div>
+
+      {/* Preset views — visible in 2D phase */}
+      {phase === '2d' && (
+        <div className="flex gap-2 flex-wrap" role="group" aria-label="Vues prédéfinies">
+          {SUGGESTED_VIEWS.map((sv) => (
+            <button
+              key={sv.label}
+              onClick={() => { setXAxis(sv.x); setYAxis(sv.y); }}
+              className={`px-3 py-1.5 rounded text-xs transition-colors focus-ring ${
+                xAxis === sv.x && yAxis === sv.y
+                  ? 'bg-amber-500/30 text-amber-300 border border-amber-400'
+                  : 'bg-gray-800 text-gray-500 hover:text-gray-300 border border-transparent'
+              }`}
+            >
+              {sv.label}
+            </button>
+          ))}
+        </div>
+      )}
 
       <PartyLegend parties={parties} visibleIds={visiblePartyIds}
         highlightedId={highlightedPartyId} onToggle={() => {}} onToggleAll={() => {}}
@@ -193,8 +214,7 @@ export function CompassReveal({ parties, userPosition, challengerPosition, onCon
             Toi vs le challenger
             {challengerDist !== null && (
               <span className="ml-auto text-xs font-normal text-indigo-400/70">
-                Distance globale : {challengerDist.toFixed(2)}
-                {challengerDist < 0.5 ? ' — très proches !' : challengerDist < 1.2 ? ' — quelques différences' : ' — positions assez éloignées'}
+                {challengerDist < 0.5 ? 'Profils très proches !' : challengerDist < 1.2 ? 'Quelques différences' : 'Positions assez éloignées'}
               </span>
             )}
           </h3>
@@ -203,12 +223,13 @@ export function CompassReveal({ parties, userPosition, challengerPosition, onCon
               const axisInfo = AXES[key];
               const userSide = userPosition[key] > 0 ? axisInfo.positive : axisInfo.negative;
               const challSide = challengerPosition[key] > 0 ? axisInfo.positive : axisInfo.negative;
+              const gapLabel = absDiff < 0.2 ? 'très proches' : absDiff < 0.5 ? 'quelques nuances' : absDiff < 0.8 ? 'divergence notable' : 'positions opposées';
               return (
                 <div key={key} className="text-xs">
                   <div className="flex justify-between text-gray-500 mb-0.5">
                     <span>{axisInfo.negative}</span>
                     <span className={`font-medium ${absDiff > 0.5 ? 'text-orange-400' : 'text-indigo-400'}`}>
-                      écart {diff > 0 ? '+' : ''}{diff.toFixed(2)}
+                      {gapLabel}
                     </span>
                     <span>{axisInfo.positive}</span>
                   </div>
@@ -277,7 +298,9 @@ export function CompassReveal({ parties, userPosition, challengerPosition, onCon
         )}
         {(phase === 'transition' || phase === '2d') && (
           <p className="text-xs text-gray-500 mb-3">
-            {partyChanged ? 'L\'axe unique masquait ta vraie position.' : 'Axe sociétal × économique — ton vrai positionnement'}
+            {partyChanged
+              ? "L'axe unique masquait ta vraie position — explore les autres vues ci-dessus."
+              : `${AXES[xAxis].negative.toLowerCase()} ↔ ${AXES[xAxis].positive.toLowerCase()} · ${AXES[yAxis].negative.toLowerCase()} ↔ ${AXES[yAxis].positive.toLowerCase()}`}
           </p>
         )}
         {phase === '2d' && (

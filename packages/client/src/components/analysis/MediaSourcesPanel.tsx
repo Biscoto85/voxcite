@@ -214,8 +214,8 @@ export function MediaSourcesPanel({ profile, userPosition }: MediaSourcesPanelPr
                 >
                   <div className="flex justify-between items-center mb-0.5">
                     <span className="font-medium text-gray-200">{AXES[key].negative} ↔ {AXES[key].positive}</span>
-                    <span className={`text-[10px] font-mono ${absGap > 0.5 ? 'text-orange-400' : 'text-yellow-400'}`}>
-                      écart {gap > 0 ? '+' : ''}{gap.toFixed(2)}
+                    <span className={`text-[10px] font-medium ${absGap > 0.5 ? 'text-orange-400' : 'text-yellow-400'}`}>
+                      {absGap > 0.5 ? 'écart marqué' : 'écart modéré'}
                     </span>
                   </div>
                   <p className="text-gray-400">{interpretation}</p>

@@ -3,7 +3,6 @@ import type { CompassPosition, Party, AxisId } from '@partiprism/shared';
 import { AXES } from '@partiprism/shared';
 
 import type { UserProfile } from '@/App';
-import { MediaSourcesPanel } from './MediaSourcesPanel';
 import { getShareCount } from '@/components/share/SharePanel';
 
 interface AnalysisScreenProps {
@@ -62,12 +61,13 @@ function AxisBar({ axis, userVal, partyVal, partyColor }: {
   );
 }
 
-type Tab = 'resume' | 'citoyens' | 'partis' | 'biais';
+type Tab = 'resume' | 'citoyens' | 'partis';
 
 const LS_ANALYSIS = 'partiprism_analysis';
 const LS_ANALYSIS_DEEP = 'partiprism_analysis_deep';
 const LS_RESPONSES = 'partiprism_responses';
 const LS_ORPHAN = 'partiprism_is_orphan';
+const LS_PENDING_JOB = 'partiprism_pending_analysis_job';
 const ANALYSIS_QUESTION_THRESHOLD = 40;
 const SONNET_UNLOCK_SHARE_COUNT = 5; // number of shares needed to unlock deep analysis
 
@@ -119,7 +119,22 @@ export function AnalysisScreen({ position, parties, profile, onBack }: AnalysisS
       }
     } catch {}
 
-    // No cache — fetch analysis (one-shot, ephemeral on server)
+    // Check for pre-warmed job (started during onboarding reveal)
+    const pendingJobId = localStorage.getItem(LS_PENDING_JOB);
+    if (pendingJobId) {
+      localStorage.removeItem(LS_PENDING_JOB);
+      setAnalysis((prev) => ({ ...prev, loading: true }));
+      pollJobById(pendingJobId)
+        .then((data) => {
+          setAnalysis({ ...data, loading: false });
+          setCanRerun(false);
+          localStorage.setItem(LS_ANALYSIS, JSON.stringify({ result: data, questionCount: currentCount } satisfies CachedAnalysis));
+        })
+        .catch(() => fetchAnalysis(currentCount)); // fallback: enqueue fresh
+      return;
+    }
+
+    // No cache, no pending job — fetch analysis fresh
     fetchAnalysis(currentCount);
   }, []);
 
@@ -143,20 +158,8 @@ export function AnalysisScreen({ position, parties, profile, onBack }: AnalysisS
     };
   };
 
-  /** Enqueue a job and poll until done. Returns the result or throws. */
-  const pollAnalysis = async (isDeep = false): Promise<Omit<AiAnalysis, 'loading'>> => {
-    const body = buildRequestBody(isDeep);
-
-    // Enqueue
-    const enqueueRes = await fetch('/api/analysis/queue', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(body),
-    });
-    if (!enqueueRes.ok) throw new Error(`Enqueue failed: ${enqueueRes.status}`);
-    const { jobId } = await enqueueRes.json() as { jobId: string };
-
-    // Poll with exponential backoff — 2s→3s→5s→8s→10s (cap), timeout 60s
+  /** Poll an existing job by ID. Returns the result or throws. */
+  const pollJobById = useCallback((jobId: string): Promise<Omit<AiAnalysis, 'loading'>> => {
     const POLL_INTERVALS = [2_000, 3_000, 5_000, 8_000, 10_000];
     const MAX_WAIT_MS = 60_000;
 
@@ -179,7 +182,6 @@ export function AnalysisScreen({ position, parties, profile, onBack }: AnalysisS
             reject(new Error(data.error || 'Analysis failed'));
             return;
           }
-          // else: still pending/processing — keep polling
         } catch { /* network hiccup — keep trying */ }
 
         const delay = POLL_INTERVALS[Math.min(attempt, POLL_INTERVALS.length - 1)];
@@ -190,6 +192,22 @@ export function AnalysisScreen({ position, parties, profile, onBack }: AnalysisS
       setTimeout(poll, POLL_INTERVALS[0]);
       attempt = 1;
     });
+  }, []);
+
+  /** Enqueue a new job and poll until done. Returns the result or throws. */
+  const pollAnalysis = async (isDeep = false): Promise<Omit<AiAnalysis, 'loading'>> => {
+    const body = buildRequestBody(isDeep);
+
+    // Enqueue
+    const enqueueRes = await fetch('/api/analysis/queue', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+    });
+    if (!enqueueRes.ok) throw new Error(`Enqueue failed: ${enqueueRes.status}`);
+    const { jobId } = await enqueueRes.json() as { jobId: string };
+
+    return pollJobById(jobId);
   };
 
   const fetchAnalysis = (questionCount: number) => {
@@ -287,7 +305,6 @@ export function AnalysisScreen({ position, parties, profile, onBack }: AnalysisS
     { id: 'resume', label: 'Résumé' },
     { id: 'citoyens', label: 'vs Citoyens' },
     { id: 'partis', label: 'vs Partis' },
-    { id: 'biais', label: 'Mes biais' },
   ];
 
   return (
@@ -319,12 +336,6 @@ export function AnalysisScreen({ position, parties, profile, onBack }: AnalysisS
             }`}
           >
             {t.label}
-            {t.id === 'biais' && (profile?.infoDiversity || analysis.biases.length > 0) && (
-              <span className="ml-1 text-xs bg-indigo-400/30 rounded-full px-1.5"
-                aria-label={analysis.biases.length > 0 ? `${analysis.biases.length} biais IA détectés` : 'Analyse sources disponible'}>
-                {analysis.biases.length > 0 ? analysis.biases.length : '●'}
-              </span>
-            )}
           </button>
         ))}
       </div>
@@ -497,7 +508,9 @@ export function AnalysisScreen({ position, parties, profile, onBack }: AnalysisS
               <div className="flex items-center gap-2 mb-4">
                 <span className="w-3 h-3 rounded-full" style={{ backgroundColor: activeParty.party.color }} aria-hidden="true" />
                 <h3 className="font-medium">{activeParty.party.label}</h3>
-                <span className="text-sm text-gray-500">distance: {activeParty.distance.toFixed(2)}</span>
+                <span className="text-xs text-gray-600 ml-auto">
+                  {activeParty.distance < 0.5 ? 'très proche' : activeParty.distance < 1.0 ? 'assez proche' : activeParty.distance < 1.5 ? 'quelques écarts' : 'positions éloignées'}
+                </span>
               </div>
               {ALL_AXES.map((axis) => (
                 <AxisBar
@@ -518,65 +531,6 @@ export function AnalysisScreen({ position, parties, profile, onBack }: AnalysisS
                 </span>
               </div>
             </div>
-          )}
-        </div>
-      )}
-
-      {/* BIAIS */}
-      {!analysis.loading && tab === 'biais' && (
-        <div className="space-y-3" id="panel-biais" role="tabpanel">
-          {/* Analyse visuelle des sources (client-side) */}
-          <MediaSourcesPanel profile={profile} userPosition={position} />
-
-          {analysis.biases.length === 0 ? (
-            <div className="bg-gray-900 rounded-xl p-5 border border-gray-800 text-center">
-              <p className="text-gray-400">Aucun biais significatif identifié.</p>
-              <p className="text-sm text-gray-600 mt-1">Réponds à plus de questions pour affiner l'analyse.</p>
-            </div>
-          ) : (
-            <>
-              {/* Group by category */}
-              {(['media', 'values'] as const).map((cat) => {
-                const catBiases = analysis.biases.filter((b) => b.category === cat);
-                if (catBiases.length === 0) return null;
-                return (
-                  <div key={cat}>
-                    <h3 className="text-xs uppercase tracking-wider mb-2 mt-2 flex items-center gap-2">
-                      <span className={cat === 'media' ? 'text-blue-400' : 'text-amber-400'}>
-                        {cat === 'media' ? 'Biais liés à tes sources d\'info' : 'Biais liés à tes valeurs'}
-                      </span>
-                    </h3>
-                    {catBiases.map((bias, i) => (
-                      <article key={i} className={`rounded-xl p-4 border mb-2 ${
-                        cat === 'media' ? 'bg-blue-950/20 border-blue-900/30' : 'bg-amber-950/20 border-amber-900/30'
-                      }`}>
-                        <div className="flex items-center justify-between mb-1 flex-wrap gap-1">
-                          <h4 className="font-medium text-sm">{bias.biasType.replace(/_/g, ' ')}</h4>
-                          <div className="flex items-center gap-1.5">
-                            <span className="text-xs text-gray-500">{AXES[bias.axis as AxisId]?.negative}↔{AXES[bias.axis as AxisId]?.positive}</span>
-                            <div className="w-12 h-1.5 bg-gray-800 rounded-full overflow-hidden" role="img" aria-label={`Intensité: ${Math.round(bias.strength * 100)}%`}>
-                              <div
-                                className={`h-full rounded-full ${cat === 'media' ? 'bg-blue-500' : 'bg-amber-500'}`}
-                                style={{ width: `${bias.strength * 100}%` }}
-                              />
-                            </div>
-                          </div>
-                        </div>
-                        <p className="text-sm text-gray-300 mb-2">{bias.description}</p>
-                        <p className="text-xs text-amber-400">
-                          {bias.suggestedContent}
-                        </p>
-                        {bias.suggestedSource && (
-                          <p className="text-xs text-gray-500 mt-1">
-                            Source à explorer : <span className="text-gray-300">{bias.suggestedSource}</span>
-                          </p>
-                        )}
-                      </article>
-                    ))}
-                  </div>
-                );
-              })}
-            </>
           )}
         </div>
       )}

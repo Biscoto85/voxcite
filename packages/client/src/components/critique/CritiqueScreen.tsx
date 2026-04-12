@@ -1,13 +1,17 @@
 import { useState, useEffect } from 'react';
 import type { CompassPosition } from '@partiprism/shared';
+import { AXES } from '@partiprism/shared';
+import { MediaSourcesPanel } from '@/components/analysis/MediaSourcesPanel';
+import type { UserProfile } from '@/App';
 
 interface CritiqueScreenProps {
   userPosition: CompassPosition;
+  profile?: UserProfile | null;
   domainLabels: Record<string, string>;
   onBack: () => void;
 }
 
-type Tab = 'sources' | 'infos' | 'partager' | 'signaler';
+type Tab = 'sources' | 'biais' | 'infos' | 'partager' | 'signaler';
 
 interface MediaSource {
   id: string;
@@ -53,12 +57,13 @@ const ALL_AXES: AxisId[] = ['societal', 'economic', 'authority', 'ecology', 'sov
 
 const TABS: Array<{ id: Tab; label: string }> = [
   { id: 'sources', label: 'Tes médias' },
+  { id: 'biais', label: 'Mes biais' },
   { id: 'infos', label: 'Infos partagées' },
   { id: 'partager', label: 'Partager' },
   { id: 'signaler', label: 'Média manquant' },
 ];
 
-export function CritiqueScreen({ userPosition, domainLabels, onBack }: CritiqueScreenProps) {
+export function CritiqueScreen({ userPosition, profile, domainLabels, onBack }: CritiqueScreenProps) {
   const DOMAIN_LABELS = domainLabels;
   const [tab, setTab] = useState<Tab>('sources');
   const [proposeMediaUrl, setProposeMediaUrl] = useState('');
@@ -103,6 +108,7 @@ export function CritiqueScreen({ userPosition, domainLabels, onBack }: CritiqueS
       </div>
 
       {tab === 'sources' && <SourcesTab userPosition={userPosition} />}
+      {tab === 'biais' && <BiaisTab userPosition={userPosition} profile={profile} />}
       {tab === 'infos' && <InfosTab domainLabels={DOMAIN_LABELS} />}
       {tab === 'partager' && <PartagerTab domainLabels={DOMAIN_LABELS} onSuggestMedia={handleSuggestMedia} />}
       {tab === 'signaler' && <ProposeMediaTab prefillUrl={proposeMediaUrl} />}
@@ -256,7 +262,93 @@ function SourcesTab({ userPosition }: { userPosition: CompassPosition }) {
   );
 }
 
-// ── Tab 2: Infos partagées ──────────────────────────────────────────
+// ── Tab 2: Mes biais (IA + profil sources) ─────────────────────────
+
+interface CachedBias {
+  category: 'media' | 'values';
+  biasType: string;
+  axis: string;
+  description: string;
+  strength: number;
+  suggestedContent: string;
+  suggestedSource?: string;
+}
+
+function BiaisTab({ userPosition, profile }: { userPosition: CompassPosition; profile?: UserProfile | null }) {
+  const [biases, setBiases] = useState<CachedBias[]>([]);
+
+  useEffect(() => {
+    try {
+      const cached = JSON.parse(localStorage.getItem('partiprism_analysis') || 'null');
+      if (cached?.result?.biases) setBiases(cached.result.biases);
+    } catch { /* ignore */ }
+  }, []);
+
+  return (
+    <div className="space-y-3">
+      {/* Profil médias (radar + comportements) */}
+      <MediaSourcesPanel profile={profile} userPosition={userPosition} />
+
+      {/* Biais IA */}
+      {biases.length === 0 ? (
+        <div className="bg-gray-900 rounded-xl p-5 border border-gray-800 text-center">
+          <p className="text-gray-400">Analyse des biais non encore disponible.</p>
+          <p className="text-sm text-gray-600 mt-1">Visite d'abord "Me situer" pour générer ton analyse.</p>
+        </div>
+      ) : (
+        <>
+          {(['media', 'values'] as const).map((cat) => {
+            const catBiases = biases.filter((b) => b.category === cat);
+            if (catBiases.length === 0) return null;
+            return (
+              <div key={cat}>
+                <h3 className="text-xs uppercase tracking-wider mb-2 mt-2 flex items-center gap-2">
+                  <span className={cat === 'media' ? 'text-blue-400' : 'text-amber-400'}>
+                    {cat === 'media' ? 'Biais liés à tes sources d\'info' : 'Biais liés à tes valeurs'}
+                  </span>
+                </h3>
+                {catBiases.map((bias, i) => {
+                  const axisKey = bias.axis as keyof CompassPosition;
+                  const axisInfo = AXES[axisKey];
+                  return (
+                    <article key={i} className={`rounded-xl p-4 border mb-2 ${
+                      cat === 'media' ? 'bg-blue-950/20 border-blue-900/30' : 'bg-amber-950/20 border-amber-900/30'
+                    }`}>
+                      <div className="flex items-center justify-between mb-1 flex-wrap gap-1">
+                        <h4 className="font-medium text-sm">{bias.biasType.replace(/_/g, ' ')}</h4>
+                        <div className="flex items-center gap-1.5">
+                          {axisInfo && (
+                            <span className="text-xs text-gray-500">{axisInfo.negative}↔{axisInfo.positive}</span>
+                          )}
+                          <div className="w-12 h-1.5 bg-gray-800 rounded-full overflow-hidden"
+                            role="img" aria-label={`Intensité: ${Math.round(bias.strength * 100)}%`}>
+                            <div
+                              className={`h-full rounded-full ${cat === 'media' ? 'bg-blue-500' : 'bg-amber-500'}`}
+                              style={{ width: `${bias.strength * 100}%` }}
+                            />
+                          </div>
+                        </div>
+                      </div>
+                      <p className="text-sm text-gray-300 mb-2">{bias.description}</p>
+                      <p className="text-xs text-amber-400">{bias.suggestedContent}</p>
+                      {bias.suggestedSource && (
+                        <p className="text-xs text-gray-500 mt-1">
+                          Source à explorer : <span className="text-gray-300">{bias.suggestedSource}</span>
+                        </p>
+                      )}
+                    </article>
+                  );
+                })}
+              </div>
+            );
+          })}
+        </>
+      )}
+    </div>
+  );
+}
+
+// ── Tab 3: Infos partagées ──────────────────────────────────────────
 
 function InfosTab({ domainLabels: DOMAIN_LABELS }: { domainLabels: Record<string, string> }) {
   const [links, setLinks] = useState<SharedLink[]>([]);

@@ -18,7 +18,7 @@ import { MobiliserScreen } from './components/mobiliser/MobiliserScreen';
 import { parseChallengeFromHash } from './utils/challenge';
 import { ShareButton } from './components/share/ShareButton';
 
-export type AppScreen = 'loading' | 'onboarding' | 'reveal' | 'menu' | 'prisme' | 'affiner' | 'comparaison' | 'critique' | 'exprimer' | 'mobiliser' | 'mentions' | 'cgu' | 'intention' | 'methodologie' | 'qg';
+export type AppScreen = 'loading' | 'onboarding' | 'reveal' | 'menu' | 'prisme' | 'affiner' | 'situer' | 'critique' | 'exprimer' | 'mobiliser' | 'mentions' | 'cgu' | 'intention' | 'methodologie' | 'qg';
 
 // ── localStorage keys ──────────────────────────────────────────────
 const LS = {
@@ -28,6 +28,7 @@ const LS = {
   ONBOARDING_DONE: 'partiprism_onboarding_done',
   ANALYSIS: 'partiprism_analysis',
   SNAPSHOT_TOKEN: 'partiprism_snapshot_token',
+  PENDING_ANALYSIS_JOB: 'partiprism_pending_analysis_job',
 } as const;
 
 export interface UserProfile {
@@ -59,7 +60,7 @@ const SCREEN_TITLES: Record<AppScreen, string> = {
   menu: 'Menu principal',
   prisme: 'Prisme',
   affiner: 'Affiner',
-  comparaison: 'Comparaison',
+  situer: 'Me situer',
   critique: 'Esprit critique',
   exprimer: 'M\'exprimer',
   mobiliser: 'Me mobiliser',
@@ -149,6 +150,34 @@ export function App() {
     localStorage.setItem(LS.POSITION, JSON.stringify(position));
     localStorage.setItem(LS.PROFILE, JSON.stringify(profile));
     localStorage.setItem(LS.ONBOARDING_DONE, 'true');
+
+    // Pre-warm AI analysis in background — stores jobId so AnalysisScreen can poll immediately
+    try {
+      const savedResponses: Array<{ questionId: string; value: number }> = JSON.parse(
+        localStorage.getItem(LS.RESPONSES) || '[]',
+      );
+      fetch('/api/analysis/queue', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          position,
+          infoSource: profile.infoSource,
+          perceivedBias: profile.perceivedBias,
+          infoFormats: profile.infoFormats,
+          mediaSources: profile.mediaSources,
+          infoDiversity: profile.infoDiversity,
+          mediaRelationship: profile.mediaRelationship,
+          responses: savedResponses,
+          deepAnalysis: false,
+          parties: parties.map((p: Party) => ({ id: p.id, label: p.label, abbreviation: p.abbreviation, position: p.position })),
+        }),
+      })
+        .then((r) => r.ok ? r.json() : null)
+        .then((data: { jobId?: string } | null) => {
+          if (data?.jobId) localStorage.setItem(LS.PENDING_ANALYSIS_JOB, data.jobId);
+        })
+        .catch(() => {});
+    } catch { /* ignore */ }
 
     // Send anonymous snapshot for nebula; store token to allow position refinement later
     fetch('/api/sessions/snapshot', {
@@ -265,7 +294,7 @@ export function App() {
           />
         )}
 
-        {screen === 'comparaison' && userPosition && (
+        {screen === 'situer' && userPosition && (
           <AnalysisScreen
             position={userPosition}
             parties={parties}
@@ -277,6 +306,7 @@ export function App() {
         {screen === 'critique' && userPosition && (
           <CritiqueScreen
             userPosition={userPosition}
+            profile={userProfile}
             domainLabels={domainLabels}
             onBack={() => setScreen('menu')}
           />

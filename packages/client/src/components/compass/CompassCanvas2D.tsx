@@ -22,12 +22,20 @@ interface CompassCanvas2DProps {
   onPartyHover: (id: string | null) => void;
 }
 
+interface HoveredPole {
+  axisId: AxisId;
+  side: 'negative' | 'positive';
+  x: number; // canvas CSS px
+  y: number;
+}
+
 export function CompassCanvas2D({
   parties, userPosition, challengerPosition, xAxis, yAxis, highlightedPartyId, onPartyHover,
 }: CompassCanvas2DProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const [nebula, setNebula] = useState<NebulaData | null>(null);
+  const [hoveredPole, setHoveredPole] = useState<HoveredPole | null>(null);
 
   // Fetch nebula data when axes change
   useEffect(() => {
@@ -267,18 +275,56 @@ export function CompassCanvas2D({
       }
 
       onPartyHover(closest);
+
+      // Pole label hover detection (reuse margin/center already declared above)
+      const hitW = 80; // horizontal hit half-width for centered labels
+      const hitH = 20; // vertical hit half-height
+
+      type PoleHit = { axisId: AxisId; side: 'negative' | 'positive'; cx: number; cy: number };
+      const poleHits: PoleHit[] = [
+        { axisId: xAxis, side: 'negative', cx: margin + 40, cy: center - 14 },
+        { axisId: xAxis, side: 'positive', cx: size - margin - 40, cy: center - 14 },
+        { axisId: yAxis, side: 'positive', cx: center, cy: margin - 14 },
+        { axisId: yAxis, side: 'negative', cx: center, cy: size - margin + 14 },
+      ];
+
+      let pole: HoveredPole | null = null;
+      for (const h of poleHits) {
+        if (Math.abs(mx - h.cx) < hitW && Math.abs(my - h.cy) < hitH) {
+          pole = { axisId: h.axisId, side: h.side, x: mx, y: my };
+          break;
+        }
+      }
+      setHoveredPole(pole);
     },
     [parties, xAxis, yAxis, onPartyHover],
   );
 
+  const poleTooltip = hoveredPole ? AXES[hoveredPole.axisId].poles[hoveredPole.side] : null;
+
   return (
-    <div ref={containerRef} className="w-full flex justify-center">
+    <div ref={containerRef} className="w-full flex justify-center relative">
       <canvas
         ref={canvasRef}
         onMouseMove={handleMouseMove}
-        onMouseLeave={() => onPartyHover(null)}
+        onMouseLeave={() => { onPartyHover(null); setHoveredPole(null); }}
         className="cursor-crosshair"
       />
+      {/* Pole tooltip */}
+      {poleTooltip && hoveredPole && (
+        <div
+          role="tooltip"
+          className="absolute z-20 pointer-events-none bg-gray-900 border border-gray-700 rounded-xl p-3 shadow-xl text-xs max-w-[220px]"
+          style={{
+            left: Math.min(hoveredPole.x + 12, (containerRef.current?.clientWidth ?? 500) - 230),
+            top: Math.max(hoveredPole.y - 60, 4),
+          }}
+        >
+          <p className="font-semibold text-amber-300 mb-1">{poleTooltip.label}</p>
+          <p className="text-gray-300 leading-relaxed">{poleTooltip.definition}</p>
+          <p className="text-gray-600 mt-1 italic">{poleTooltip.source}</p>
+        </div>
+      )}
     </div>
   );
 }

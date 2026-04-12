@@ -78,11 +78,10 @@ export function NotreIntention({ onBack }: NotreIntentionProps) {
             c'est le résultat d'un sentiment d'impuissance que rien n'oblige à accepter.
           </p>
           <p className="mt-3">
-            Le modèle de la démocratie représentative a été conçu à une époque où l'information circulait lentement
-            et où la participation directe était logistiquement impossible. Ces contraintes n'existent plus tout à fait.
-            Les technologies numériques ouvrent des possibilités nouvelles d'expression collective que notre droit et
-            nos institutions n'ont pas encore explorées sérieusement — et c'est une conversation que nous pensons
-            urgente d'engager.
+            Les outils numériques permettent aujourd'hui de recueillir, structurer et rendre visibles des convictions
+            communes. Pas pour les transformer mécaniquement en programme — mais pour que les citoyens qui partagent
+            des positions puissent les formuler, les préciser, et les porter plus clairement dans le débat public.
+            C'est à cette ambition modeste mais sérieuse que s'essaie PartiPrism.
           </p>
         </div>
 

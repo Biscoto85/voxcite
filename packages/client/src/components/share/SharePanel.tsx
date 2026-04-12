@@ -11,6 +11,7 @@ import {
   buildSharePhrase,
 } from '@/utils/share';
 import { getClosestParty } from '@/utils/scoring';
+import { buildChallengeUrl } from '@/utils/challenge';
 
 interface SharePanelProps {
   userPosition: CompassPosition;
@@ -39,6 +40,7 @@ export function getShareCount(): number {
 export function SharePanel({ userPosition, parties }: SharePanelProps) {
   const [copied, setCopied] = useState(false);
   const [shared, setShared] = useState(false);
+  const [challengeCopied, setChallengeCopied] = useState(false);
 
   const closest = useMemo(() => getClosestParty(userPosition, parties), [userPosition, parties]);
   const message = useMemo(() => buildFullShareMessage(userPosition, parties), [userPosition, parties]);
@@ -64,6 +66,19 @@ export function SharePanel({ userPosition, parties }: SharePanelProps) {
       setTimeout(() => setCopied(false), 2500);
     }).catch(() => {});
   }, [message]);
+
+  const handleChallenge = useCallback(() => {
+    const url = buildChallengeUrl(userPosition);
+    const text = 'Je viens de tester mon positionnement politique en 5 axes sur PartiPrism — relève le défi et compare nos résultats !';
+    if (navigator.share) {
+      navigator.share({ title: 'Défi PartiPrism', text, url }).catch(() => {});
+    } else {
+      navigator.clipboard.writeText(`${text} ${url}`).then(() => {
+        setChallengeCopied(true);
+        setTimeout(() => setChallengeCopied(false), 2500);
+      }).catch(() => {});
+    }
+  }, [userPosition]);
 
   return (
     <div className="space-y-4">
@@ -164,6 +179,21 @@ export function SharePanel({ userPosition, parties }: SharePanelProps) {
           Sur téléphone, le bouton "Partager" propose aussi Signal, WhatsApp et tous tes contacts.
         </p>
       )}
+
+      {/* Défi */}
+      <div className="border-t border-gray-800 pt-4">
+        <p className="text-xs text-gray-500 uppercase tracking-wider mb-2">Défi</p>
+        <button
+          onClick={handleChallenge}
+          className="w-full flex items-center gap-2 px-4 py-3 bg-indigo-900/40 hover:bg-indigo-900/60 border border-indigo-700/50 rounded-xl text-sm text-indigo-200 transition-colors focus-ring"
+        >
+          <span className="text-lg" aria-hidden="true">⚡</span>
+          <div className="text-left">
+            <p className="font-medium">{challengeCopied ? 'Lien copié !' : 'Défier quelqu\'un'}</p>
+            <p className="text-xs text-indigo-400/70">Partage ton positionnement et compare vos résultats</p>
+          </div>
+        </button>
+      </div>
     </div>
   );
 }

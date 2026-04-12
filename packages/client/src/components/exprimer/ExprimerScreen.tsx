@@ -34,7 +34,7 @@ interface Suggestion {
 // DOMAIN_LABELS loaded from API, passed as prop
 
 const TABS: Array<{ id: Tab; label: string }> = [
-  { id: 'programme', label: 'Le programme' },
+  { id: 'programme', label: 'Les propositions' },
   { id: 'proposer', label: 'Proposer' },
   { id: 'reagir', label: 'Réagir' },
 ];
@@ -103,8 +103,8 @@ function ProgramTab() {
   if (!program) {
     return (
       <div className="text-center py-8">
-        <p className="text-gray-400">Le programme citoyen n'a pas encore été généré.</p>
-        <p className="text-gray-500 text-sm mt-2">Il sera construit à partir des propositions des citoyens.</p>
+        <p className="text-gray-400">Aucune proposition collective n'est disponible pour l'instant.</p>
+        <p className="text-gray-500 text-sm mt-2">Tes contributions aideront à en élaborer de structurées.</p>
       </div>
     );
   }
@@ -115,7 +115,7 @@ function ProgramTab() {
       {program.evolutionSummary && (
         <div className="mb-6 p-4 bg-amber-900/20 border border-amber-800/40 rounded-xl">
           <p className="text-sm text-amber-300 font-medium mb-1">
-            {program.isInitial ? 'Version initiale' : 'Évolution du programme'}
+            {program.isInitial ? 'Premières propositions' : 'Évolution des propositions'}
           </p>
           <p className="text-sm text-gray-300">{program.evolutionSummary}</p>
           <p className="text-xs text-gray-500 mt-2">
@@ -197,8 +197,8 @@ function ProposerTab({ userPosition, domainLabels: DOMAIN_LABELS }: { userPositi
   return (
     <div>
       <p className="text-sm text-gray-400 mb-4">
-        Rédige une proposition pour le programme citoyen. Elle sera intégrée
-        à la synthèse collective.
+        Partage ton idée sur ce sujet. Elle contribuera à l'élaboration
+        de propositions citoyennes structurées.
       </p>
 
       {/* Domain selector */}
@@ -233,12 +233,12 @@ function ProposerTab({ userPosition, domainLabels: DOMAIN_LABELS }: { userPositi
         disabled={!text.trim() || sending}
         className="mt-3 w-full py-3 bg-amber-500 hover:bg-amber-400 disabled:bg-gray-700 disabled:text-gray-500 rounded-lg font-medium text-sm transition-colors touch-target focus-ring"
       >
-        {sending ? 'Envoi...' : sent ? 'Proposition envoyée !' : 'Soumettre ma proposition'}
+        {sending ? 'Envoi...' : sent ? 'Idée envoyée !' : 'Soumettre mon idée'}
       </button>
 
       {sent && (
         <p className="text-green-400 text-sm text-center mt-2" role="status" aria-live="polite">
-          Merci ! Ta proposition sera intégrée au prochain programme.
+          Merci ! Ta contribution a bien été enregistrée.
         </p>
       )}
     </div>
