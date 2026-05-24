@@ -396,7 +396,7 @@ export async function runAiAnalysis(input: AnalysisInput, deepModel = false): Pr
   const response = await trackedAiCall({
     promptKey: dbKey,
     model,
-    maxTokens: deepModel ? 4000 : 3000,
+    maxTokens: deepModel ? 4000 : 4096,
     system: SYSTEM_JSON,
     messages: [{ role: 'user', content: prompt }],
   });
